@@ -28,12 +28,8 @@ export const HERO = {
   },
 } as const;
 
-/** Reassurance line shown under the booking CTAs. Drawn from the steps copy. */
-export const FIT_CALL_META = ['Free', '30 minutes', 'No commitment'] as const;
-
 /** Section 2 — the Knotless Assessment. */
 export const ASSESSMENT = {
-  label: 'The Assessment',
   heading: "AI is complicated. Knotless isn't.",
   intro:
     "That's why we built the Knotless Assessment. One entry point for every client, scoped to where you are right now.",
@@ -59,7 +55,6 @@ export const ASSESSMENT = {
     },
   ],
   readMore: { label: 'Read more', href: '/what-we-do' },
-  stepsLabel: 'The process',
   stepsHeading: 'How to get started',
   steps: [
     {
@@ -82,23 +77,19 @@ export const ASSESSMENT = {
 
 /** Section 3 — who you'll be talking to. Founder names/titles come from site.ts. */
 export const FOUNDERS_SECTION = {
-  label: 'The Team',
   heading: "Who you'll be talking to",
   body: [
     'Knotless is run by Insiya and Huzefa Karbalai, husband and wife, both based in Adelaide.',
     'Insiya spent over a decade in client success and account management, working with mid-market and SME firms across industries. She watched the same pattern repeat everywhere: capable people stuck doing repetitive work because there was no other option, and budgets stretched too thin to fix it.',
     'Huzefa spent fifteen years on the buyer’s side of complex technology rollouts. He learned the hard part of any technology is never the technology. It’s making it work inside a real business, with real budgets, real constraints, and people who just need it to work.',
-  ],
-  // Promoted to a large pull-quote.
-  pullQuote: 'Knotless is what happens when those two disciplines work on the same problem.',
-  closer:
+    'Knotless is what happens when those two disciplines work on the same problem.',
     'Every Fit Call is taken by us. Every Assessment is run by us. No handovers. No account managers. Just the two people whose names are on the door.',
+  ],
   readMore: { label: 'Read more about us', href: '/about' },
 } as const;
 
 /** Section 4 — final CTA. */
 export const FINAL_CTA = {
-  label: 'Get started',
   heading: 'Ready when you are.',
   body: "If you've read this far, the next step is the call.",
   cta: { label: 'Book a free Fit Call', href: '/contact' },
