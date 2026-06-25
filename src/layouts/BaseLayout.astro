@@ -78,6 +78,10 @@ const fontFace = `@font-face{font-family:'Inter Variable';font-style:normal;font
     <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
+    <!-- Subtle paper grain: a fixed, full-viewport noise overlay behind content.
+         Monochrome, very low opacity, multiply-blended onto the Cream paper. -->
+    <div class="grain" aria-hidden="true"></div>
+
     {
       bare ? (
         <slot />
