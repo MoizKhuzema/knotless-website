@@ -1,31 +1,143 @@
-/* Tailwind v4 entry point.
+/* =====================================================================
+ * Knotless — design tokens & global base
+ * ---------------------------------------------------------------------
+ * This is the single styling source of truth, the visual sibling of
+ * src/config/site.ts. Everything below is a TOKEN: change it here and it
+ * changes everywhere.
  *
- * The single @import pulls in all of Tailwind. The @theme block below is our
- * central design-token list: every custom value here becomes a utility class.
- * For example `--color-accent` generates `bg-accent`, `text-accent`,
- * `border-accent`, etc. Change a token here and it updates everywhere — the
- * styling equivalent of src/config/site.ts.
- */
+ * It's written for Tailwind v4. The @theme block is special — every value in
+ * it becomes BOTH a CSS custom property (e.g. var(--color-ink)) AND a utility
+ * class (e.g. bg-ink, text-2xl, tracking-wordmark). So you can reach a token
+ * from plain CSS or from markup, and there's only one definition.
+ *
+ * BRAND ANCHORS encoded here (do not widen without a brand decision):
+ *   - Palette is EXACTLY five values. No tints/shades/gradients/alpha.
+ *   - Cream is the default page background; Ink is default text.
+ *   - Terracotta is a single accent value, used once per composition.
+ *   - Inter only; hierarchy via weight + size.
+ * ===================================================================== */
+
 @import 'tailwindcss';
+@import './fonts.css';
 
 @theme {
-  /* Brand colours */
-  --color-accent: #2f5bea;
-  --color-accent-hover: #2447bd;
-  --color-accent-contrast: #ffffff;
+  /* --- Palette (the only five colours) ------------------------------- */
+  --color-ink: #1f1f1d; /* default text, dark surfaces            */
+  --color-terracotta: #a04a2c; /* single accent — one per composition    */
+  --color-cream: #efe9dd; /* default page background                 */
+  --color-white: #ffffff; /* UI surfaces only (cards on cream)       */
+  --color-warm-grey: #8a8580; /* muted text, hairlines, secondary icons  */
 
-  /* Text + surfaces */
-  --color-ink: #1a1a1a;
-  --color-ink-muted: #5c5c5c;
-  --color-line: #e2e2e2;
+  /* Turn OFF Tailwind's default palette so no off-brand colour
+   * (blue-500, gray-200, …) can sneak in. Only the five above remain. */
+  --color-*: initial;
 
-  /* Type */
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* --- Type family -------------------------------------------------- */
+  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto,
+    sans-serif;
+
+  /* --- Type scale ---------------------------------------------------
+   * Editorial scale, rem-based (root = 16px). Body is a generous 18px,
+   * the register of a printed document. Each size pairs with a sensible
+   * line-height. Names map to utilities: text-label, text-base, text-3xl…
+   * Headings get their weight from markup/utilities, not from the scale. */
+  --text-label: 0.75rem; /* 12px — all-caps labels, nav, metadata   */
+  --text-label--line-height: 1.4;
+  --text-sm: 0.875rem; /* 14px — small print, captions            */
+  --text-sm--line-height: 1.5;
+  --text-base: 1.125rem; /* 18px — body                             */
+  --text-base--line-height: 1.6;
+  --text-lg: 1.375rem; /* 22px — lead paragraph / standfirst      */
+  --text-lg--line-height: 1.5;
+  --text-xl: 1.75rem; /* 28px — h3                               */
+  --text-xl--line-height: 1.3;
+  --text-2xl: 2.25rem; /* 36px — h2                               */
+  --text-2xl--line-height: 1.2;
+  --text-3xl: 3.25rem; /* 52px — h1                               */
+  --text-3xl--line-height: 1.1;
+  --text-4xl: 4.5rem; /* 72px — hero display                     */
+  --text-4xl--line-height: 1.05;
+  --text-5xl: 6rem; /* 96px — oversized hero moments           */
+  --text-5xl--line-height: 1;
+
+  /* --- Letter-spacing (tracking) -----------------------------------
+   * The brand-specified wordmark/tagline values plus a few working ones.
+   * Tight tracking on large display type; open tracking on small caps. */
+  --tracking-wordmark: -0.03em; /* −3%  — the logo wordmark           */
+  --tracking-tagline: 0.15em; /* +15% — the "AI UNTANGLED" lockup   */
+  --tracking-tight: -0.02em; /* large display headings            */
+  --tracking-normal: 0em; /* body                              */
+  --tracking-label: 0.08em; /* all-caps labels / nav / metadata  */
+
+  /* --- Spacing rhythm ----------------------------------------------
+   * Tailwind's default 4px-based numeric scale (p-4, gap-8, …) still
+   * applies for fine control. These named tokens add the large, editorial
+   * rhythm used between sections, so vertical whitespace stays consistent:
+   *   py-section, my-section-lg, gap-gutter, …                         */
+  --spacing-gutter: 1.5rem; /* base horizontal gutter            */
+  --spacing-section: 6rem; /* vertical space between sections    */
+  --spacing-section-lg: 9rem; /* between major movements           */
+
+  /* --- Measure / containers ----------------------------------------
+   * Body copy is capped near ~70 characters for readability; the page
+   * itself sits in a wider editorial column. Map to max-w-prose etc. */
+  --container-prose: 38rem; /* ~68–70 chars at 18px body          */
+  --container-text: 48rem; /* headings / standfirst column      */
+  --container-page: 72rem; /* outer editorial width             */
 }
 
-/* A couple of sensible global defaults so pages look right before any classes. */
-html {
-  font-family: var(--font-sans);
-  color: var(--color-ink);
-  line-height: 1.6;
+/* ---------------------------------------------------------------------
+ * Base layer — sensible defaults so the page is on-brand before a single
+ * utility class is added.
+ * ------------------------------------------------------------------- */
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    /* Opt into Inter's typographic niceties (proper quotes, kerning). */
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+    font-size: var(--text-base);
+    line-height: 1.6;
+  }
+
+  /* Reversed (Ink) sections use Cream text — an approved pair. Wrap a dark
+   * block in .on-ink and its default text colour flips automatically. */
+  .on-ink {
+    background-color: var(--color-ink);
+    color: var(--color-cream);
+  }
+
+  ::selection {
+    background-color: var(--color-ink);
+    color: var(--color-cream);
+  }
+}
+
+/* ---------------------------------------------------------------------
+ * Component layer — small, reusable brand primitives.
+ * ------------------------------------------------------------------- */
+@layer components {
+  /* The terracotta strike from the logo, echoed as a short accent rule.
+   * Use sparingly — once per composition — above a heading or as a divider. */
+  .accent-rule {
+    display: block;
+    width: 2.5rem;
+    height: 0.25rem;
+    border-radius: 0.125rem;
+    background-color: var(--color-terracotta);
+  }
+
+  /* All-caps label / eyebrow / metadata styling. */
+  .label {
+    font-size: var(--text-label);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+  }
 }

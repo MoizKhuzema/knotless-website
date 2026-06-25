@@ -2,10 +2,11 @@
 /**
  * The base layout every page should use.
  *
- * It renders the shared <head>, the Nav, and the Footer, and drops the page's
- * own content into the <slot />. Because Nav and Footer read from the central
- * config, every page that uses this layout automatically inherits a consistent
- * header and footer.
+ * Responsibilities:
+ *  - shared <head>: title, description, canonical, favicons, social/OG tags
+ *  - font preload (Inter) to avoid layout shift
+ *  - the shared Nav and Footer (both read from src/config/site.ts)
+ *  - the Cream page shell with a consistent editorial max-width
  *
  * Usage from a page:
  *
@@ -19,8 +20,6 @@
 import { SITE } from '../config/site';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
-// Loads Tailwind + our design tokens. Importing it here means every page that
-// uses this layout gets the styles, so individual pages never import CSS.
 import '../styles/global.css';
 
 interface Props {
@@ -28,10 +27,16 @@ interface Props {
   title: string;
   /** Meta description for SEO / link previews. */
   description?: string;
+  /** Hide the shared Nav/Footer chrome (e.g. for the styleguide). */
+  bare?: boolean;
 }
 
-const { title, description = '' } = Astro.props;
+const { title, description = '', bare = false } = Astro.props;
 const fullTitle = `${title} | ${SITE.legalEntityName}`;
+
+// Absolute URLs for canonical + OG. Astro.site comes from astro.config.mjs.
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL('/og-default.png', Astro.site);
 ---
 
 <!doctype html>
@@ -39,18 +44,49 @@ const fullTitle = `${title} | ${SITE.legalEntityName}`;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+    <link rel="canonical" href={canonical} />
+
+    <!-- Preload the variable font so it's ready before first paint. -->
+    <link
+      rel="preload"
+      href="/fonts/inter-variable.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <!-- Favicons (generated from the mark on a Cream square). -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <!-- Open Graph / social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
-    <!-- .shell: centres content with a max width and consistent gutter. -->
-    <div class="mx-auto flex min-h-screen max-w-5xl flex-col px-5">
-      <Nav />
-      <main class="flex-1 py-8">
+    {
+      bare ? (
         <slot />
-      </main>
-      <Footer />
-    </div>
+      ) : (
+        <div class="mx-auto flex min-h-screen max-w-page flex-col px-gutter">
+          <Nav />
+          <main class="flex-1 py-section">
+            <slot />
+          </main>
+          <Footer />
+        </div>
+      )
+    }
   </body>
 </html>

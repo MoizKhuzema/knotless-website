@@ -2,29 +2,35 @@
 /**
  * Site footer.
  *
- * Pulls legal entity, ABN, address, and contact emails straight from the
- * central config so they only ever live in one place.
+ * Kept on Cream (the default) — a dark footer would be a deliberate emphasis
+ * choice, not the baseline. Uses the wordmark_secondary "original" lockup for a
+ * light background. All legal/contact values come from src/config/site.ts.
  */
 import { SITE } from '../config/site';
+import wordmark from '../assets/logo/wordmark_secondary/Wordmark_Secondary.svg';
 
 const year = new Date().getFullYear();
 ---
 
-<footer class="mt-12 grid gap-4 border-t border-line py-8 text-sm text-ink-muted">
-  <div>
-    <p class="font-semibold text-ink">{SITE.legalEntityName}</p>
-    <p class="my-0.5">ABN {SITE.abn}</p>
-    <p class="my-0.5">{SITE.registeredAddress}</p>
+<footer class="mt-section border-t border-warm-grey py-12 text-sm text-warm-grey">
+  <img src={wordmark.src} alt={SITE.legalEntityName} height="40" class="h-10 w-auto" />
+
+  <div class="mt-8 grid gap-8 sm:grid-cols-2">
+    <div class="not-italic">
+      <p class="font-medium text-ink">{SITE.legalEntityName}</p>
+      <p class="mt-1">ABN {SITE.abn}</p>
+      <p class="mt-1">{SITE.registeredAddress}</p>
+    </div>
+
+    <div class="sm:text-right">
+      <p>
+        <a class="hover:text-ink" href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>
+      </p>
+      <p class="mt-1">
+        <a class="hover:text-ink" href={`mailto:${SITE.privacyEmail}`}>{SITE.privacyEmail}</a>
+      </p>
+    </div>
   </div>
 
-  <div>
-    <p class="my-0.5">
-      General: <a class="text-ink-muted hover:text-ink" href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>
-    </p>
-    <p class="my-0.5">
-      Privacy: <a class="text-ink-muted hover:text-ink" href={`mailto:${SITE.privacyEmail}`}>{SITE.privacyEmail}</a>
-    </p>
-  </div>
-
-  <p class="mt-2">© {year} {SITE.legalEntityName}. All rights reserved.</p>
+  <p class="mt-8 label">© {year} {SITE.legalEntityName}</p>
 </footer>

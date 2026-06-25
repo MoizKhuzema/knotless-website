@@ -1,30 +1,35 @@
 ---
 /**
- * Site navigation bar.
+ * Site navigation.
  *
- * The brand label comes from the central config so it stays in sync with the
- * legal entity name. The link list lives here because it's structural to the
- * nav rather than a "site-wide value" — edit NAV_LINKS below to change it.
+ * Brand: the wordmark_secondary lockup (wordmark only, strike retained). This
+ * is the "original" variant for light/Cream backgrounds. It's rendered at a
+ * height that keeps its width above the 100px wordmark-only minimum, and never
+ * recoloured or stretched (height set, width auto).
+ *
+ * Links are all-caps metadata (.label). One primary action (Contact).
  */
 import { SITE } from '../config/site';
 import CtaButton from './CtaButton.astro';
+import wordmark from '../assets/logo/wordmark_secondary/Wordmark_Secondary.svg';
 
 const NAV_LINKS = [
-  { label: 'Home', href: '/' },
   { label: 'About', href: '/about' },
-  { label: 'Privacy', href: '/privacy' },
+  { label: 'Approach', href: '/approach' },
+  { label: 'Insights', href: '/insights' },
 ];
 
-// Highlight the current page. Astro gives us the request pathname at build time.
 const here = Astro.url.pathname;
-const isActive = (href: string) =>
-  href === '/' ? here === '/' : here.startsWith(href);
+const isActive = (href: string) => here.startsWith(href);
 ---
 
-<nav class="flex items-center gap-6 border-b border-line py-4">
-  <a href="/" class="text-lg font-bold text-ink no-underline">{SITE.legalEntityName}</a>
+<nav class="flex items-center gap-8 py-6">
+  <a href="/" aria-label={`${SITE.legalEntityName} — home`} class="shrink-0">
+    <!-- height drives size; width auto preserves the locked aspect ratio -->
+    <img src={wordmark.src} alt={SITE.legalEntityName} height="44" class="h-11 w-auto" />
+  </a>
 
-  <ul class="ml-auto flex list-none gap-5 p-0">
+  <ul class="ml-auto flex items-center gap-8">
     {
       NAV_LINKS.map((link) => (
         <li>
@@ -32,8 +37,8 @@ const isActive = (href: string) =>
             href={link.href}
             aria-current={isActive(link.href) ? 'page' : undefined}
             class:list={[
-              'no-underline hover:text-ink',
-              isActive(link.href) ? 'text-ink' : 'text-ink-muted',
+              'label no-underline transition-colors hover:text-ink',
+              isActive(link.href) ? 'text-ink' : 'text-warm-grey',
             ]}
           >
             {link.label}

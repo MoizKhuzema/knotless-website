@@ -1,13 +1,16 @@
 ---
 /**
- * A single founder's card: photo, name, title, LinkedIn link.
+ * A founder's card — typographic, no photography.
  *
- * Takes one `founder` object — the same shape as the entries in
- * SITE.founders — so you can map over the config to render the whole team:
+ * The brand uses no photos or illustration, and "any avatar → mark", so the
+ * card leads with the mark (its Cream background blends into the Cream card)
+ * and relies on type for hierarchy. `founder.photoPath` is intentionally
+ * unused under the no-photography rule.
  *
  *   {SITE.founders.map((f) => <FounderCard founder={f} />)}
  */
 import type { Founder } from '../config/site';
+import mark from '../assets/logo/mark/Mark.svg';
 
 interface Props {
   founder: Founder;
@@ -16,22 +19,16 @@ interface Props {
 const { founder } = Astro.props;
 ---
 
-<article class="flex flex-col items-center gap-2 rounded-xl border border-line p-6 text-center">
-  <img
-    class="h-40 w-40 rounded-full bg-line object-cover"
-    src={founder.photoPath}
-    alt={`Photo of ${founder.name}`}
-    width="160"
-    height="160"
-  />
-  <h3 class="mt-2 mb-0 text-lg">{founder.name}</h3>
-  <p class="m-0 text-ink-muted">{founder.title}</p>
+<article class="border-t border-warm-grey pt-6">
+  <img src={mark.src} alt="" aria-hidden="true" width="56" class="w-14" />
+  <h3 class="mt-5 text-xl font-semibold tracking-tight text-ink">{founder.name}</h3>
+  <p class="label mt-1 text-warm-grey">{founder.title}</p>
   <a
-    class="mt-1 font-semibold text-accent no-underline hover:underline"
+    class="label mt-4 inline-block text-ink no-underline hover:text-terracotta"
     href={founder.linkedinUrl}
     target="_blank"
     rel="noopener noreferrer"
   >
-    LinkedIn
+    LinkedIn →
   </a>
 </article>

@@ -1,82 +1,198 @@
 ---
 /**
- * Home page — the marketing landing page.
+ * TEMPORARY — design-token showcase.
  *
- * Sections: hero, value propositions, founders, closing CTA. All shared
- * chrome (nav/footer/head) comes from BaseLayout; all data comes from
- * src/config/site.ts.
+ * This page exists so the tokens, palette, type scale, logo variants, and
+ * brand primitives can be reviewed in one place before any real pages are
+ * built. It will be replaced by the real homepage once the hero direction is
+ * chosen. It is not part of the final site.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaButton from '../components/CtaButton.astro';
 import FounderCard from '../components/FounderCard.astro';
 import { SITE } from '../config/site';
 
-// PLACEHOLDER marketing copy — swap for real messaging.
-const VALUE_PROPS = [
-  {
-    title: 'PLACEHOLDER value one',
-    body: 'Describe the first thing you do well. One or two sentences is plenty.',
-  },
-  {
-    title: 'PLACEHOLDER value two',
-    body: 'The second reason a visitor should care. Keep it concrete and specific.',
-  },
-  {
-    title: 'PLACEHOLDER value three',
-    body: 'A third benefit. Together these three give a quick scan of your offer.',
-  },
+// Logo variants (imported as optimised assets — kept as vectors).
+import wmPrimary from '../assets/logo/wordmark_primary/Wordmark.svg';
+import wmPrimaryRev from '../assets/logo/wordmark_primary/Reverse_Wordmark.svg';
+import wmSecondary from '../assets/logo/wordmark_secondary/Wordmark_Secondary.svg';
+import wmSecondaryRev from '../assets/logo/wordmark_secondary/Reverse_Wordmark_Secondary.svg';
+import mark from '../assets/logo/mark/Mark.svg';
+import markRev from '../assets/logo/mark/Reverse_Mark.svg';
+
+const palette = [
+  { name: 'Ink', hex: '#1F1F1D', role: 'Default text · dark surfaces', cls: 'bg-ink' },
+  { name: 'Terracotta', hex: '#A04A2C', role: 'Single accent · one per composition', cls: 'bg-terracotta' },
+  { name: 'Cream', hex: '#EFE9DD', role: 'Default page background', cls: 'bg-cream border border-warm-grey' },
+  { name: 'White', hex: '#FFFFFF', role: 'UI surfaces only', cls: 'bg-white border border-warm-grey' },
+  { name: 'Warm grey', hex: '#8A8580', role: 'Muted text · hairlines', cls: 'bg-warm-grey' },
+];
+
+const pairs = [
+  { label: 'Ink on Cream (default)', cls: 'bg-cream text-ink' },
+  { label: 'Cream on Ink (reversed)', cls: 'bg-ink text-cream' },
+  { label: 'Terracotta on Cream', cls: 'bg-cream text-terracotta' },
+  { label: 'Terracotta on Ink', cls: 'bg-ink text-terracotta' },
+];
+
+const typeScale = [
+  { cls: 'text-5xl', name: '5xl · 96px', use: 'oversized hero' },
+  { cls: 'text-4xl', name: '4xl · 72px', use: 'hero display' },
+  { cls: 'text-3xl', name: '3xl · 52px', use: 'h1' },
+  { cls: 'text-2xl', name: '2xl · 36px', use: 'h2' },
+  { cls: 'text-xl', name: 'xl · 28px', use: 'h3' },
+  { cls: 'text-lg', name: 'lg · 22px', use: 'lead' },
+  { cls: 'text-base', name: 'base · 18px', use: 'body' },
+  { cls: 'text-sm', name: 'sm · 14px', use: 'small print' },
+];
+
+const logos = [
+  { src: wmPrimary, label: 'wordmark_primary — original / Cream', dark: false },
+  { src: wmPrimaryRev, label: 'wordmark_primary — reverse / Ink', dark: true },
+  { src: wmSecondary, label: 'wordmark_secondary — original / Cream', dark: false },
+  { src: wmSecondaryRev, label: 'wordmark_secondary — reverse / Ink', dark: true },
+  { src: mark, label: 'mark — original / Cream', dark: false },
+  { src: markRev, label: 'mark — reverse / Ink', dark: true },
 ];
 ---
 
-<BaseLayout
-  title="Home"
-  description="PLACEHOLDER home page description — one sentence summarising what the company does."
->
-  <!-- Hero -->
-  <section class="py-12 text-center">
-    <h1 class="mx-auto max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
-      PLACEHOLDER headline that says what you do
-    </h1>
-    <p class="mx-auto mt-4 max-w-2xl text-lg text-ink-muted">
-      PLACEHOLDER subheading — a short, plain-language explanation of the value you
-      provide and who it's for.
+<BaseLayout title="Design tokens" description="Brand token showcase — internal reference.">
+  <header class="max-w-text">
+    <span class="accent-rule"></span>
+    <p class="label mt-5 text-terracotta">Internal reference</p>
+    <h1 class="mt-3 text-3xl font-semibold tracking-tight">Design tokens &amp; brand system</h1>
+    <p class="mt-4 text-lg text-warm-grey">
+      The palette, type, spacing, and logo rules below are the foundation every
+      page inherits. Review before we build the homepage.
     </p>
-    <div class="mt-8 flex justify-center gap-4">
-      <CtaButton href="/contact">Get in touch</CtaButton>
-      <CtaButton href="/about" variant="secondary">Learn more</CtaButton>
-    </div>
-  </section>
+  </header>
 
-  <!-- Value propositions -->
-  <section class="py-12">
-    <div class="grid gap-6 sm:grid-cols-3">
+  <!-- PALETTE -->
+  <section class="mt-section">
+    <p class="label text-warm-grey">01 — Palette</p>
+    <div class="mt-6 grid gap-6 sm:grid-cols-3 lg:grid-cols-5">
       {
-        VALUE_PROPS.map((vp) => (
-          <div class="rounded-xl border border-line p-6">
-            <h2 class="mt-0 mb-2 text-xl">{vp.title}</h2>
-            <p class="m-0 text-ink-muted">{vp.body}</p>
+        palette.map((c) => (
+          <div>
+            <div class={`h-24 w-full rounded-sm ${c.cls}`} />
+            <p class="mt-3 font-medium text-ink">{c.name}</p>
+            <p class="text-sm text-warm-grey">{c.hex}</p>
+            <p class="mt-1 text-sm text-warm-grey">{c.role}</p>
+          </div>
+        ))
+      }
+    </div>
+
+    <p class="label mt-10 text-warm-grey">Approved pairings only</p>
+    <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        pairs.map((p) => (
+          <div class={`rounded-sm px-5 py-6 ${p.cls}`}>
+            <span class="text-lg font-medium">Aa</span>
+            <p class="mt-2 text-sm">{p.label}</p>
           </div>
         ))
       }
     </div>
   </section>
 
-  <!-- Founders -->
-  <section class="py-12">
-    <h2 class="text-center text-2xl font-bold">Meet the founders</h2>
-    <div class="mt-8 grid gap-6 sm:grid-cols-2">
-      {SITE.founders.map((founder) => <FounderCard founder={founder} />)}
+  <!-- TYPE SCALE -->
+  <section class="mt-section">
+    <p class="label text-warm-grey">02 — Type scale · Inter</p>
+    <div class="mt-6 divide-y divide-warm-grey">
+      {
+        typeScale.map((t) => (
+          <div class="flex items-baseline gap-6 py-4">
+            <span class="label w-28 shrink-0 text-warm-grey">{t.name}</span>
+            <span class={`${t.cls} font-medium tracking-tight`}>Knotless</span>
+            <span class="ml-auto hidden text-sm text-warm-grey sm:block">{t.use}</span>
+          </div>
+        ))
+      }
+    </div>
+    <div class="mt-8 max-w-prose">
+      <p class="label text-warm-grey">Body — capped near ~70 characters</p>
+      <p class="mt-2">
+        Judgement-led advice, set like a printed document. Body copy stays within
+        a comfortable measure so the eye never loses its place, weight does the
+        work of hierarchy, and the page reads calmly from top to bottom.
+      </p>
     </div>
   </section>
 
-  <!-- Closing CTA -->
-  <section class="py-12 text-center">
-    <h2 class="text-2xl font-bold">PLACEHOLDER closing call to action</h2>
-    <p class="mx-auto mt-2 max-w-xl text-ink-muted">
-      One last nudge to get the visitor to act.
-    </p>
-    <div class="mt-6">
-      <CtaButton href="/contact">Get in touch</CtaButton>
+  <!-- LETTER-SPACING -->
+  <section class="mt-section">
+    <p class="label text-warm-grey">03 — Letter-spacing</p>
+    <div class="mt-6 space-y-6">
+      <div>
+        <p class="text-3xl font-semibold tracking-wordmark">knotless</p>
+        <p class="mt-1 text-sm text-warm-grey">wordmark · −3% (tracking-wordmark)</p>
+      </div>
+      <div>
+        <p class="text-base uppercase tracking-tagline text-terracotta">AI Untangled</p>
+        <p class="mt-1 text-sm text-warm-grey">tagline lockup · +15% (tracking-tagline)</p>
+      </div>
+      <div>
+        <p class="label">Labels · Nav · Metadata</p>
+        <p class="mt-1 text-sm text-warm-grey">all-caps label · +8% (tracking-label)</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SPACING + ACCENT RULE -->
+  <section class="mt-section">
+    <p class="label text-warm-grey">04 — Spacing rhythm &amp; accent rule</p>
+    <div class="mt-6 space-y-3">
+      {
+        [
+          { w: 'w-6', l: 'gutter · 1.5rem' },
+          { w: 'w-24', l: 'section · 6rem' },
+          { w: 'w-36', l: 'section-lg · 9rem' },
+        ].map((s) => (
+          <div class="flex items-center gap-4">
+            <div class={`h-4 ${s.w} bg-ink`} />
+            <span class="text-sm text-warm-grey">{s.l}</span>
+          </div>
+        ))
+      }
+    </div>
+    <div class="mt-10">
+      <span class="accent-rule"></span>
+      <p class="mt-3 text-sm text-warm-grey">.accent-rule — the terracotta strike, echoed</p>
+    </div>
+  </section>
+
+  <!-- BUTTONS -->
+  <section class="mt-section">
+    <p class="label text-warm-grey">05 — Primary action</p>
+    <div class="mt-6 flex flex-wrap items-center gap-4">
+      <CtaButton href="#">Speak with us</CtaButton>
+      <CtaButton href="#" variant="secondary">Read more</CtaButton>
+    </div>
+  </section>
+
+  <!-- LOGOS -->
+  <section class="mt-section">
+    <p class="label text-warm-grey">06 — Logo variants &amp; placement</p>
+    <div class="mt-6 grid gap-5 sm:grid-cols-2">
+      {
+        logos.map((l) => (
+          <figure class={`flex min-h-32 items-center justify-center rounded-sm p-8 ${l.dark ? 'bg-ink' : 'bg-cream border border-warm-grey'}`}>
+            <img src={l.src.src} alt={l.label} class="max-h-20 w-auto" />
+          </figure>
+        ))
+      }
+    </div>
+    <div class="mt-4 grid gap-5 text-sm text-warm-grey sm:grid-cols-2">
+      {logos.map((l) => <p>{l.label}</p>)}
+    </div>
+  </section>
+
+  <!-- FOUNDER CARD -->
+  <section class="mt-section">
+    <p class="label text-warm-grey">07 — Founder card (typographic, no photography)</p>
+    <div class="mt-6 grid gap-8 sm:grid-cols-2">
+      {SITE.founders.map((founder) => <FounderCard founder={founder} />)}
     </div>
   </section>
 </BaseLayout>

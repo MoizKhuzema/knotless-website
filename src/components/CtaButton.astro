@@ -1,31 +1,32 @@
 ---
 /**
- * The primary call-to-action button.
+ * The primary call-to-action.
  *
- * Renders as a real <a> link (CTAs almost always navigate somewhere). Use it
- * anywhere you want the site's main action styling:
+ * Renders as a real <a> link. Two variants, both within approved colour pairs:
+ *   - primary:   solid Ink button, Cream label (Cream-on-Ink) — the one
+ *                primary action per layout.
+ *   - secondary: Ink outline on the Cream page (Ink-on-Cream) — quieter.
  *
- *   <CtaButton href="/contact">Get in touch</CtaButton>
- *   <CtaButton href="/signup" variant="secondary">Learn more</CtaButton>
+ * Terracotta is deliberately NOT used as a button fill: it's reserved as a
+ * single accent per composition (e.g. the accent rule), not a body/UI colour.
+ *
+ *   <CtaButton href="/contact">Speak with us</CtaButton>
+ *   <CtaButton href="/about" variant="secondary">Read more</CtaButton>
  */
 interface Props {
-  /** Where the button links to. */
   href: string;
-  /** Visual weight. "primary" is the bold default; "secondary" is outlined. */
   variant?: 'primary' | 'secondary';
 }
 
 const { href, variant = 'primary' } = Astro.props;
 
-// Shared shape; the two variants only differ in colour.
 const base =
-  'inline-block rounded-lg border-2 px-6 py-3 font-semibold leading-none no-underline transition-colors';
+  'inline-block rounded-sm px-7 py-3 text-label font-medium uppercase tracking-label no-underline transition-colors';
 
 const variants = {
-  primary:
-    'border-accent bg-accent text-accent-contrast hover:border-accent-hover hover:bg-accent-hover',
-  secondary:
-    'border-accent bg-transparent text-accent hover:bg-accent hover:text-accent-contrast',
+  // hover inverts to Ink-on-Cream — an approved pair, no terracotta on a button
+  primary: 'border border-ink bg-ink text-cream hover:bg-cream hover:text-ink',
+  secondary: 'border border-ink text-ink hover:bg-ink hover:text-cream',
 } as const;
 ---
 
