@@ -2,40 +2,18 @@
 /**
  * HERO — "Strike".
  *
- * Sized to fill the first viewport (below the sticky nav) so the whole hero —
- * down to the industries — is visible without scrolling, and vertically centred
- * to keep the space under the nav tight.
- *
- * The tagline "untangles" on load: each letter starts slightly scattered/tilted
- * and settles into place (pure type — on brand). The terracotta strike draws in
- * under "worth" as the single accent. All motion is opacity/transform only and
- * disabled under prefers-reduced-motion.
+ * The tagline sits as a static eyebrow above the headline. The terracotta
+ * strike draws in under "worth" as the single accent, and the rest of the
+ * block fades up on load. All motion is opacity/transform only and disabled
+ * under prefers-reduced-motion.
  */
 import { HERO } from '../../data/homepage';
 import { SITE } from '../../config/site';
 import CtaButton from '../CtaButton.astro';
-
-// Per-letter scatter for the untangle effect. Deterministic (derived from the
-// index) so the build is stable, but irregular enough to read as "tangled".
-const letters = [...SITE.tagline].map((ch, i) => ({
-  ch: ch === ' ' ? ' ' : ch,
-  i,
-  dx: ((i * 53) % 33) - 16, // -16..16 px
-  dy: ((i * 29) % 29) - 14, // -14..14 px
-  r: ((i * 37) % 45) - 22, // -22..22 deg
-}));
 ---
 
 <section class="pt-20 pb-section sm:pt-28">
-  <p class="tagline text-label uppercase tracking-tagline text-ink" aria-label={SITE.tagline}>
-    {
-      letters.map((l) => (
-        <span class="ch" aria-hidden="true" style={`--dx:${l.dx}px;--dy:${l.dy}px;--r:${l.r}deg;--i:${l.i}`}>
-          {l.ch}
-        </span>
-      ))
-    }
-  </p>
+  <p class="text-label uppercase tracking-tagline text-ink">{SITE.tagline}</p>
 
   <h1 class="r r-1 mt-5 max-w-[16ch] text-4xl font-semibold leading-[1.04] tracking-tight text-ink sm:text-5xl">
     AI that's <span class="emph">worth</span> building.
@@ -56,25 +34,6 @@ const letters = [...SITE.tagline].map((ch, i) => ({
 </section>
 
 <style>
-  /* --- Tagline "untangle" on load --- */
-  .tagline .ch {
-    display: inline-block;
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .tagline .ch {
-      opacity: 0;
-      transform: translate(var(--dx), var(--dy)) rotate(var(--r));
-      animation: untangle 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-      animation-delay: calc(var(--i) * 65ms + 150ms);
-    }
-  }
-  @keyframes untangle {
-    to {
-      opacity: 1;
-      transform: translate(0, 0) rotate(0);
-    }
-  }
-
   /* --- Dot separators between industries --- */
   .industries li + li::before {
     content: '·';
@@ -105,14 +64,14 @@ const letters = [...SITE.tagline].map((ch, i) => ({
       transform: translateY(12px);
       animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
-    .r-1 { animation-delay: 0.45s; }
-    .r-2 { animation-delay: 0.58s; }
-    .r-3 { animation-delay: 0.71s; }
-    .r-4 { animation-delay: 0.84s; }
+    .r-1 { animation-delay: 0.1s; }
+    .r-2 { animation-delay: 0.23s; }
+    .r-3 { animation-delay: 0.36s; }
+    .r-4 { animation-delay: 0.49s; }
 
     .emph::after {
       animation: draw 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-      animation-delay: 1s;
+      animation-delay: 0.6s;
     }
   }
 
