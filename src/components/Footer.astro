@@ -11,6 +11,7 @@
  *   - legal block · link row · copyright
  */
 import { SITE } from '../config/site';
+import { href } from '../lib/href';
 import wordmark from '../assets/logo/wordmark_secondary/Wordmark_Secondary.svg';
 
 const year = new Date().getFullYear();
@@ -61,7 +62,7 @@ const LINKS = [
     {
       LINKS.map((l) => (
         <li>
-          <a class="label text-ink no-underline underline-offset-4 hover:underline" href={l.href}>
+          <a class="label text-ink no-underline underline-offset-4 hover:underline" href={href(l.href)}>
             {l.label}
           </a>
         </li>

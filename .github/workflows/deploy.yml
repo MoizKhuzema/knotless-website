@@ -1,0 +1,54 @@
+name: Deploy to GitHub Pages
+
+# Builds the Astro site and publishes it to GitHub Pages on every push to the
+# branches below (and on-demand via the "Run workflow" button).
+#
+# One-time setup (in the repo): Settings → Pages → Build and deployment →
+# Source: "GitHub Actions". After that, each push deploys automatically and the
+# live URL appears in this workflow's summary.
+on:
+  push:
+    branches:
+      - main
+      - claude/inspiring-cerf-egxogk
+  workflow_dispatch:
+
+# Permissions the deploy needs.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one deploy at a time; don't cancel an in-progress one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Project Pages serve from a sub-path; these feed astro.config.mjs.
+      SITE_URL: https://moizkhuzema.github.io
+      BASE_PATH: /knotless-website
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

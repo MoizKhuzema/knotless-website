@@ -18,7 +18,8 @@
  * ===================================================================== */
 
 @import 'tailwindcss';
-@import './fonts.css';
+/* @font-face for Inter is injected in BaseLayout.astro so the font URL respects
+ * Astro's `base` (needed for GitHub Pages sub-path deploys). */
 
 @theme {
   /* --- Palette (the only five colours) ------------------------------- */

@@ -14,6 +14,8 @@
  *   <CtaButton href="/about" variant="secondary">Read more</CtaButton>
  *   <CtaButton href="/book" variant="inverse">…</CtaButton>  // on Ink sections
  */
+import { href as withBase } from '../lib/href';
+
 interface Props {
   href: string;
   variant?: 'primary' | 'secondary' | 'inverse';
@@ -33,6 +35,6 @@ const variants = {
 } as const;
 ---
 
-<a href={href} class:list={[base, variants[variant]]}>
+<a href={withBase(href)} class:list={[base, variants[variant]]}>
   <slot />
 </a>

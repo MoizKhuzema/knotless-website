@@ -11,6 +11,7 @@
  * metadata (.label). No nav button — the single primary action is the hero CTA.
  */
 import { SITE } from '../config/site';
+import { href } from '../lib/href';
 import wordmark from '../assets/logo/wordmark_secondary/Wordmark_Secondary.svg';
 
 const NAV_LINKS = [
@@ -28,7 +29,7 @@ const isActive = (href: string) =>
 ---
 
 <nav class="flex flex-wrap items-center gap-x-8 gap-y-4 py-6">
-  <a href="/" aria-label={`${SITE.legalEntityName} — home`} class="shrink-0">
+  <a href={href('/')} aria-label={`${SITE.legalEntityName} — home`} class="shrink-0">
     <!-- height drives size; width auto preserves the locked aspect ratio -->
     <img src={wordmark.src} alt={SITE.legalEntityName} height="44" class="h-11 w-auto" />
   </a>
@@ -38,7 +39,7 @@ const isActive = (href: string) =>
       NAV_LINKS.map((link) => (
         <li>
           <a
-            href={link.href}
+            href={href(link.href)}
             aria-current={isActive(link.href) ? 'page' : undefined}
             class:list={[
               'label text-ink no-underline underline-offset-4 hover:underline',

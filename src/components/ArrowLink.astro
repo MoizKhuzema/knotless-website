@@ -5,6 +5,8 @@
  *
  *   <ArrowLink href="/about">Read more about us</ArrowLink>
  */
+import { href as withBase } from '../lib/href';
+
 interface Props {
   href: string;
   /** Use on Ink/reversed sections (Cream text instead of Ink). */
@@ -14,7 +16,7 @@ const { href, onInk = false } = Astro.props;
 ---
 
 <a
-  href={href}
+  href={withBase(href)}
   class:list={[
     'group inline-flex items-center gap-2 font-medium no-underline transition-colors',
     onInk ? 'text-cream hover:text-terracotta' : 'text-ink hover:text-terracotta',

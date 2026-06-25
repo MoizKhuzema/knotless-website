@@ -18,9 +18,13 @@
  *   </BaseLayout>
  */
 import { SITE } from '../config/site';
+import { href } from '../lib/href';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import '../styles/global.css';
+// Imported through Vite so the URL is hashed and base-aware (works under the
+// GitHub Pages sub-path). Used for both the @font-face and the preload below.
+import interFont from '../assets/fonts/inter-variable.woff2';
 
 interface Props {
   /** Page <title>. The legal entity name is appended automatically. */
@@ -34,9 +38,13 @@ interface Props {
 const { title, description = '', bare = false } = Astro.props;
 const fullTitle = `${title} | ${SITE.legalEntityName}`;
 
-// Absolute URLs for canonical + OG. Astro.site comes from astro.config.mjs.
+// Absolute URLs for canonical + OG. Astro.url.pathname already includes the
+// base; og path is base-prefixed via href() before being made absolute.
 const canonical = new URL(Astro.url.pathname, Astro.site);
-const ogImage = new URL('/og-default.png', Astro.site);
+const ogImage = new URL(href('/og-default.png'), Astro.site);
+
+// @font-face injected here (not in CSS) so the font URL carries the base.
+const fontFace = `@font-face{font-family:'Inter Variable';font-style:normal;font-display:swap;font-weight:100 900;src:url('${interFont}') format('woff2-variations');}`;
 ---
 
 <!doctype html>
@@ -49,20 +57,15 @@ const ogImage = new URL('/og-default.png', Astro.site);
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
 
-    <!-- Preload the variable font so it's ready before first paint. -->
-    <link
-      rel="preload"
-      href="/fonts/inter-variable.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
+    <!-- Inter @font-face (base-aware URL) + preload so it's ready before paint. -->
+    <style set:html={fontFace}></style>
+    <link rel="preload" href={interFont} as="font" type="font/woff2" crossorigin />
 
     <!-- Favicons (generated from the mark on a Cream square). -->
-    <link rel="icon" href="/favicon.ico" sizes="any" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" href={href('/favicon.ico')} sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href={href('/favicon-32.png')} />
+    <link rel="icon" type="image/png" sizes="16x16" href={href('/favicon-16.png')} />
+    <link rel="apple-touch-icon" sizes="180x180" href={href('/apple-touch-icon.png')} />
 
     <!-- Open Graph / social -->
     <meta property="og:type" content="website" />
