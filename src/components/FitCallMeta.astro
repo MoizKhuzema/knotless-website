@@ -1,0 +1,25 @@
+---
+/**
+ * Small-caps reassurance strip shown beneath booking CTAs
+ * (e.g. "Free · 30 minutes · No commitment"). Dot-separated.
+ */
+import { FIT_CALL_META } from '../data/homepage';
+
+interface Props {
+  /** Use on Ink/reversed sections (Cream text instead of Ink). */
+  onInk?: boolean;
+}
+const { onInk = false } = Astro.props;
+---
+
+<ul class:list={['fit-meta flex flex-wrap text-label uppercase tracking-label', onInk ? 'text-cream' : 'text-ink']}>
+  {FIT_CALL_META.map((item) => <li>{item}</li>)}
+</ul>
+
+<style>
+  .fit-meta li + li::before {
+    content: '·';
+    margin: 0 0.7rem;
+    /* inherits the text colour (Ink on Cream, Cream on Ink) — no extra accent */
+  }
+</style>

@@ -1,25 +1,30 @@
 ---
 /**
  * Section 3 — "Who you'll be talking to".
- * Narrative body (page content) + two founder blocks. Founder names and titles
- * come from src/config/site.ts, not the content file.
+ * Labelled header, narrative, a promoted pull-quote, a closer, and the two
+ * founder blocks. Founder names and titles come from src/config/site.ts.
  */
 import { FOUNDERS_SECTION } from '../../data/homepage';
 import { SITE } from '../../config/site';
+import SectionHeader from '../SectionHeader.astro';
 import ArrowLink from '../ArrowLink.astro';
 ---
 
 <section class="pt-section-lg">
   <div data-reveal class="max-w-text">
-    <span class="accent-rule"></span>
-    <h2 class="mt-6 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-      {FOUNDERS_SECTION.heading}
-    </h2>
+    <SectionHeader label={FOUNDERS_SECTION.label} title={FOUNDERS_SECTION.heading} />
   </div>
 
   <div data-reveal class="mt-8 max-w-prose space-y-5 text-ink">
     {FOUNDERS_SECTION.body.map((para) => <p>{para}</p>)}
   </div>
+
+  <!-- Pull-quote: one confident typographic beat. -->
+  <blockquote data-reveal class="mt-14 max-w-text text-2xl font-medium leading-snug tracking-tight text-ink sm:text-3xl">
+    {FOUNDERS_SECTION.pullQuote}
+  </blockquote>
+
+  <p data-reveal class="mt-14 max-w-prose text-ink">{FOUNDERS_SECTION.closer}</p>
 
   <!-- Founder blocks (name + title from site.ts) -->
   <div class="mt-16 grid gap-10 sm:grid-cols-2">

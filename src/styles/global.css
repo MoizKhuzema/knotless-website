@@ -136,6 +136,18 @@
     background-color: var(--color-terracotta);
   }
 
+  /* The tick "draws in" from the left when its section reveals. */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-reveal] .accent-rule {
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.1s;
+    }
+    [data-reveal].is-visible .accent-rule {
+      transform: scaleX(1);
+    }
+  }
+
   /* All-caps label / eyebrow / metadata styling. */
   .label {
     font-size: var(--text-label);

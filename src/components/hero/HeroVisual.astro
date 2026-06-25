@@ -10,6 +10,7 @@
 import { HERO } from '../../data/homepage';
 import { SITE } from '../../config/site';
 import CtaButton from '../CtaButton.astro';
+import FitCallMeta from '../FitCallMeta.astro';
 ---
 
 <section class="pt-20 pb-section sm:pt-28">
@@ -23,8 +24,9 @@ import CtaButton from '../CtaButton.astro';
     {HERO.subhead}
   </p>
 
-  <div class="r r-3 mt-8">
+  <div class="r r-3 mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
     <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
+    <FitCallMeta />
   </div>
 
   <!-- Industries served — static, dot-separated, reads at a glance. -->

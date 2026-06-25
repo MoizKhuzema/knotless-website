@@ -1,11 +1,12 @@
 ---
 /**
  * Section 2 — "AI is complicated. Knotless isn't."
- * Intro + three Assessment stages (each an in-page anchor target for the nav)
- * + "How to get started" three steps. Left-aligned editorial; one terracotta
- * accent (the rule under the heading). Numerals are warm grey, not accent.
+ * Labelled header + larger lead, three Assessment stages (each a nav anchor)
+ * with oversized numerals that warm to terracotta on hover, then the labelled
+ * "How to get started" steps. One terracotta accent (the header tick).
  */
 import { ASSESSMENT } from '../../data/homepage';
+import SectionHeader from '../SectionHeader.astro';
 import ArrowLink from '../ArrowLink.astro';
 ---
 
@@ -13,27 +14,26 @@ import ArrowLink from '../ArrowLink.astro';
      previous section), little below (grouping it with its content). -->
 <section class="pt-section-lg">
   <div data-reveal class="max-w-text">
-    <span class="accent-rule"></span>
-    <h2 class="mt-6 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-      {ASSESSMENT.heading}
-    </h2>
-    <p class="mt-6 text-lg text-ink">{ASSESSMENT.intro}</p>
+    <SectionHeader label={ASSESSMENT.label} title={ASSESSMENT.heading} />
+    <p class="mt-6 text-xl text-ink">{ASSESSMENT.intro}</p>
   </div>
 
   <!-- Stages -->
-  <div class="mt-16 grid gap-px border-t border-warm-grey">
+  <div class="mt-16 border-t border-warm-grey">
     {
       ASSESSMENT.stages.map((stage) => (
         <article
           id={stage.id}
           data-reveal
-          class="scroll-mt-24 border-b border-warm-grey py-8 sm:grid sm:grid-cols-12 sm:gap-8"
+          class="stage group scroll-mt-28 border-b border-warm-grey py-9 sm:grid sm:grid-cols-12 sm:gap-8"
         >
-          <div class="sm:col-span-3">
-            <span class="text-2xl font-normal tracking-tight text-ink">{stage.n}</span>
-            <h3 class="mt-2 text-xl font-semibold tracking-tight text-ink">{stage.title}</h3>
+          <div class="flex items-baseline gap-4 sm:col-span-4 sm:block">
+            <span class="block text-4xl font-light tracking-tight text-ink transition-colors duration-300 group-hover:text-terracotta sm:text-5xl">
+              {stage.n}
+            </span>
+            <h3 class="text-xl font-semibold tracking-tight text-ink sm:mt-3">{stage.title}</h3>
           </div>
-          <p class="mt-3 max-w-prose text-ink sm:col-span-9 sm:mt-0">{stage.body}</p>
+          <p class="mt-3 max-w-prose text-ink sm:col-span-8 sm:mt-0 sm:self-center">{stage.body}</p>
         </article>
       ))
     }
@@ -45,17 +45,16 @@ import ArrowLink from '../ArrowLink.astro';
 
   <!-- How to get started -->
   <div data-reveal class="mt-section-lg max-w-text">
-    <span class="accent-rule"></span>
-    <h2 class="mt-6 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-      {ASSESSMENT.stepsHeading}
-    </h2>
+    <SectionHeader label={ASSESSMENT.stepsLabel} title={ASSESSMENT.stepsHeading} />
   </div>
 
   <ol class="mt-12 grid gap-12 sm:grid-cols-3">
     {
       ASSESSMENT.steps.map((step) => (
-        <li data-reveal class="border-t border-warm-grey pt-5">
-          <span class="text-xl font-normal tracking-tight text-ink">{step.n}</span>
+        <li data-reveal class="step group border-t border-warm-grey pt-5">
+          <span class="block text-3xl font-light tracking-tight text-ink transition-colors duration-300 group-hover:text-terracotta">
+            {step.n}
+          </span>
           <h3 class="mt-3 text-lg font-semibold tracking-tight text-ink">{step.title}</h3>
           <p class="mt-2 text-ink">{step.body}</p>
         </li>
