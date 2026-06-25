@@ -32,8 +32,8 @@ import CtaButton from '../CtaButton.astro';
     <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
   </div>
 
-  <!-- Industries served — static, dot-separated, reads at a glance. -->
-  <ul class="industries r r-4 mt-12 flex flex-wrap items-center border-t border-warm-grey pt-5 text-label uppercase tracking-label text-ink">
+  <!-- Industries served — static, space-separated, reads at a glance. -->
+  <ul class="r r-4 mt-12 flex flex-wrap items-center gap-x-7 gap-y-2 border-t border-warm-grey pt-5 text-label uppercase tracking-label text-ink">
     {HERO.verticals.map((v) => <li>{v}</li>)}
   </ul>
 </section>
@@ -83,13 +83,6 @@ import CtaButton from '../CtaButton.astro';
 </script>
 
 <style>
-  /* --- Dot separators between industries --- */
-  .industries li + li::before {
-    content: '·';
-    margin: 0 0.85rem;
-    color: var(--color-warm-grey);
-  }
-
   /* --- "worth": typewriter word + terracotta strike --- */
   .emph {
     position: relative;
