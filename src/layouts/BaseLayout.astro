@@ -1,0 +1,98 @@
+---
+/**
+ * The base layout every page should use.
+ *
+ * It renders the shared <head>, the Nav, and the Footer, and drops the page's
+ * own content into the <slot />. Because Nav and Footer read from the central
+ * config, every page that uses this layout automatically inherits a consistent
+ * header and footer.
+ *
+ * Usage from a page:
+ *
+ *   ---
+ *   import BaseLayout from '../layouts/BaseLayout.astro';
+ *   ---
+ *   <BaseLayout title="About" description="Who we are">
+ *     <h1>About us</h1>
+ *   </BaseLayout>
+ */
+import { SITE } from '../config/site';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  /** Page <title>. The legal entity name is appended automatically. */
+  title: string;
+  /** Meta description for SEO / link previews. */
+  description?: string;
+}
+
+const { title, description = '' } = Astro.props;
+const fullTitle = `${title} | ${SITE.legalEntityName}`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+  </head>
+  <body>
+    <div class="shell">
+      <Nav />
+      <main>
+        <slot />
+      </main>
+      <Footer />
+    </div>
+
+    <style is:global>
+      /* ---- Design tokens ----------------------------------------------
+         A small, central set of colours and type defaults. Tweak these to
+         re-skin the whole site. Components reference them via var(--name). */
+      :root {
+        --color-text: #1a1a1a;
+        --color-text-muted: #5c5c5c;
+        --color-border: #e2e2e2;
+        --color-accent: #2f5bea;
+        --color-accent-hover: #2447bd;
+        --color-accent-contrast: #ffffff;
+
+        --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --content-max-width: 64rem;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        font-family: var(--font-body);
+        color: var(--color-text);
+        line-height: 1.6;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      /* Centres content and gives consistent horizontal padding. */
+      .shell {
+        max-width: var(--content-max-width);
+        margin: 0 auto;
+        padding: 0 1.25rem;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      main {
+        flex: 1;
+        padding: 2rem 0;
+      }
+    </style>
+  </body>
+</html>

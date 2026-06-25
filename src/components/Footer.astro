@@ -1,0 +1,63 @@
+---
+/**
+ * Site footer.
+ *
+ * Pulls legal entity, ABN, address, and contact emails straight from the
+ * central config so they only ever live in one place.
+ */
+import { SITE } from '../config/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="legal">
+    <p class="entity">{SITE.legalEntityName}</p>
+    <p>ABN {SITE.abn}</p>
+    <p>{SITE.registeredAddress}</p>
+  </div>
+
+  <div class="contact">
+    <p>
+      General: <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>
+    </p>
+    <p>
+      Privacy: <a href={`mailto:${SITE.privacyEmail}`}>{SITE.privacyEmail}</a>
+    </p>
+  </div>
+
+  <p class="copyright">© {year} {SITE.legalEntityName}. All rights reserved.</p>
+</footer>
+
+<style>
+  .footer {
+    display: grid;
+    gap: 1rem;
+    padding: 2rem 0;
+    margin-top: 3rem;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .entity {
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .footer p {
+    margin: 0.15rem 0;
+  }
+
+  .footer a {
+    color: var(--color-text-muted);
+  }
+
+  .footer a:hover {
+    color: var(--color-text);
+  }
+
+  .copyright {
+    margin-top: 0.5rem;
+  }
+</style>

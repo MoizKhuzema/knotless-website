@@ -1,0 +1,40 @@
+---
+/**
+ * PLACEHOLDER HOME PAGE — architecture smoke test only.
+ *
+ * This exists so the project builds and so you can see the layout, config, and
+ * all four components wired together. Replace it (and add real pages) once the
+ * structure is confirmed.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CtaButton from '../components/CtaButton.astro';
+import FounderCard from '../components/FounderCard.astro';
+import { SITE } from '../config/site';
+---
+
+<BaseLayout title="Home" description="Placeholder home page — architecture smoke test.">
+  <section>
+    <h1>Architecture is wired up</h1>
+    <p>
+      This placeholder page reads from <code>src/config/site.ts</code> and uses the
+      shared layout, nav, footer, CTA button, and founder card.
+    </p>
+    <CtaButton href="/contact">Primary CTA</CtaButton>
+  </section>
+
+  <section>
+    <h2>Founders (from config)</h2>
+    <div class="founders">
+      {SITE.founders.map((founder) => <FounderCard founder={founder} />)}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .founders {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+</style>

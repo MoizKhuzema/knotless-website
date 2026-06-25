@@ -1,0 +1,8 @@
+# Netlify build configuration for a static Astro site.
+# Astro outputs the finished site to `dist/`, which is what Netlify publishes.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
