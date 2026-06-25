@@ -32,7 +32,7 @@ export const HERO = {
 export const ASSESSMENT = {
   heading: "AI is complicated. Knotless isn't.",
   intro:
-    "That's why we built the Knotless Assessment. One entry point for every client, scoped to where you are right now. You don't need to know what kind of help you need. We work it out together on a free 30-minute Fit Call. You pay only for what you need, and nothing else.",
+    "That's why we built the Knotless Assessment. One entry point for every client, scoped to where you are right now.",
   // `id` doubles as the nav anchor target (see Nav.astro).
   stages: [
     {
