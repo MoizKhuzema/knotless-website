@@ -1,0 +1,61 @@
+---
+/**
+ * HERO — Treatment A: "Letterhead" (minimal).
+ *
+ * Centred, calm, generous whitespace. The wordmark_primary lockup is the brand
+ * moment (its terracotta strike is the single accent — nothing else competes).
+ * Hierarchy is pure weight + size. The only motion is a gentle, staggered
+ * fade-up on load, disabled under prefers-reduced-motion.
+ */
+import { HERO } from '../../data/homepage';
+import CtaButton from '../CtaButton.astro';
+import wordmarkPrimary from '../../assets/logo/wordmark_primary/Wordmark.svg';
+---
+
+<section class="reveal flex flex-col items-center py-section text-center">
+  <img
+    src={wordmarkPrimary.src}
+    alt="knotless — AI Untangled."
+    width="300"
+    class="r r-0 w-[clamp(200px,40vw,300px)]"
+  />
+
+  <h1 class="r r-1 mt-12 max-w-text text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+    {HERO.headline}
+  </h1>
+
+  <p class="r r-2 mt-6 max-w-text text-lg text-warm-grey">
+    {HERO.subhead}
+  </p>
+
+  <div class="r r-3 mt-9">
+    <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
+  </div>
+
+  <p class="r r-4 mt-12 max-w-2xl text-label uppercase leading-relaxed tracking-label text-warm-grey">
+    {HERO.verticals.join('  ·  ')}
+  </p>
+</section>
+
+<style>
+  /* Staggered fade-up on load. Transform + opacity only. */
+  @media (prefers-reduced-motion: no-preference) {
+    .r {
+      opacity: 0;
+      transform: translateY(12px);
+      animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    .r-0 { animation-delay: 0.05s; }
+    .r-1 { animation-delay: 0.18s; }
+    .r-2 { animation-delay: 0.31s; }
+    .r-3 { animation-delay: 0.44s; }
+    .r-4 { animation-delay: 0.57s; }
+  }
+
+  @keyframes rise {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

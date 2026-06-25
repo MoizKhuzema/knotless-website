@@ -3,11 +3,10 @@
  *
  * HOW TO USE THIS FILE
  * --------------------
- * Every value below is a PLACEHOLDER. Search the codebase for the string
- * "PLACEHOLDER" (or "example.invalid") to find everything that still needs
- * real data, then replace it here — once. Components and layouts read from
- * this object, so you never have to hunt through markup to update an address,
- * an email, or a founder's title.
+ * Values are either REAL (taken from the content brief) or placeholders. Search
+ * for "PLACEHOLDER" to find everything still needing real data, and for
+ * "TODO confirm" to find plausible-but-unconfirmed assumptions. Replace here
+ * once — components and layouts read from this object.
  *
  * The `as const satisfies SiteConfig` at the bottom does two things:
  *   1. `satisfies SiteConfig` checks the object against the type, so a typo in
@@ -21,8 +20,6 @@ export interface Founder {
   name: string;
   /** Role / title, e.g. "Co-Founder & CEO". */
   title: string;
-  /** Path to the headshot, relative to /public — e.g. "/founders/jane.jpg". */
-  photoPath: string;
   /** Full LinkedIn profile URL. */
   linkedinUrl: string;
 }
@@ -30,6 +27,8 @@ export interface Founder {
 export interface SiteConfig {
   /** Registered company name, e.g. on invoices and legal pages. */
   legalEntityName: string;
+  /** Short brand tagline. Used in the hero. */
+  tagline: string;
   /** Australian Business Number. */
   abn: string;
   /** Full registered business address. */
@@ -38,6 +37,8 @@ export interface SiteConfig {
   contactEmail: string;
   /** Email for privacy / data requests. */
   privacyEmail: string;
+  /** Company LinkedIn page (footer). */
+  companyLinkedinUrl: string;
   /** Primary domain WITHOUT protocol, e.g. "example.com". */
   primaryDomain: string;
   /** Secondary / alternate domain WITHOUT protocol. */
@@ -52,25 +53,25 @@ export interface SiteConfig {
 }
 
 export const SITE = {
-  legalEntityName: 'PLACEHOLDER LEGAL ENTITY PTY LTD',
-  abn: '00 000 000 000',
-  registeredAddress: '000 Placeholder Street, Placeholder Suburb, NSW 0000, Australia',
-  contactEmail: 'hello@example.invalid',
-  privacyEmail: 'privacy@example.invalid',
-  primaryDomain: 'placeholder-primary.example.invalid',
-  secondaryDomain: 'placeholder-secondary.example.invalid',
+  legalEntityName: 'Knotless AI Pty Ltd',
+  tagline: 'AI Untangled.',
+  abn: 'XX XXX XXX XXX', // PLACEHOLDER — not in brief
+  registeredAddress: 'PLACEHOLDER address line, Adelaide SA 5000, Australia', // PLACEHOLDER (founders are Adelaide-based)
+  contactEmail: 'hello@knotless.ai',
+  privacyEmail: 'privacy@knotless.ai', // TODO confirm — inferred from primary domain
+  companyLinkedinUrl: 'https://www.linkedin.com/company/knotless-ai', // TODO confirm
+  primaryDomain: 'knotless.ai',
+  secondaryDomain: 'knotless.com.au', // TODO confirm — not in brief
   founders: [
     {
-      name: 'PLACEHOLDER Founder One',
+      name: 'Insiya Karbalai',
       title: 'Co-Founder & CEO',
-      photoPath: '/founders/placeholder-one.jpg',
-      linkedinUrl: 'https://www.linkedin.com/in/placeholder-one',
+      linkedinUrl: 'https://www.linkedin.com/in/placeholder-insiya', // PLACEHOLDER
     },
     {
-      name: 'PLACEHOLDER Founder Two',
-      title: 'Co-Founder & CTO',
-      photoPath: '/founders/placeholder-two.jpg',
-      linkedinUrl: 'https://www.linkedin.com/in/placeholder-two',
+      name: 'Huzefa Karbalai',
+      title: 'Co-Founder & COO',
+      linkedinUrl: 'https://www.linkedin.com/in/placeholder-huzefa', // PLACEHOLDER
     },
   ],
   privacyActWording: 'handled under',

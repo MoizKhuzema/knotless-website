@@ -22,15 +22,17 @@
 
 @theme {
   /* --- Palette (the only five colours) ------------------------------- */
+  /* Turn OFF Tailwind's default palette FIRST so no off-brand colour
+   * (blue-500, gray-200, …) can sneak in. This wildcard clears the whole
+   * --color-* namespace, so it MUST come before our own definitions —
+   * otherwise it would wipe them too. */
+  --color-*: initial;
+
   --color-ink: #1f1f1d; /* default text, dark surfaces            */
   --color-terracotta: #a04a2c; /* single accent — one per composition    */
   --color-cream: #efe9dd; /* default page background                 */
   --color-white: #ffffff; /* UI surfaces only (cards on cream)       */
   --color-warm-grey: #8a8580; /* muted text, hairlines, secondary icons  */
-
-  /* Turn OFF Tailwind's default palette so no off-brand colour
-   * (blue-500, gray-200, …) can sneak in. Only the five above remain. */
-  --color-*: initial;
 
   /* --- Type family -------------------------------------------------- */
   --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto,

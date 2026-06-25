@@ -2,34 +2,38 @@
 /**
  * Site navigation.
  *
- * Brand: the wordmark_secondary lockup (wordmark only, strike retained). This
- * is the "original" variant for light/Cream backgrounds. It's rendered at a
- * height that keeps its width above the 100px wordmark-only minimum, and never
- * recoloured or stretched (height set, width auto).
+ * Brand: the wordmark_secondary lockup (wordmark only) — the "original" variant
+ * for the light Cream background, height-driven so width stays above the 100px
+ * wordmark-only minimum, never recoloured or stretched.
  *
- * Links are all-caps metadata (.label). One primary action (Contact).
+ * Per the content brief: five items. The first three are in-page anchors to the
+ * homepage's Assessment stages; the last two are real pages. Links are all-caps
+ * metadata (.label). No nav button — the single primary action is the hero CTA.
  */
 import { SITE } from '../config/site';
-import CtaButton from './CtaButton.astro';
 import wordmark from '../assets/logo/wordmark_secondary/Wordmark_Secondary.svg';
 
 const NAV_LINKS = [
+  { label: 'Exploring AI', href: '/#exploring-ai' },
+  { label: 'Committing to AI', href: '/#committing-ai' },
+  { label: 'Already Running AI', href: '/#already-running-ai' },
+  { label: 'What We Do', href: '/what-we-do' },
   { label: 'About', href: '/about' },
-  { label: 'Approach', href: '/approach' },
-  { label: 'Insights', href: '/insights' },
 ];
 
 const here = Astro.url.pathname;
-const isActive = (href: string) => here.startsWith(href);
+// Only the two real pages get an active state; anchors don't.
+const isActive = (href: string) =>
+  href.startsWith('/') && !href.includes('#') && here.startsWith(href);
 ---
 
-<nav class="flex items-center gap-8 py-6">
+<nav class="flex flex-wrap items-center gap-x-8 gap-y-4 py-6">
   <a href="/" aria-label={`${SITE.legalEntityName} — home`} class="shrink-0">
     <!-- height drives size; width auto preserves the locked aspect ratio -->
     <img src={wordmark.src} alt={SITE.legalEntityName} height="44" class="h-11 w-auto" />
   </a>
 
-  <ul class="ml-auto flex items-center gap-8">
+  <ul class="ml-auto flex flex-wrap items-center gap-x-7 gap-y-2">
     {
       NAV_LINKS.map((link) => (
         <li>
@@ -47,6 +51,4 @@ const isActive = (href: string) => here.startsWith(href);
       ))
     }
   </ul>
-
-  <CtaButton href="/contact">Contact</CtaButton>
 </nav>

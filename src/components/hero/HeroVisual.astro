@@ -1,0 +1,153 @@
+---
+/**
+ * HERO — Treatment B: "Strike" (more visual interest).
+ *
+ * Left-aligned editorial composition with typographic drama: an oversized
+ * headline where the terracotta strike motif is echoed as an accent rule that
+ * draws in beneath the word "worth". The vertical list becomes a slow, calm
+ * marquee. All motion is transform/opacity only and disabled under
+ * prefers-reduced-motion (the underline stays drawn, the marquee stops and
+ * wraps). The wordmark_primary lockup is the same brand moment as Treatment A.
+ */
+import { HERO } from '../../data/homepage';
+import CtaButton from '../CtaButton.astro';
+import wordmarkPrimary from '../../assets/logo/wordmark_primary/Wordmark.svg';
+// The headline is rendered inline below so "worth" can carry the accent rule.
+---
+
+<section class="py-section">
+  <img
+    src={wordmarkPrimary.src}
+    alt="knotless — AI Untangled."
+    width="220"
+    class="r r-0 w-[clamp(170px,28vw,220px)]"
+  />
+
+  <h1 class="r r-1 mt-12 max-w-[16ch] text-4xl font-semibold leading-[1.04] tracking-tight text-ink sm:text-5xl">
+    AI that's <span class="emph">worth</span> building.
+  </h1>
+
+  <p class="r r-2 mt-8 max-w-text text-lg text-warm-grey">
+    {HERO.subhead}
+  </p>
+
+  <div class="r r-3 mt-9">
+    <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
+  </div>
+
+  <!-- Verticals as a slow marquee (calm, pauses on hover). -->
+  <div class="r r-4 marquee mt-14 border-t border-warm-grey pt-5">
+    <div class="marquee__track text-label uppercase tracking-label text-warm-grey">
+      <span class="marquee__group">
+        {HERO.verticals.map((v) => <span class="marquee__item">{v}</span>)}
+      </span>
+      <span class="marquee__group" aria-hidden="true">
+        {HERO.verticals.map((v) => <span class="marquee__item">{v}</span>)}
+      </span>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* --- The accent-rule echo under "worth" --- */
+  .emph {
+    position: relative;
+    white-space: nowrap;
+  }
+  .emph::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.04em;
+    height: 0.08em;
+    background-color: var(--color-terracotta);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  /* --- Marquee --- */
+  .marquee {
+    overflow: hidden;
+  }
+  .marquee__track {
+    display: flex;
+    width: max-content;
+  }
+  .marquee__group {
+    display: flex;
+  }
+  .marquee__item {
+    padding: 0 1.5rem;
+    border-left: 1px solid var(--color-warm-grey);
+  }
+  .marquee__item:first-child {
+    border-left: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .r {
+      opacity: 0;
+      transform: translateY(12px);
+      animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    .r-0 { animation-delay: 0.05s; }
+    .r-1 { animation-delay: 0.18s; }
+    .r-2 { animation-delay: 0.31s; }
+    .r-3 { animation-delay: 0.44s; }
+    .r-4 { animation-delay: 0.57s; }
+
+    .emph::after {
+      animation: draw 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation-delay: 0.7s;
+    }
+
+    .marquee__track {
+      animation: marquee 38s linear infinite;
+    }
+    .marquee:hover .marquee__track {
+      animation-play-state: paused;
+    }
+  }
+
+  /* Reduced motion: everything static, marquee collapses to a wrapped row. */
+  @media (prefers-reduced-motion: reduce) {
+    .emph::after {
+      transform: scaleX(1);
+    }
+    .marquee {
+      overflow: visible;
+    }
+    .marquee__track {
+      width: auto;
+      flex-wrap: wrap;
+    }
+    .marquee__group[aria-hidden='true'] {
+      display: none;
+    }
+    .marquee__item {
+      padding: 0.25rem 1.5rem;
+    }
+    .marquee__item:first-child {
+      padding-left: 0;
+    }
+  }
+
+  @keyframes rise {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes draw {
+    to {
+      transform: scaleX(1);
+    }
+  }
+  /* Two identical groups; shift by half the track for a seamless loop. */
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+</style>
