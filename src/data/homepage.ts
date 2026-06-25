@@ -24,7 +24,7 @@ export const HERO = {
   ],
   cta: {
     label: 'Book a free Fit Call',
-    href: '/book', // PLACEHOLDER — booking destination not in brief
+    href: '/contact', // all "Book a free Fit Call" CTAs route to the contact page
   },
 } as const;
 
@@ -92,5 +92,5 @@ export const FOUNDERS_SECTION = {
 export const FINAL_CTA = {
   heading: 'Ready when you are.',
   body: "If you've read this far, the next step is the call.",
-  cta: { label: 'Book a free Fit Call', href: '/book' },
+  cta: { label: 'Book a free Fit Call', href: '/contact' },
 } as const;
