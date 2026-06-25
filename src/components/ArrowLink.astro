@@ -1,7 +1,22 @@
 ---
 /**
- * A quiet text link with a trailing arrow that nudges on hover.
- * Ink by default, terracotta on hover (a permitted accent next to an action).
+ * A quiet text link whose trailing glyph is a knot that untangles into a
+ * rightward arrow on hover / keyboard focus.
+ *
+ * The text already shifts Ink → Terracotta on hover; the SVG stroke is
+ * currentColor, so the knot picks up the same colour — one coordinated accent.
+ *
+ * Motion: the path's `d` morphs between two states that share an identical
+ * command structure (M C C C L M L L), so the knot visually pulls straight into
+ * the arrow. ~360ms on the house easing. (stroke-dashoffset can only draw a
+ * fixed shape, not reshape it, so a `d` morph is the correct tool here.)
+ *
+ * Accessibility / robustness:
+ *  - SVG is aria-hidden; the link text carries the meaning.
+ *  - prefers-reduced-motion: the clean arrow is shown statically, no animation.
+ *  - :focus-visible triggers the same resolve as hover.
+ *  - The resting knot already has an arrowhead, so it's clear and directional on
+ *    touch / no-hover devices and in browsers without CSS `d` support.
  *
  *   <ArrowLink href="/about">Read more about us</ArrowLink>
  */
@@ -13,15 +28,57 @@ interface Props {
   onInk?: boolean;
 }
 const { href, onInk = false } = Astro.props;
+
+// Resting (knot, option 5) and resolved (clean arrow). Same command structure.
+const REST = 'M3 12 C8 12 6 7 10 8 C13 9 11 13 8 12 C5 11 14 11 17 12 L21 12 M17 9 L21 12 L17 15';
+const ARROW = 'M3 12 C7 12 9 12 11 12 C13 12 15 12 16 12 C18 12 20 12 21 12 L21 12 M15 7 L21 12 L15 17';
 ---
 
 <a
   href={withBase(href)}
   class:list={[
-    'group inline-flex items-center gap-2 font-medium no-underline transition-colors',
+    'arrow-link inline-flex items-center gap-2 font-medium no-underline transition-colors',
     onInk ? 'text-cream hover:text-terracotta' : 'text-ink hover:text-terracotta',
   ]}
 >
   <slot />
-  <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span>
+  <svg
+    class="arrow-link__knot"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d={REST} />
+  </svg>
 </a>
+
+<style define:vars={{ rest: `path("${REST}")`, arrow: `path("${ARROW}")` }}>
+  .arrow-link__knot {
+    width: 1.45em;
+    height: 1em;
+    flex: none;
+    overflow: visible;
+  }
+
+  .arrow-link__knot path {
+    d: var(--rest);
+    transition: d 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .arrow-link:hover .arrow-link__knot path,
+  .arrow-link:focus-visible .arrow-link__knot path {
+    d: var(--arrow);
+  }
+
+  /* Reduced motion: show the resolved arrow, no morph. */
+  @media (prefers-reduced-motion: reduce) {
+    .arrow-link__knot path {
+      d: var(--arrow);
+      transition: none;
+    }
+  }
+</style>
