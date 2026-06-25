@@ -26,7 +26,7 @@ const letters = [...SITE.tagline].map((ch, i) => ({
 }));
 ---
 
-<section class="pt-40 pb-section sm:pt-56">
+<section class="pt-30 pb-section sm:pt-46">
   <p class="tagline text-label uppercase tracking-tagline text-ink" aria-label={SITE.tagline}>
     {
       letters.map((l) => (
@@ -65,7 +65,7 @@ const letters = [...SITE.tagline].map((ch, i) => ({
       opacity: 0;
       transform: translate(var(--dx), var(--dy)) rotate(var(--r));
       animation: untangle 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-      animation-delay: calc(var(--i) * 150ms + 250ms);
+      animation-delay: calc(var(--i) * 65ms + 150ms);
     }
   }
   @keyframes untangle {
