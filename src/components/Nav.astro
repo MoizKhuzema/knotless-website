@@ -21,14 +21,21 @@ const isActive = (href: string) =>
   href === '/' ? here === '/' : here.startsWith(href);
 ---
 
-<nav class="nav">
-  <a class="brand" href="/">{SITE.legalEntityName}</a>
+<nav class="flex items-center gap-6 border-b border-line py-4">
+  <a href="/" class="text-lg font-bold text-ink no-underline">{SITE.legalEntityName}</a>
 
-  <ul class="links">
+  <ul class="ml-auto flex list-none gap-5 p-0">
     {
       NAV_LINKS.map((link) => (
         <li>
-          <a href={link.href} aria-current={isActive(link.href) ? 'page' : undefined}>
+          <a
+            href={link.href}
+            aria-current={isActive(link.href) ? 'page' : undefined}
+            class:list={[
+              'no-underline hover:text-ink',
+              isActive(link.href) ? 'text-ink' : 'text-ink-muted',
+            ]}
+          >
             {link.label}
           </a>
         </li>
@@ -38,40 +45,3 @@ const isActive = (href: string) =>
 
   <CtaButton href="/contact">Contact</CtaButton>
 </nav>
-
-<style>
-  .nav {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .brand {
-    font-weight: 700;
-    font-size: 1.1rem;
-    text-decoration: none;
-    color: var(--color-text);
-  }
-
-  .links {
-    display: flex;
-    gap: 1.25rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    /* push the CTA to the far right */
-    margin-left: auto;
-  }
-
-  .links a {
-    text-decoration: none;
-    color: var(--color-text-muted);
-  }
-
-  .links a:hover,
-  .links a[aria-current='page'] {
-    color: var(--color-text);
-  }
-</style>

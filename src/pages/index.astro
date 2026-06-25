@@ -1,40 +1,82 @@
 ---
 /**
- * PLACEHOLDER HOME PAGE — architecture smoke test only.
+ * Home page — the marketing landing page.
  *
- * This exists so the project builds and so you can see the layout, config, and
- * all four components wired together. Replace it (and add real pages) once the
- * structure is confirmed.
+ * Sections: hero, value propositions, founders, closing CTA. All shared
+ * chrome (nav/footer/head) comes from BaseLayout; all data comes from
+ * src/config/site.ts.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaButton from '../components/CtaButton.astro';
 import FounderCard from '../components/FounderCard.astro';
 import { SITE } from '../config/site';
+
+// PLACEHOLDER marketing copy — swap for real messaging.
+const VALUE_PROPS = [
+  {
+    title: 'PLACEHOLDER value one',
+    body: 'Describe the first thing you do well. One or two sentences is plenty.',
+  },
+  {
+    title: 'PLACEHOLDER value two',
+    body: 'The second reason a visitor should care. Keep it concrete and specific.',
+  },
+  {
+    title: 'PLACEHOLDER value three',
+    body: 'A third benefit. Together these three give a quick scan of your offer.',
+  },
+];
 ---
 
-<BaseLayout title="Home" description="Placeholder home page — architecture smoke test.">
-  <section>
-    <h1>Architecture is wired up</h1>
-    <p>
-      This placeholder page reads from <code>src/config/site.ts</code> and uses the
-      shared layout, nav, footer, CTA button, and founder card.
+<BaseLayout
+  title="Home"
+  description="PLACEHOLDER home page description — one sentence summarising what the company does."
+>
+  <!-- Hero -->
+  <section class="py-12 text-center">
+    <h1 class="mx-auto max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
+      PLACEHOLDER headline that says what you do
+    </h1>
+    <p class="mx-auto mt-4 max-w-2xl text-lg text-ink-muted">
+      PLACEHOLDER subheading — a short, plain-language explanation of the value you
+      provide and who it's for.
     </p>
-    <CtaButton href="/contact">Primary CTA</CtaButton>
+    <div class="mt-8 flex justify-center gap-4">
+      <CtaButton href="/contact">Get in touch</CtaButton>
+      <CtaButton href="/about" variant="secondary">Learn more</CtaButton>
+    </div>
   </section>
 
-  <section>
-    <h2>Founders (from config)</h2>
-    <div class="founders">
+  <!-- Value propositions -->
+  <section class="py-12">
+    <div class="grid gap-6 sm:grid-cols-3">
+      {
+        VALUE_PROPS.map((vp) => (
+          <div class="rounded-xl border border-line p-6">
+            <h2 class="mt-0 mb-2 text-xl">{vp.title}</h2>
+            <p class="m-0 text-ink-muted">{vp.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Founders -->
+  <section class="py-12">
+    <h2 class="text-center text-2xl font-bold">Meet the founders</h2>
+    <div class="mt-8 grid gap-6 sm:grid-cols-2">
       {SITE.founders.map((founder) => <FounderCard founder={founder} />)}
     </div>
   </section>
-</BaseLayout>
 
-<style>
-  .founders {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1rem;
-  }
-</style>
+  <!-- Closing CTA -->
+  <section class="py-12 text-center">
+    <h2 class="text-2xl font-bold">PLACEHOLDER closing call to action</h2>
+    <p class="mx-auto mt-2 max-w-xl text-ink-muted">
+      One last nudge to get the visitor to act.
+    </p>
+    <div class="mt-6">
+      <CtaButton href="/contact">Get in touch</CtaButton>
+    </div>
+  </section>
+</BaseLayout>

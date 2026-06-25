@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import tailwindcss from '@tailwindcss/vite';
 
 import { SITE } from './src/config/site';
 
@@ -11,4 +12,7 @@ import { SITE } from './src/config/site';
 // URLs (sitemap, canonical links, etc.) without duplicating the domain here.
 export default defineConfig({
   site: `https://${SITE.primaryDomain}`,
+  vite: {
+    plugins: [tailwindcss()],
+  },
 });

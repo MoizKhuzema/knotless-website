@@ -1,0 +1,31 @@
+/* Tailwind v4 entry point.
+ *
+ * The single @import pulls in all of Tailwind. The @theme block below is our
+ * central design-token list: every custom value here becomes a utility class.
+ * For example `--color-accent` generates `bg-accent`, `text-accent`,
+ * `border-accent`, etc. Change a token here and it updates everywhere — the
+ * styling equivalent of src/config/site.ts.
+ */
+@import 'tailwindcss';
+
+@theme {
+  /* Brand colours */
+  --color-accent: #2f5bea;
+  --color-accent-hover: #2447bd;
+  --color-accent-contrast: #ffffff;
+
+  /* Text + surfaces */
+  --color-ink: #1a1a1a;
+  --color-ink-muted: #5c5c5c;
+  --color-line: #e2e2e2;
+
+  /* Type */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* A couple of sensible global defaults so pages look right before any classes. */
+html {
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  line-height: 1.6;
+}
