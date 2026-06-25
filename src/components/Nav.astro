@@ -1,33 +1,36 @@
 ---
 /**
- * Site navigation.
+ * Site navigation — sticky, with a hairline separating it from the page.
  *
  * Brand: the wordmark_secondary "original" lockup for the light Cream
  * background — height-driven so it's never recoloured or stretched.
  *
- * Two links (real pages) + one primary action that goes to the contact page.
+ * Three equal-weight text links. No button here: the page's own CTAs carry the
+ * primary action, so the nav stays quiet and symmetric.
  */
 import { SITE } from '../config/site';
 import { href } from '../lib/href';
-import CtaButton from './CtaButton.astro';
 import wordmark from '../assets/logo/wordmark_secondary/Wordmark_Secondary.svg';
 
 const NAV_LINKS = [
   { label: 'About us', href: '/about' },
   { label: 'What we do', href: '/what-we-do' },
+  { label: 'Contact us', href: '/contact' },
 ];
 
 const here = Astro.url.pathname;
 const isActive = (path: string) => here.startsWith(href(path));
 ---
 
-<nav class="flex flex-wrap items-center gap-x-8 gap-y-4 py-6">
+<nav
+  class="sticky top-0 z-50 flex flex-wrap items-center gap-x-8 gap-y-4 border-b border-warm-grey bg-cream py-5"
+>
   <a href={href('/')} aria-label={`${SITE.legalEntityName} — home`} class="shrink-0">
     <!-- height drives size; width auto preserves the locked aspect ratio -->
     <img src={wordmark.src} alt={SITE.legalEntityName} height="56" class="h-14 w-auto" />
   </a>
 
-  <ul class="ml-auto flex flex-wrap items-center gap-x-7 gap-y-2">
+  <ul class="ml-auto flex flex-wrap items-center gap-x-8 gap-y-2">
     {
       NAV_LINKS.map((link) => (
         <li>
@@ -45,6 +48,4 @@ const isActive = (path: string) => here.startsWith(href(path));
       ))
     }
   </ul>
-
-  <CtaButton href="/contact">Book a free Fit Call</CtaButton>
 </nav>

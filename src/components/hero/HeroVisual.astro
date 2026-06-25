@@ -2,41 +2,87 @@
 /**
  * HERO — "Strike".
  *
- * Left-aligned editorial composition with typographic drama: the terracotta
- * strike motif is echoed as an accent rule that draws in beneath "worth" (the
- * single accent in this composition). The tagline sits as an eyebrow above the
- * headline — the wordmark itself lives in the nav, so it isn't repeated here.
- * The industry list is static for fast reading. Motion is opacity/transform
- * only and disabled under prefers-reduced-motion.
+ * Sized to fill the first viewport (below the sticky nav) so the whole hero —
+ * down to the industries — is visible without scrolling, and vertically centred
+ * to keep the space under the nav tight.
+ *
+ * The tagline "untangles" on load: each letter starts slightly scattered/tilted
+ * and settles into place (pure type — on brand). The terracotta strike draws in
+ * under "worth" as the single accent. All motion is opacity/transform only and
+ * disabled under prefers-reduced-motion.
  */
 import { HERO } from '../../data/homepage';
 import { SITE } from '../../config/site';
 import CtaButton from '../CtaButton.astro';
+
+// Per-letter scatter for the untangle effect. Deterministic (derived from the
+// index) so the build is stable, but irregular enough to read as "tangled".
+const letters = [...SITE.tagline].map((ch, i) => ({
+  ch: ch === ' ' ? ' ' : ch,
+  i,
+  dx: ((i * 53) % 11) - 5, // -5..5 px
+  dy: ((i * 29) % 9) - 4, // -4..4 px
+  r: ((i * 37) % 15) - 7, // -7..7 deg
+}));
 ---
 
-<section class="py-section">
-  <p class="r r-0 text-label uppercase tracking-tagline text-ink">{SITE.tagline}</p>
+<section class="flex min-h-[calc(100svh-6.25rem)] flex-col justify-center pb-12">
+  <p class="tagline text-label uppercase tracking-tagline text-ink" aria-label={SITE.tagline}>
+    {
+      letters.map((l) => (
+        <span class="ch" aria-hidden="true" style={`--dx:${l.dx}px;--dy:${l.dy}px;--r:${l.r}deg;--i:${l.i}`}>
+          {l.ch}
+        </span>
+      ))
+    }
+  </p>
 
-  <h1 class="r r-1 mt-6 max-w-[16ch] text-4xl font-semibold leading-[1.04] tracking-tight text-ink sm:text-5xl">
+  <h1 class="r r-1 mt-5 max-w-[16ch] text-4xl font-semibold leading-[1.04] tracking-tight text-ink sm:text-5xl">
     AI that's <span class="emph">worth</span> building.
   </h1>
 
-  <p class="r r-2 mt-8 max-w-text text-lg text-ink">
+  <p class="r r-2 mt-7 max-w-text text-lg text-ink">
     {HERO.subhead}
   </p>
 
-  <div class="r r-3 mt-9">
+  <div class="r r-3 mt-8">
     <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
   </div>
 
-  <!-- Industries served — static, so it reads at a glance. -->
-  <ul class="r r-4 mt-14 flex flex-wrap gap-x-6 gap-y-2 border-t border-warm-grey pt-5 text-label uppercase tracking-label text-ink">
+  <!-- Industries served — static, dot-separated, reads at a glance. -->
+  <ul class="industries r r-4 mt-12 flex flex-wrap items-center border-t border-warm-grey pt-5 text-label uppercase tracking-label text-ink">
     {HERO.verticals.map((v) => <li>{v}</li>)}
   </ul>
 </section>
 
 <style>
-  /* The accent-rule echo under "worth": draws in on load. */
+  /* --- Tagline "untangle" on load --- */
+  .tagline .ch {
+    display: inline-block;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .tagline .ch {
+      opacity: 0;
+      transform: translate(var(--dx), var(--dy)) rotate(var(--r));
+      animation: untangle 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation-delay: calc(var(--i) * 45ms + 100ms);
+    }
+  }
+  @keyframes untangle {
+    to {
+      opacity: 1;
+      transform: translate(0, 0) rotate(0);
+    }
+  }
+
+  /* --- Dot separators between industries --- */
+  .industries li + li::before {
+    content: '·';
+    margin: 0 0.85rem;
+    color: var(--color-warm-grey);
+  }
+
+  /* --- The accent-rule echo under "worth": draws in on load --- */
   .emph {
     position: relative;
     white-space: nowrap;
@@ -59,19 +105,17 @@ import CtaButton from '../CtaButton.astro';
       transform: translateY(12px);
       animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
-    .r-0 { animation-delay: 0.05s; }
-    .r-1 { animation-delay: 0.18s; }
-    .r-2 { animation-delay: 0.31s; }
-    .r-3 { animation-delay: 0.44s; }
-    .r-4 { animation-delay: 0.57s; }
+    .r-1 { animation-delay: 0.45s; }
+    .r-2 { animation-delay: 0.58s; }
+    .r-3 { animation-delay: 0.71s; }
+    .r-4 { animation-delay: 0.84s; }
 
     .emph::after {
       animation: draw 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-      animation-delay: 0.7s;
+      animation-delay: 1s;
     }
   }
 
-  /* Reduced motion: the underline is simply present, no draw. */
   @media (prefers-reduced-motion: reduce) {
     .emph::after {
       transform: scaleX(1);
