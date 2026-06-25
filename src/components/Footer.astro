@@ -26,7 +26,9 @@ const LINKS = [
 <footer class="mt-section-lg border-t border-warm-grey py-12 text-sm text-ink">
   <!-- Top row -->
   <div class="flex items-center justify-between gap-6">
-    <img src={wordmark.src} alt={SITE.legalEntityName} height="40" class="h-10 w-auto" />
+    <!-- Negative margin cancels the wordmark's baked-in left clear space so the
+         glyph aligns with the legal text below. -->
+    <img src={wordmark.src} alt={SITE.legalEntityName} height="40" class="-ml-[0.86rem] h-10 w-auto" />
     <a
       href={SITE.companyLinkedinUrl}
       target="_blank"

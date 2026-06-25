@@ -65,7 +65,7 @@ export const ASSESSMENT = {
     {
       n: '02',
       title: 'We scope your Assessment, together',
-      body: 'No AI knowledge needed, no homework. On the call, we work out what you need and what you don’t. You walk away with a fixed price, fixed scope, and a clear timeline.',
+      body: 'No AI knowledge needed, no homework. On the call, we work out what you need and what you don’t. You walk away with a fixed price and scope for the Assessment.',
     },
     {
       n: '03',
