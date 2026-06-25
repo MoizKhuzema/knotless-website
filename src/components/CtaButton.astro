@@ -12,10 +12,11 @@
  *
  *   <CtaButton href="/contact">Speak with us</CtaButton>
  *   <CtaButton href="/about" variant="secondary">Read more</CtaButton>
+ *   <CtaButton href="/book" variant="inverse">…</CtaButton>  // on Ink sections
  */
 interface Props {
   href: string;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'inverse';
 }
 
 const { href, variant = 'primary' } = Astro.props;
@@ -27,6 +28,8 @@ const variants = {
   // hover inverts to Ink-on-Cream — an approved pair, no terracotta on a button
   primary: 'border border-ink bg-ink text-cream hover:bg-cream hover:text-ink',
   secondary: 'border border-ink text-ink hover:bg-ink hover:text-cream',
+  // for reversed (Ink) sections: Cream fill / Ink text, hover to Cream-on-Ink
+  inverse: 'border border-cream bg-cream text-ink hover:bg-ink hover:text-cream',
 } as const;
 ---
 

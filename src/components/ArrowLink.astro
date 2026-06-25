@@ -1,0 +1,25 @@
+---
+/**
+ * A quiet text link with a trailing arrow that nudges on hover.
+ * Ink by default, terracotta on hover (a permitted accent next to an action).
+ *
+ *   <ArrowLink href="/about">Read more about us</ArrowLink>
+ */
+interface Props {
+  href: string;
+  /** Use on Ink/reversed sections (Cream text instead of Ink). */
+  onInk?: boolean;
+}
+const { href, onInk = false } = Astro.props;
+---
+
+<a
+  href={href}
+  class:list={[
+    'group inline-flex items-center gap-2 font-medium no-underline transition-colors',
+    onInk ? 'text-cream hover:text-terracotta' : 'text-ink hover:text-terracotta',
+  ]}
+>
+  <slot />
+  <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span>
+</a>

@@ -41,8 +41,8 @@ const isActive = (href: string) =>
             href={link.href}
             aria-current={isActive(link.href) ? 'page' : undefined}
             class:list={[
-              'label no-underline transition-colors hover:text-ink',
-              isActive(link.href) ? 'text-ink' : 'text-warm-grey',
+              'label text-ink no-underline underline-offset-4 hover:underline',
+              isActive(link.href) ? 'underline' : '',
             ]}
           >
             {link.label}

@@ -1,0 +1,39 @@
+---
+/**
+ * Section 3 — "Who you'll be talking to".
+ * Narrative body (page content) + two founder blocks. Founder names and titles
+ * come from src/config/site.ts, not the content file.
+ */
+import { FOUNDERS_SECTION } from '../../data/homepage';
+import { SITE } from '../../config/site';
+import ArrowLink from '../ArrowLink.astro';
+---
+
+<section class="py-section">
+  <div data-reveal class="max-w-text">
+    <span class="accent-rule"></span>
+    <h2 class="mt-6 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+      {FOUNDERS_SECTION.heading}
+    </h2>
+  </div>
+
+  <div data-reveal class="mt-8 max-w-prose space-y-5 text-ink">
+    {FOUNDERS_SECTION.body.map((para) => <p>{para}</p>)}
+  </div>
+
+  <!-- Founder blocks (name + title from site.ts) -->
+  <div class="mt-16 grid gap-10 sm:grid-cols-2">
+    {
+      SITE.founders.map((founder) => (
+        <div data-reveal class="border-t border-warm-grey pt-5">
+          <h3 class="text-xl font-semibold tracking-tight text-ink">{founder.name}</h3>
+          <p class="label mt-2 text-ink">{founder.title}</p>
+        </div>
+      ))
+    }
+  </div>
+
+  <div data-reveal class="mt-12">
+    <ArrowLink href={FOUNDERS_SECTION.readMore.href}>{FOUNDERS_SECTION.readMore.label}</ArrowLink>
+  </div>
+</section>

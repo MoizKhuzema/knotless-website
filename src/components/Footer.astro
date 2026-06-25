@@ -22,7 +22,7 @@ const LINKS = [
 ];
 ---
 
-<footer class="mt-section-lg border-t border-warm-grey py-12 text-sm text-warm-grey">
+<footer class="mt-section-lg border-t border-warm-grey py-12 text-sm text-ink">
   <!-- Top row -->
   <div class="flex items-center justify-between gap-6">
     <img src={wordmark.src} alt={SITE.legalEntityName} height="40" class="h-10 w-auto" />
@@ -31,7 +31,7 @@ const LINKS = [
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Knotless AI on LinkedIn"
-      class="text-warm-grey transition-colors hover:text-ink"
+      class="text-ink transition-colors hover:text-terracotta"
     >
       <!-- monoline LinkedIn icon, inherits currentColor (Ink/Warm grey only) -->
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
@@ -61,7 +61,7 @@ const LINKS = [
     {
       LINKS.map((l) => (
         <li>
-          <a class="label text-warm-grey no-underline hover:text-ink" href={l.href}>
+          <a class="label text-ink no-underline underline-offset-4 hover:underline" href={l.href}>
             {l.label}
           </a>
         </li>
