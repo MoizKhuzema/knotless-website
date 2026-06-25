@@ -2,10 +2,11 @@
 /**
  * HERO — "Strike".
  *
- * The tagline sits as a static eyebrow above the headline. The terracotta
- * strike draws in under "worth" as the single accent, and the rest of the
- * block fades up on load. All motion is opacity/transform only and disabled
- * under prefers-reduced-motion.
+ * The headline lands instantly, except the word "worth" types in; then the
+ * terracotta strike draws left-to-right beneath it; then the caret blinks once
+ * and disappears. The one animated word is the one that carries the positioning.
+ * Everything is opacity/transform only and fully disabled under
+ * prefers-reduced-motion (the word and strike are simply shown).
  */
 import { HERO } from '../../data/homepage';
 import { SITE } from '../../config/site';
@@ -15,8 +16,12 @@ import CtaButton from '../CtaButton.astro';
 <section class="pt-20 pb-section sm:pt-28">
   <p class="text-label uppercase tracking-tagline text-ink">{SITE.tagline}</p>
 
-  <h1 class="r r-1 mt-5 max-w-[16ch] text-4xl font-semibold leading-[1.04] tracking-tight text-ink sm:text-5xl">
-    AI that's <span class="emph">worth</span> building.
+  <h1 class="mt-5 max-w-[16ch] text-4xl font-semibold leading-[1.04] tracking-tight text-ink sm:text-5xl">
+    AI that's <span class="emph hero-type" data-word="worth"
+      ><span class="sr-only">worth</span><span class="word" aria-hidden="true"
+        ><span class="sizer">worth</span><span class="live"><span class="typed">worth</span><span class="caret"></span></span></span
+      ></span
+    > building.
   </h1>
 
   <p class="r r-2 mt-7 max-w-text text-lg text-ink">
@@ -33,6 +38,50 @@ import CtaButton from '../CtaButton.astro';
   </ul>
 </section>
 
+<!-- is:inline so it runs during parse (pre-paint): arms the word before it can
+     flash, then types after fonts load. -->
+<script is:inline>
+  (() => {
+    const emph = document.querySelector('.hero-type');
+    if (!emph) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const word = emph.getAttribute('data-word') || '';
+    const typed = emph.querySelector('.typed');
+    const caret = emph.querySelector('.caret');
+    if (!typed || !caret || !word) return;
+
+    // Arm immediately so "worth" doesn't appear before it types.
+    typed.textContent = '';
+    emph.classList.add('is-typing');
+    caret.classList.add('is-on');
+
+    const start = () => {
+      let i = 0;
+      const tick = () => {
+        i += 1;
+        typed.textContent = word.slice(0, i);
+        if (i < word.length) {
+          setTimeout(tick, 78);
+        } else {
+          emph.classList.remove('is-typing'); // strike draws (CSS transition)
+          setTimeout(() => {
+            caret.classList.add('is-blink'); // one blink, then remove
+            caret.addEventListener(
+              'animationend',
+              () => caret.classList.remove('is-on', 'is-blink'),
+              { once: true },
+            );
+          }, 600);
+        }
+      };
+      setTimeout(tick, 320); // brief beat before typing
+    };
+
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(start);
+    else start();
+  })();
+</script>
+
 <style>
   /* --- Dot separators between industries --- */
   .industries li + li::before {
@@ -41,11 +90,43 @@ import CtaButton from '../CtaButton.astro';
     color: var(--color-warm-grey);
   }
 
-  /* --- The accent-rule echo under "worth": draws in on load --- */
+  /* --- "worth": typewriter word + terracotta strike --- */
   .emph {
     position: relative;
     white-space: nowrap;
   }
+  /* The word reserves its final width via an invisible sizer; the live text and
+     caret sit in an absolute layer over it, so typing never shifts "building." */
+  .word {
+    position: relative;
+    display: inline-block;
+  }
+  .sizer {
+    visibility: hidden;
+  }
+  .live {
+    position: absolute;
+    left: 0;
+    top: 0;
+    white-space: nowrap;
+  }
+  .caret {
+    display: none;
+    width: 0.06em;
+    height: 0.9em;
+    margin-left: 0.06em;
+    background-color: currentColor;
+    vertical-align: -0.04em;
+  }
+  .caret.is-on {
+    display: inline-block;
+  }
+  .caret.is-blink {
+    animation: caret-blink 0.7s steps(1, end) 1 forwards;
+  }
+
+  /* The strike is shown by default (no-JS / reduced motion); while typing it's
+     hidden, then transitions back in left-to-right when typing finishes. */
   .emph::after {
     content: '';
     position: absolute;
@@ -54,42 +135,36 @@ import CtaButton from '../CtaButton.astro';
     bottom: 0.04em;
     height: 0.08em;
     background-color: var(--color-terracotta);
-    transform: scaleX(0);
+    transform: scaleX(1);
     transform-origin: left;
+    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .emph.is-typing::after {
+    transform: scaleX(0);
   }
 
+  @keyframes caret-blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
+  /* --- Fade-up for the rest of the hero (not the headline) --- */
   @media (prefers-reduced-motion: no-preference) {
     .r {
       opacity: 0;
       transform: translateY(12px);
       animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
-    .r-1 { animation-delay: 0.1s; }
-    .r-2 { animation-delay: 0.23s; }
-    .r-3 { animation-delay: 0.36s; }
-    .r-4 { animation-delay: 0.49s; }
-
-    .emph::after {
-      animation: draw 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-      animation-delay: 0.6s;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .emph::after {
-      transform: scaleX(1);
-    }
+    .r-2 { animation-delay: 0.15s; }
+    .r-3 { animation-delay: 0.28s; }
+    .r-4 { animation-delay: 0.41s; }
   }
 
   @keyframes rise {
     to {
       opacity: 1;
       transform: translateY(0);
-    }
-  }
-  @keyframes draw {
-    to {
-      transform: scaleX(1);
     }
   }
 </style>

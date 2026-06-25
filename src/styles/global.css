@@ -117,13 +117,14 @@
   }
 
   /* Paper grain overlay (option A): inline SVG fractalNoise, desaturated to
-   * grey, tiled and multiply-blended so it reads as faint paper texture on the
-   * Cream. Fixed so the whole page feels printed on one sheet. Tune intensity
-   * with --grain-opacity. Behind content (z -1); pointer-events off. */
+   * grey, tiled and multiply-blended so it reads as faint paper texture.
+   * Sits ON TOP of everything (above the sticky nav) so the whole page —
+   * nav, logo, content — shares one grain and nothing looks out of place.
+   * pointer-events off so it never intercepts clicks. Tune with --grain-opacity. */
   .grain {
     position: fixed;
     inset: 0;
-    z-index: -1;
+    z-index: 60;
     pointer-events: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 180px 180px;
