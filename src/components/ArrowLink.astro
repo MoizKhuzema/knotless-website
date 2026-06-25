@@ -37,12 +37,11 @@ const ARROW = 'M3 12 C7 12 9 12 11 12 C13 12 15 12 16 12 C18 12 20 12 21 12 L21 
 <a
   href={withBase(href)}
   class:list={[
-    'arrow-link inline-flex items-center gap-2 font-medium no-underline transition-colors',
+    'arrow-link font-medium no-underline transition-colors',
     onInk ? 'text-cream hover:text-terracotta' : 'text-ink hover:text-terracotta',
   ]}
 >
-  <slot />
-  <svg
+  <slot /><svg
     class="arrow-link__knot"
     viewBox="0 0 24 24"
     fill="none"
@@ -58,9 +57,12 @@ const ARROW = 'M3 12 C7 12 9 12 11 12 C13 12 15 12 16 12 C18 12 20 12 21 12 L21 
 
 <style define:vars={{ rest: `path("${REST}")`, arrow: `path("${ARROW}")` }}>
   .arrow-link__knot {
+    display: inline-block;
     width: 1.45em;
     height: 1em;
-    flex: none;
+    margin-left: 0.4em;
+    /* centre the glyph on the text's optical middle, not the line box */
+    vertical-align: middle;
     overflow: visible;
   }
 

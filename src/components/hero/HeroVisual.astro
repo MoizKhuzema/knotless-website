@@ -64,14 +64,8 @@ import CtaButton from '../CtaButton.astro';
           setTimeout(tick, 78);
         } else {
           emph.classList.remove('is-typing'); // strike draws (CSS transition)
-          setTimeout(() => {
-            caret.classList.add('is-blink'); // one blink, then remove
-            caret.addEventListener(
-              'animationend',
-              () => caret.classList.remove('is-on', 'is-blink'),
-              { once: true },
-            );
-          }, 600);
+          // after the strike, leave the caret blinking at the end of "worth"
+          setTimeout(() => caret.classList.add('is-blink'), 600);
         }
       };
       setTimeout(tick, 320); // brief beat before typing
@@ -115,7 +109,7 @@ import CtaButton from '../CtaButton.astro';
     display: inline-block;
   }
   .caret.is-blink {
-    animation: caret-blink 0.7s steps(1, end) 1 forwards;
+    animation: caret-blink 1.06s steps(1, end) infinite;
   }
 
   /* The strike is shown by default (no-JS / reduced motion); while typing it's
@@ -139,7 +133,6 @@ import CtaButton from '../CtaButton.astro';
   @keyframes caret-blink {
     0% { opacity: 1; }
     50% { opacity: 0; }
-    100% { opacity: 1; }
   }
 
   /* --- Fade-up for the rest of the hero (not the headline) --- */
