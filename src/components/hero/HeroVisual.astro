@@ -1,29 +1,23 @@
 ---
 /**
- * HERO — Treatment B: "Strike" (more visual interest).
+ * HERO — "Strike".
  *
- * Left-aligned editorial composition with typographic drama: an oversized
- * headline where the terracotta strike motif is echoed as an accent rule that
- * draws in beneath the word "worth". The vertical list becomes a slow, calm
- * marquee. All motion is transform/opacity only and disabled under
- * prefers-reduced-motion (the underline stays drawn, the marquee stops and
- * wraps). The wordmark_primary lockup is the same brand moment as Treatment A.
+ * Left-aligned editorial composition with typographic drama: the terracotta
+ * strike motif is echoed as an accent rule that draws in beneath "worth" (the
+ * single accent in this composition). The tagline sits as an eyebrow above the
+ * headline — the wordmark itself lives in the nav, so it isn't repeated here.
+ * The industry list is static for fast reading. Motion is opacity/transform
+ * only and disabled under prefers-reduced-motion.
  */
 import { HERO } from '../../data/homepage';
+import { SITE } from '../../config/site';
 import CtaButton from '../CtaButton.astro';
-import wordmarkPrimary from '../../assets/logo/wordmark_primary/Wordmark.svg';
-// The headline is rendered inline below so "worth" can carry the accent rule.
 ---
 
 <section class="py-section">
-  <img
-    src={wordmarkPrimary.src}
-    alt="knotless — AI Untangled."
-    width="220"
-    class="r r-0 w-[clamp(170px,28vw,220px)]"
-  />
+  <p class="r r-0 text-label uppercase tracking-tagline text-ink">{SITE.tagline}</p>
 
-  <h1 class="r r-1 mt-12 max-w-[16ch] text-4xl font-semibold leading-[1.04] tracking-tight text-ink sm:text-5xl">
+  <h1 class="r r-1 mt-6 max-w-[16ch] text-4xl font-semibold leading-[1.04] tracking-tight text-ink sm:text-5xl">
     AI that's <span class="emph">worth</span> building.
   </h1>
 
@@ -35,21 +29,14 @@ import wordmarkPrimary from '../../assets/logo/wordmark_primary/Wordmark.svg';
     <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
   </div>
 
-  <!-- Verticals as a slow marquee (calm, pauses on hover). -->
-  <div class="r r-4 marquee mt-14 border-t border-warm-grey pt-5">
-    <div class="marquee__track text-label uppercase tracking-label text-ink">
-      <span class="marquee__group">
-        {HERO.verticals.map((v) => <span class="marquee__item">{v}</span>)}
-      </span>
-      <span class="marquee__group" aria-hidden="true">
-        {HERO.verticals.map((v) => <span class="marquee__item">{v}</span>)}
-      </span>
-    </div>
-  </div>
+  <!-- Industries served — static, so it reads at a glance. -->
+  <ul class="r r-4 mt-14 flex flex-wrap gap-x-6 gap-y-2 border-t border-warm-grey pt-5 text-label uppercase tracking-label text-ink">
+    {HERO.verticals.map((v) => <li>{v}</li>)}
+  </ul>
 </section>
 
 <style>
-  /* --- The accent-rule echo under "worth" --- */
+  /* The accent-rule echo under "worth": draws in on load. */
   .emph {
     position: relative;
     white-space: nowrap;
@@ -64,25 +51,6 @@ import wordmarkPrimary from '../../assets/logo/wordmark_primary/Wordmark.svg';
     background-color: var(--color-terracotta);
     transform: scaleX(0);
     transform-origin: left;
-  }
-
-  /* --- Marquee --- */
-  .marquee {
-    overflow: hidden;
-  }
-  .marquee__track {
-    display: flex;
-    width: max-content;
-  }
-  .marquee__group {
-    display: flex;
-  }
-  .marquee__item {
-    padding: 0 1.5rem;
-    border-left: 1px solid var(--color-warm-grey);
-  }
-  .marquee__item:first-child {
-    border-left: 0;
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -101,35 +69,12 @@ import wordmarkPrimary from '../../assets/logo/wordmark_primary/Wordmark.svg';
       animation: draw 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       animation-delay: 0.7s;
     }
-
-    .marquee__track {
-      animation: marquee 38s linear infinite;
-    }
-    .marquee:hover .marquee__track {
-      animation-play-state: paused;
-    }
   }
 
-  /* Reduced motion: everything static, marquee collapses to a wrapped row. */
+  /* Reduced motion: the underline is simply present, no draw. */
   @media (prefers-reduced-motion: reduce) {
     .emph::after {
       transform: scaleX(1);
-    }
-    .marquee {
-      overflow: visible;
-    }
-    .marquee__track {
-      width: auto;
-      flex-wrap: wrap;
-    }
-    .marquee__group[aria-hidden='true'] {
-      display: none;
-    }
-    .marquee__item {
-      padding: 0.25rem 1.5rem;
-    }
-    .marquee__item:first-child {
-      padding-left: 0;
     }
   }
 
@@ -142,12 +87,6 @@ import wordmarkPrimary from '../../assets/logo/wordmark_primary/Wordmark.svg';
   @keyframes draw {
     to {
       transform: scaleX(1);
-    }
-  }
-  /* Two identical groups; shift by half the track for a seamless loop. */
-  @keyframes marquee {
-    to {
-      transform: translateX(-50%);
     }
   }
 </style>
