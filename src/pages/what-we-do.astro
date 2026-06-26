@@ -63,17 +63,17 @@ const introDescription = WWD_INTRO.bodyParts
       <p class="mt-6 max-w-text text-lg text-ink">{WWD_QUESTIONS.lead}</p>
     </div>
 
-    <div class="mt-14 grid gap-6 sm:grid-cols-2 sm:auto-rows-fr">
+    <div class="mt-10 grid gap-4 sm:mt-14 sm:grid-cols-2 sm:auto-rows-fr sm:gap-6">
       {
         WWD_QUESTIONS.vignettes.map((v) => (
           <article
             data-reveal
-            class="group flex h-full flex-col rounded-sm border border-warm-grey p-6 transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-ink hover:bg-ink sm:p-7"
+            class="group flex h-full flex-col rounded-sm border border-warm-grey p-5 transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-ink hover:bg-ink sm:p-7"
           >
-            <p class="text-xl font-medium leading-snug tracking-tight text-ink transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream">
+            <p class="text-lg font-medium leading-snug tracking-tight text-ink transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream sm:text-xl">
               “{v.quote}”
             </p>
-            <p class="mt-4 italic text-ink transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream">
+            <p class="mt-3 text-sm italic text-ink transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream sm:mt-4 sm:text-base">
               {v.who}
             </p>
           </article>
@@ -165,7 +165,7 @@ const introDescription = WWD_INTRO.bodyParts
          step this whole section is about. Stretched arrows; stacks on mobile. -->
     <ol
       data-reveal
-      class="mt-14 flex flex-col items-center gap-4 text-base font-medium text-ink sm:flex-row sm:gap-4"
+      class="mt-10 flex flex-wrap items-center gap-x-2 gap-y-1 text-base font-medium text-ink sm:mt-14 sm:flex-nowrap sm:gap-4"
     >
       {
         WWD_PROCESS.map((step, i) => (
@@ -177,7 +177,7 @@ const introDescription = WWD_INTRO.bodyParts
               >
                 <span class="hidden h-px flex-1 bg-warm-grey sm:block" />
                 <svg
-                  class="h-5 w-5 shrink-0 rotate-90 sm:-ml-px sm:rotate-0"
+                  class="h-4 w-4 shrink-0 sm:-ml-px sm:h-5 sm:w-5"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
