@@ -118,16 +118,16 @@
     color: var(--color-cream);
   }
 
-  /* Paper grain overlay (option A): inline SVG fractalNoise, desaturated to
-   * grey, tiled and multiply-blended so it reads as faint paper texture.
-   * Sits ON TOP of everything (above the sticky nav) so the whole page —
-   * nav, logo, content — shares one grain and nothing looks out of place.
-   * pointer-events off so it never intercepts clicks. Tune with --grain-opacity.
+  /* Paper grain overlay: inline SVG fractalNoise, desaturated to grey, tiled
+   * as a faint paper texture over the whole page (above the sticky nav) so
+   * everything shares one grain. pointer-events off so it never intercepts
+   * clicks. Tune with --grain-opacity.
    *
-   * `position: absolute` (covering the whole document via body's relative box)
-   * rather than `fixed`: the noise is uniform so scrolling vs fixed is
-   * imperceptible, and it avoids the iOS Safari `fixed + mix-blend-mode` bug
-   * that let page content paint over the sticky nav. */
+   * NOTE: no `mix-blend-mode` and `position: absolute` (not `fixed`). Both
+   * blend-mode and fixed positioning here triggered an iOS Safari compositing
+   * bug that ghosted page content above the sticky nav. As a plain low-opacity
+   * grey speckle on the mostly-cream page it reads almost identically, without
+   * forcing the broken compositing group. */
   .grain {
     position: absolute;
     inset: 0;
@@ -135,8 +135,7 @@
     pointer-events: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 180px 180px;
-    opacity: var(--grain-opacity, 0.06);
-    mix-blend-mode: multiply;
+    opacity: var(--grain-opacity, 0.05);
   }
 
   ::selection {
