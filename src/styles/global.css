@@ -151,6 +151,66 @@
     letter-spacing: var(--tracking-label);
   }
 
+  /* Typewriter word with a terracotta strike (the "worth"/"product" treatment).
+   * Markup is inlined in the heading; the initialiser lives in BaseLayout.
+   * The word reserves its width via a hidden sizer so typing never reflows. */
+  .emph-type {
+    position: relative;
+    white-space: nowrap;
+  }
+  .emph-type .ew {
+    position: relative;
+    display: inline-block;
+  }
+  .emph-type .ew-sizer {
+    visibility: hidden;
+  }
+  .emph-type .ew-live {
+    position: absolute;
+    left: 0;
+    top: 0;
+    white-space: nowrap;
+  }
+  .emph-type .ew-caret {
+    display: none;
+    width: 0.06em;
+    height: 0.9em;
+    margin-left: 0.06em;
+    background-color: currentColor;
+    vertical-align: -0.04em;
+  }
+  .emph-type .ew-caret.is-on {
+    display: inline-block;
+  }
+  /* Blink exactly twice, then the initialiser removes the caret on animationend. */
+  .emph-type .ew-caret.is-blink {
+    animation: ew-caret-blink 1.06s steps(1, end) 2;
+  }
+  /* Strike: shown by default; hidden while typing, then drawn back in. */
+  .emph-type::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.04em;
+    height: 0.08em;
+    background-color: var(--color-terracotta);
+    transform: scaleX(1);
+    transform-origin: left;
+    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .emph-type.is-typing::after {
+    transform: scaleX(0);
+  }
+  @keyframes ew-caret-blink {
+    0% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+  }
+
   /* Scroll-reveal: elements marked [data-reveal] start hidden and fade up when
    * the IntersectionObserver in BaseLayout adds .is-visible. Under reduced
    * motion they're shown immediately (the script adds .is-visible up front). */

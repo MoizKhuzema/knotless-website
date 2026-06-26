@@ -121,5 +121,53 @@ const fontFace = `@font-face{font-family:'Inter Variable';font-style:normal;font
         els.forEach((el) => io.observe(el));
       })();
     </script>
+
+    <script is:inline>
+      // Typewriter for <EmphType> words (.emph-type): type the word in, draw the
+      // terracotta strike, blink the caret twice, then remove it. Kept here (not
+      // in the component) so the inline script never sits in the word's text
+      // flow. Reduced motion / no-JS: the word + strike are shown statically.
+      (() => {
+        const emphs = document.querySelectorAll('.emph-type');
+        if (!emphs.length) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        emphs.forEach((emph) => {
+          const word = emph.getAttribute('data-word') || '';
+          const typed = emph.querySelector('.ew-typed');
+          const caret = emph.querySelector('.ew-caret');
+          if (!typed || !caret || !word) return;
+
+          // Arm immediately so the word doesn't flash before it types.
+          typed.textContent = '';
+          emph.classList.add('is-typing');
+          caret.classList.add('is-on');
+
+          const start = () => {
+            let i = 0;
+            const tick = () => {
+              i += 1;
+              typed.textContent = word.slice(0, i);
+              if (i < word.length) {
+                setTimeout(tick, 78);
+              } else {
+                emph.classList.remove('is-typing'); // strike draws (CSS transition)
+                setTimeout(() => {
+                  caret.classList.add('is-blink'); // blink twice
+                  caret.addEventListener(
+                    'animationend',
+                    () => caret.classList.remove('is-on', 'is-blink'),
+                    { once: true },
+                  );
+                }, 600);
+              }
+            };
+            setTimeout(tick, 320); // brief beat before typing
+          };
+
+          if (document.fonts && document.fonts.ready) document.fonts.ready.then(start);
+          else start();
+        });
+      })();
+    </script>
   </body>
 </html>

@@ -9,12 +9,13 @@
 
 /**
  * Section 1 — page intro.
- * `heading` is two lines (rendered on separate rows). `bodyParts` is the lead
+ * The heading ("One product. Whole story.") is rendered in the page so the word
+ * "product" can use the typewriter/strike treatment. `bodyParts` is the lead
  * with the two services marked `strong` so the page can highlight them.
  */
 export const WWD_INTRO = {
   eyebrow: 'What we do',
-  heading: ['One product.', 'The whole story.'],
+  cta: { label: 'Book a free Fit Call', href: '/contact' },
   bodyParts: [
     'Everything we sell is on this page: ',
     { strong: 'the Knotless Assessment' },
