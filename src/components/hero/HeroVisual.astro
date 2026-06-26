@@ -33,15 +33,37 @@ const LINE =
   <div class="grid items-center gap-x-12 gap-y-14 lg:grid-cols-[1.45fr_0.55fr]">
     <!-- Left column: positioning copy -->
     <div>
-      <p class="text-label uppercase tracking-tagline text-ink">{SITE.tagline}</p>
+      <!-- Heading row. On phones the knot sits beside the heading (reduced type so
+           it fits); on sm+ it stacks and the knot moves below / to the right. -->
+      <div class="flex items-center gap-5 sm:block">
+        <div class="min-w-0 flex-1 sm:flex-none">
+          <p class="text-label uppercase tracking-tagline text-ink">{SITE.tagline}</p>
 
-      <h1 class="mt-5 text-[2.8rem] font-semibold leading-[1.04] tracking-tight text-ink sm:text-5xl">
-        AI that's <span class="emph hero-type" data-word="worth"
-          ><span class="sr-only">worth</span><span class="word" aria-hidden="true"
-            ><span class="sizer">worth</span><span class="live"><span class="typed">worth</span><span class="caret"></span></span></span
-          ></span
-        ><br />building.
-      </h1>
+          <h1 class="mt-5 text-[2.1rem] font-semibold leading-[1.04] tracking-tight text-ink min-[420px]:text-[2.5rem] sm:text-5xl">
+            AI that's <span class="emph hero-type" data-word="worth"
+              ><span class="sr-only">worth</span><span class="word" aria-hidden="true"
+                ><span class="sizer">worth</span><span class="live"><span class="typed">worth</span><span class="caret"></span></span></span
+              ></span
+            ><br />building.
+          </h1>
+        </div>
+
+        <!-- Knot beside the heading, phones only (sm+ uses the centred / right-column knot). -->
+        <div class="hero-knot-wrap shrink-0 text-ink sm:hidden">
+          <svg
+            class="hero-knot w-16 min-[420px]:w-20"
+            viewBox="44 12 140 208"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d={KNOT} />
+          </svg>
+        </div>
+      </div>
 
       <p class="r r-2 mt-7 max-w-text text-lg text-ink">
         {HERO.subhead}
@@ -51,12 +73,11 @@ const LINE =
         <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
       </div>
 
-      <!-- Knot mark for tablet & phone (the lg right-column knot is hidden below
-           lg). Centred under the CTA so the "AI Untangled" moment exists on every
-           screen, not just desktop. Decorative; same untangle behaviour. -->
-      <div class="r r-4 mt-12 flex justify-center text-ink lg:hidden">
+      <!-- Knot mark for tablet only (phones get the beside-heading knot above;
+           desktop gets the right-column knot). Centred under the CTA. -->
+      <div class="r r-4 mt-12 hidden justify-center text-ink sm:flex lg:hidden">
         <svg
-          class="hero-knot w-28 sm:w-32 md:w-40"
+          class="hero-knot w-32 md:w-40"
           viewBox="44 12 140 208"
           fill="none"
           stroke="currentColor"
@@ -103,34 +124,25 @@ const LINE =
   (() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    /* --- knots: rest as a tangled knot, then untangle into the straight line +
-           downward arrow on load and every time the hero re-enters view. The
-           knot is the persistent, filled resting state; the untangle replays. --- */
+    /* --- knots: rest as a tangled knot, then untangle into a clean straight
+           line and settle back, looping continuously. The knot is the filled
+           resting state; the untangle is the recurring "AI Untangled" gesture. --- */
     const knots = document.querySelectorAll('.hero-knot');
     const canMorphD = window.CSS && CSS.supports && CSS.supports('d', 'path("M0 0")');
     if (knots.length && !reduce && canMorphD) {
-      const play = (knot) => {
-        if (knot.dataset.busy) return;
-        knot.dataset.busy = '1';
-        knot.classList.add('is-untangled'); // knot -> clean straight line
-        setTimeout(() => {
-          knot.classList.remove('is-untangled'); // settle back to the knot
+      const loop = (knot) => {
+        const cycle = () => {
+          knot.classList.add('is-untangled'); // morph to a clean line
           setTimeout(() => {
-            knot.dataset.busy = '';
-          }, 1500);
-        }, 1700);
+            knot.classList.remove('is-untangled'); // morph back to the knot
+            setTimeout(cycle, 3600); // hold the knot, then repeat
+          }, 2600); // line morph (1.4s) + brief hold
+        };
+        cycle();
       };
-      if ('IntersectionObserver' in window) {
-        const io = new IntersectionObserver(
-          (entries) => entries.forEach((e) => e.isIntersecting && play(e.target)),
-          { threshold: 0.4 },
-        );
-        const arm = () => knots.forEach((k) => io.observe(k));
-        if (document.fonts && document.fonts.ready) document.fonts.ready.then(arm);
-        else arm();
-      } else {
-        knots.forEach(play);
-      }
+      const start = () => knots.forEach(loop);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(start);
+      else start();
     }
 
     /* --- "worth": typewriter word + terracotta strike --- */
