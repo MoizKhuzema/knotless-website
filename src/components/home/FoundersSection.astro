@@ -21,12 +21,16 @@ import ArrowLink from '../ArrowLink.astro';
     {FOUNDERS_SECTION.body.map((para) => <p>{para}</p>)}
   </div>
 
-  <!-- Founder blocks (name + title from site.ts) -->
+  <!-- Founder blocks (name + title from site.ts). The circle is a placeholder
+       outline for the headshot — drop an <img> inside and it crops to the circle. -->
   <div class="mt-16 grid gap-10 sm:grid-cols-2">
     {
       SITE.founders.map((founder) => (
-        <div data-reveal class="border-t border-warm-grey pt-5">
-          <h3 class="text-xl font-semibold tracking-tight text-ink">{founder.name}</h3>
+        <div data-reveal>
+          <div class="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-warm-grey">
+            {/* headshot goes here */}
+          </div>
+          <h3 class="mt-5 text-xl font-semibold tracking-tight text-ink">{founder.name}</h3>
           <p class="label mt-2 text-ink">{founder.title}</p>
         </div>
       ))
