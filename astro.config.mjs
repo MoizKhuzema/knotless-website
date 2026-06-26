@@ -19,6 +19,10 @@ const BASE_PATH = process.env.BASE_PATH ?? '/';
 export default defineConfig({
   site: SITE_URL,
   base: BASE_PATH,
+  // Pages build as directories (/what-we-do/index.html); emit trailing-slash
+  // URLs to match, so internal links resolve directly on GitHub Pages without
+  // relying on a 301 redirect.
+  trailingSlash: 'always',
   vite: {
     plugins: [tailwindcss()],
   },
