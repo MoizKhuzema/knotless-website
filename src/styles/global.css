@@ -175,5 +175,18 @@
       opacity: 1;
       transform: none;
     }
+
+    /* The terracotta accent rule draws itself in left-to-right when its section
+     * reveals — the same gesture as the hero "strike". Slight delay so it lands
+     * after the block has risen into place. Reduced motion: shown full-width
+     * (this whole block is inside the no-preference query). */
+    [data-reveal] .accent-rule {
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
+    }
+    [data-reveal].is-visible .accent-rule {
+      transform: scaleX(1);
+    }
   }
 }

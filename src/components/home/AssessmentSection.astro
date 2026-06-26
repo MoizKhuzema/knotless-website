@@ -64,17 +64,53 @@ import ArrowLink from '../ArrowLink.astro';
     </h2>
   </div>
 
-  <ol class="mt-12 grid gap-12 sm:grid-cols-3">
-    {
-      ASSESSMENT.steps.map((step) => (
-        <li data-reveal class="border-t border-warm-grey pt-5">
-          <span class="block text-4xl font-light leading-none tracking-tight text-warm-grey">
-            {step.n}
-          </span>
-          <h3 class="mt-4 text-lg font-semibold tracking-tight text-ink">{step.title}</h3>
-          <p class="mt-2 text-ink">{step.body}</p>
-        </li>
-      ))
-    }
-  </ol>
+  <!-- One continuous "thread" links the three steps into a sequence (sm+); it
+       draws in left-to-right on reveal. On mobile the steps stack, so each keeps
+       its own top hairline instead. -->
+  <div data-reveal class="step-thread mt-12">
+    <ol class="grid gap-12 sm:grid-cols-3">
+      {
+        ASSESSMENT.steps.map((step) => (
+          <li class="border-t border-warm-grey pt-5 sm:border-t-0 sm:pt-7">
+            <span class="block text-4xl font-light leading-none tracking-tight text-warm-grey">
+              {step.n}
+            </span>
+            <h3 class="mt-4 text-lg font-semibold tracking-tight text-ink">{step.title}</h3>
+            <p class="mt-2 text-ink">{step.body}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
 </section>
+
+<style>
+  /* The connecting thread: a single warm-grey hairline spanning all three
+     steps (sm+ only — on mobile they stack and keep per-item borders). */
+  .step-thread {
+    position: relative;
+  }
+  @media (min-width: 640px) {
+    .step-thread::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background-color: var(--color-warm-grey);
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+  }
+  /* Draw it in on reveal; default/reduced-motion shows it full-width. */
+  @media (min-width: 640px) and (prefers-reduced-motion: no-preference) {
+    .step-thread::before {
+      transform: scaleX(0);
+      transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.1s;
+    }
+    .step-thread.is-visible::before {
+      transform: scaleX(1);
+    }
+  }
+</style>
