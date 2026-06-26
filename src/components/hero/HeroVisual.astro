@@ -49,6 +49,30 @@ const LINE =
       <div class="r r-3 mt-8">
         <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
       </div>
+
+      <!-- Knot mark for tablet & phone (the lg right-column knot is hidden below
+           lg). Centred under the CTA so the "AI Untangled" moment exists on every
+           screen, not just desktop. Same untangle behaviour as the big knot. -->
+      <div class="r r-4 mt-12 flex justify-center lg:hidden">
+        <a
+          href="#assessment"
+          class="hero-scroll inline-flex rounded-sm text-ink"
+          aria-label="Scroll to the next section"
+        >
+          <svg
+            class="hero-knot w-28 sm:w-32 md:w-40"
+            viewBox="44 12 140 208"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d={KNOT} />
+          </svg>
+        </a>
+      </div>
     </div>
 
     <!-- Right column: the knot that untangles into a downward arrow and scrolls
@@ -63,16 +87,16 @@ const LINE =
         aria-label="Scroll to the next section"
       >
         <svg
-          class="hero-knot"
+          class="hero-knot w-52 xl:w-60"
           viewBox="44 12 140 208"
           fill="none"
           stroke="currentColor"
-          stroke-width="2.5"
+          stroke-width="3"
           stroke-linecap="round"
           stroke-linejoin="round"
           aria-hidden="true"
         >
-          <path d={LINE} />
+          <path d={KNOT} />
         </svg>
       </a>
     </div>
@@ -93,30 +117,45 @@ const LINE =
   (() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    /* --- knot: arm tangled (pre-paint), then untangle --- */
-    const knot = document.querySelector('.hero-knot');
+    /* --- knots: rest as a tangled knot, then untangle into the straight line +
+           downward arrow on load and every time the hero re-enters view. The
+           knot is the persistent, filled resting state; the untangle replays. --- */
+    const knots = document.querySelectorAll('.hero-knot');
     const canMorphD = window.CSS && CSS.supports && CSS.supports('d', 'path("M0 0")');
-    if (knot && !reduce && canMorphD) {
-      knot.classList.add('is-tangled'); // first paint = knot
-      const untangle = () => {
-        // next frame so the tangled state paints before the transition starts
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => knot.classList.remove('is-tangled')),
-        );
+    if (knots.length && !reduce && canMorphD) {
+      const play = (knot) => {
+        if (knot.dataset.busy) return;
+        knot.dataset.busy = '1';
+        knot.classList.add('is-untangled'); // knot -> straight line + arrow
+        setTimeout(() => {
+          knot.classList.remove('is-untangled'); // settle back to the knot
+          setTimeout(() => {
+            knot.dataset.busy = '';
+          }, 1500);
+        }, 1700);
       };
-      if (document.fonts && document.fonts.ready) document.fonts.ready.then(untangle);
-      else untangle();
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(
+          (entries) => entries.forEach((e) => e.isIntersecting && play(e.target)),
+          { threshold: 0.4 },
+        );
+        const arm = () => knots.forEach((k) => io.observe(k));
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(arm);
+        else arm();
+      } else {
+        knots.forEach(play);
+      }
     }
 
     /* --- scroll cue: smooth-scroll to the next section --- */
-    const scroll = document.querySelector('.hero-scroll');
     const target = document.querySelector('#assessment');
-    if (scroll && target) {
+    document.querySelectorAll('.hero-scroll').forEach((scroll) => {
+      if (!target) return;
       scroll.addEventListener('click', (e) => {
         e.preventDefault();
         target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
       });
-    }
+    });
 
     /* --- "worth": typewriter word + terracotta strike --- */
     const emph = document.querySelector('.hero-type');
@@ -163,24 +202,40 @@ const LINE =
   /* --- the knot visual / scroll cue (fills the right half of the hero) ---
      Show/hide + centring are handled by Tailwind utilities (hidden / lg:flex /
      justify-center) so display can be toggled responsively. */
+  /* Width comes from Tailwind w-* utilities per instance (the big right-column
+     knot vs the smaller centred knot on tablet/phone). */
   .hero-knot {
     display: block;
-    width: 10rem; /* fixed: the <a> is shrink-to-fit, so % has no basis */
     height: auto;
     color: var(--color-ink);
     overflow: visible;
   }
   .hero-knot path {
-    d: var(--line); /* default / no-JS / reduced motion: resolved line */
-    transition: d 2.4s cubic-bezier(0.22, 1, 0.36, 1);
+    d: var(--knot); /* resting state: the tangled knot — fills the space */
+    transition: d 1.4s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .hero-knot.is-tangled path {
-    d: var(--knot);
+  .hero-knot.is-untangled path {
+    d: var(--line); /* untangled: straight line + downward arrow */
   }
   @media (prefers-reduced-motion: reduce) {
     .hero-knot path {
-      d: var(--line);
+      d: var(--knot);
       transition: none;
+    }
+  }
+  /* Subtle idle so the knot feels alive at rest (motion-safe only). */
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-knot {
+      animation: knot-float 7s ease-in-out infinite;
+    }
+  }
+  @keyframes knot-float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-4px);
     }
   }
 
