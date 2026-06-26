@@ -33,25 +33,25 @@ const LINE =
   <div class="grid items-center gap-x-12 gap-y-14 lg:grid-cols-[1.45fr_0.55fr]">
     <!-- Left column: positioning copy -->
     <div>
-      <!-- Heading row. On phones the knot sits beside the heading (reduced type so
-           it fits); on sm+ it stacks and the knot moves below / to the right. -->
-      <div class="flex items-center gap-5 sm:block">
-        <div class="min-w-0 flex-1 sm:flex-none">
-          <p class="text-label uppercase tracking-tagline text-ink">{SITE.tagline}</p>
+      <p class="text-label uppercase tracking-tagline text-ink">{SITE.tagline}</p>
 
-          <h1 class="mt-5 text-[2.1rem] font-semibold leading-[1.04] tracking-tight text-ink min-[420px]:text-[2.5rem] sm:text-5xl">
-            AI that's <span class="emph hero-type" data-word="worth"
-              ><span class="sr-only">worth</span><span class="word" aria-hidden="true"
-                ><span class="sizer">worth</span><span class="live"><span class="typed">worth</span><span class="caret"></span></span></span
-              ></span
-            ><br />building.
-          </h1>
-        </div>
+      <!-- Heading row. On phones the knot sits beside the heading, vertically
+           centred to it; on sm+ the row stacks (block) and the knot is hidden
+           here (the centred / right-column knot takes over). The eyebrow stays
+           above, full width, so eyebrow + heading + knot read as one aligned unit. -->
+      <div class="mt-5 flex items-center gap-5 sm:block">
+        <h1 class="min-w-0 flex-1 text-[2.1rem] font-semibold leading-[1.04] tracking-tight text-ink min-[420px]:text-[2.5rem] sm:flex-none sm:text-5xl">
+          AI that's <span class="emph hero-type" data-word="worth"
+            ><span class="sr-only">worth</span><span class="word" aria-hidden="true"
+              ><span class="sizer">worth</span><span class="live"><span class="typed">worth</span><span class="caret"></span></span></span
+            ></span
+          ><br />building.
+        </h1>
 
         <!-- Knot beside the heading, phones only (sm+ uses the centred / right-column knot). -->
-        <div class="hero-knot-wrap shrink-0 text-ink sm:hidden">
+        <div class="hero-knot-wrap shrink-0 self-center text-ink sm:hidden">
           <svg
-            class="hero-knot w-16 min-[420px]:w-20"
+            class="hero-knot w-14 min-[420px]:w-16"
             viewBox="44 12 140 208"
             fill="none"
             stroke="currentColor"
@@ -130,19 +130,35 @@ const LINE =
     const knots = document.querySelectorAll('.hero-knot');
     const canMorphD = window.CSS && CSS.supports && CSS.supports('d', 'path("M0 0")');
     if (knots.length && !reduce && canMorphD) {
-      const loop = (knot) => {
-        const cycle = () => {
-          knot.classList.add('is-untangled'); // morph to a clean line
-          setTimeout(() => {
-            knot.classList.remove('is-untangled'); // morph back to the knot
-            setTimeout(cycle, 3600); // hold the knot, then repeat
-          }, 2600); // line morph (1.4s) + brief hold
+      knots.forEach((knot) => {
+        let timer = null;
+        let running = false;
+        const tick = () => {
+          knot.classList.toggle('is-untangled');
+          // Each step includes the 1.4s morph; hold a touch longer as the knot.
+          timer = setTimeout(tick, knot.classList.contains('is-untangled') ? 2400 : 3000);
         };
-        cycle();
-      };
-      const start = () => knots.forEach(loop);
-      if (document.fonts && document.fonts.ready) document.fonts.ready.then(start);
-      else start();
+        const startLoop = () => {
+          if (running) return;
+          running = true;
+          tick();
+        };
+        const stopLoop = () => {
+          running = false;
+          if (timer) clearTimeout(timer);
+          timer = null;
+        };
+        // Loop continuously while the knot is in view; pause when it isn't.
+        if ('IntersectionObserver' in window) {
+          const io = new IntersectionObserver(
+            (entries) => entries.forEach((e) => (e.isIntersecting ? startLoop() : stopLoop())),
+            { threshold: 0.2 },
+          );
+          io.observe(knot);
+        } else {
+          startLoop();
+        }
+      });
     }
 
     /* --- "worth": typewriter word + terracotta strike --- */

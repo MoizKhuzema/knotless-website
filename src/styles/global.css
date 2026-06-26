@@ -90,6 +90,25 @@
 }
 
 /* ---------------------------------------------------------------------
+ * Mobile type scale — the editorial scale above is tuned for larger screens;
+ * on phones every size steps down a notch so the page doesn't read oversized.
+ * Overriding the TOKENS (not individual utilities) keeps this in one place, so
+ * every text-* utility and component shrinks consistently below sm (640px).
+ * The two hero H1s use bespoke sizes and are stepped down in their own files.
+ * ------------------------------------------------------------------- */
+@media (max-width: 639px) {
+  :root {
+    --text-base: 1rem; /* 16px body            (was 18) */
+    --text-lg: 1.125rem; /* 18px lead/standfirst (was 22) */
+    --text-xl: 1.5rem; /* 24px h3              (was 28) */
+    --text-2xl: 1.75rem; /* 28px h2              (was 36) */
+    --text-3xl: 2.5rem; /* 40px                 (was 52) */
+    --text-4xl: 3rem; /* 48px numerals        (was 72) */
+    --text-5xl: 3.75rem; /* 60px                 (was 96) */
+  }
+}
+
+/* ---------------------------------------------------------------------
  * Base layer — sensible defaults so the page is on-brand before a single
  * utility class is added.
  * ------------------------------------------------------------------- */
