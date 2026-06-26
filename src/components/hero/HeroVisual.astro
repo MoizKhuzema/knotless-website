@@ -1,199 +1,60 @@
 ---
 /**
- * HERO — "Strike" + the signature knot.
+ * HERO — "Strike".
  *
- * The headline lands instantly, except the word "worth" types in; then the
- * terracotta strike draws beneath it (the one accent in this composition) and
- * the caret blinks twice and disappears. Beside the copy, a line-art KNOT loops
- * between its tangled form and a single clean straight line — the brand promise
- * ("AI Untangled") made literal. The morph is interpolated in JS (the path `d`
- * attribute) so it runs in every browser, not just Chromium. It's a decorative
- * mark (no arrow, no scroll control).
+ * A type-led hero: the headline lands instantly, except the word "worth" types
+ * in; then the terracotta strike draws beneath it (the one accent in this
+ * composition), the caret blinks twice and disappears. Left-aligned editorial —
+ * a single large headline carries the space, no decorative visual; the
+ * whitespace is the composition.
  *
- * Motion is disabled under prefers-reduced-motion (the knot rests tangled, the
- * word + strike shown resolved). The knot is Ink only: terracotta stays reserved
- * for the strike so the hero keeps a single accent.
+ * Motion is disabled under prefers-reduced-motion (the word + strike are shown
+ * resolved). Terracotta is reserved for the strike so the hero keeps a single
+ * accent.
  */
 import { HERO } from '../../data/homepage';
 import { SITE } from '../../config/site';
 import CtaButton from '../CtaButton.astro';
-
-// Vertical knot (tangled) and its resolved form (a clean straight line, no
-// arrow). IDENTICAL command structure — M then six C — so their numbers line up
-// one-for-one and the JS morph can lerp KNOT -> LINE. LINE is KNOT with every x
-// pinned to the centre line, so the morph collapses the tangle into a straight drop.
-const KNOT =
-  'M112 28 C112 54 58 70 92 80 C126 90 132 52 144 70 C156 89 150 121 110 115 C78 110 70 85 102 95 C134 105 138 143 110 157 C84 171 112 188 112 204';
-const LINE =
-  'M112 28 C112 54 112 70 112 80 C112 90 112 52 112 70 C112 89 112 121 112 115 C112 110 112 85 112 95 C112 105 112 143 112 157 C112 171 112 188 112 204';
 ---
 
 <section class="pt-20 pb-section sm:pt-28">
-  <div class="grid items-center gap-x-12 gap-y-14 lg:grid-cols-[1.45fr_0.55fr]">
-    <!-- Left column: positioning copy -->
-    <div>
-      <p class="text-label uppercase tracking-tagline text-ink">{SITE.tagline}</p>
+  <p class="text-label uppercase tracking-tagline text-ink">{SITE.tagline}</p>
 
-      <!-- Heading row. On phones the knot sits beside the heading, vertically
-           centred to it; on sm+ the row stacks (block) and the knot is hidden
-           here (the centred / right-column knot takes over). The eyebrow stays
-           above, full width, so eyebrow + heading + knot read as one aligned unit. -->
-      <div class="mt-5 flex items-center gap-4 sm:block">
-        <h1 class="min-w-0 text-[2.1rem] font-semibold leading-[1.04] tracking-tight text-ink min-[420px]:text-[2.5rem] sm:text-5xl">
-          AI that's <span class="emph hero-type" data-word="worth"
-            ><span class="sr-only">worth</span><span class="word" aria-hidden="true"
-              ><span class="sizer">worth</span><span class="live"><span class="typed">worth</span><span class="caret"></span></span></span
-            ></span
-          ><br />building.
-        </h1>
+  <!-- Oversized, left-aligned headline. It ramps smoothly across breakpoints so
+       it commands the width on desktop (the deliberate "confident editorial"
+       whitespace) without overflowing the smaller phone/tablet columns. -->
+  <h1
+    class="mt-5 text-[2.1rem] font-semibold leading-[1.02] tracking-tight text-ink min-[420px]:text-[2.5rem] sm:text-[3.25rem] md:text-[4.25rem] lg:text-[5.75rem] xl:text-[6.75rem]"
+  >
+    AI that's <span class="emph hero-type" data-word="worth"
+      ><span class="sr-only">worth</span><span class="word" aria-hidden="true"
+        ><span class="sizer">worth</span><span class="live"><span class="typed">worth</span><span class="caret"></span></span></span
+      ></span
+    ><br />building.
+  </h1>
 
-        <!-- Knot beside the heading, phones only (sm+ uses the centred / right-column knot). -->
-        <div class="hero-knot-wrap shrink-0 self-center text-ink sm:hidden">
-          <svg
-            class="hero-knot w-14 min-[420px]:w-16"
-            viewBox="44 12 140 208"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="3"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d={KNOT} data-line={LINE} />
-          </svg>
-        </div>
-      </div>
+  <p class="r r-2 mt-8 max-w-text text-lg text-ink">
+    {HERO.subhead}
+  </p>
 
-      <p class="r r-2 mt-7 max-w-text text-lg text-ink">
-        {HERO.subhead}
-      </p>
-
-      <div class="r r-3 mt-8">
-        <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
-      </div>
-
-      <!-- Knot mark for tablet only (phones get the beside-heading knot above;
-           desktop gets the right-column knot). Centred under the CTA. -->
-      <div class="r r-4 mt-12 hidden justify-center text-ink sm:flex lg:hidden">
-        <svg
-          class="hero-knot w-32 md:w-40"
-          viewBox="44 12 140 208"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="3"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <path d={KNOT} data-line={LINE} />
-        </svg>
-      </div>
-    </div>
-
-    <!-- Right column: the decorative knot that fills the space and untangles into
-         a clean line. Hidden below lg, where the centred knot under the CTA takes
-         over (it would otherwise awkwardly stack beside the copy). -->
-    <div class="r r-3 hero-knot-wrap hidden justify-center text-ink lg:flex">
-      <svg
-        class="hero-knot w-52 xl:w-60"
-        viewBox="44 12 140 208"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="3"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        aria-hidden="true"
-      >
-        <path d={KNOT} data-line={LINE} />
-      </svg>
-    </div>
+  <div class="r r-3 mt-8">
+    <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
   </div>
 
   <!-- Industries served. On phones: a single even column (the labels are long,
        so a wrap reads ragged). From sm up: the inline space-separated flow. -->
-  <ul class="r r-4 mt-12 grid grid-cols-1 gap-y-3 border-t border-warm-grey pt-5 text-label uppercase tracking-label text-ink sm:flex sm:flex-wrap sm:items-center sm:gap-x-7 sm:gap-y-2">
+  <ul
+    class="r r-4 mt-16 grid grid-cols-1 gap-y-3 border-t border-warm-grey pt-5 text-label uppercase tracking-label text-ink sm:flex sm:flex-wrap sm:items-center sm:gap-x-7 sm:gap-y-2"
+  >
     {HERO.verticals.map((v) => <li>{v}</li>)}
   </ul>
 </section>
 
 <!-- is:inline so it runs during parse (pre-paint): arms the word before it can
-     flash, then types after fonts load. The knot morph (tangle<->line) loops via
-     requestAnimationFrame while the knot is in view. -->
+     flash, then types after fonts load. -->
 <script is:inline>
   (() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    /* --- knots: loop tangled <-> straight continuously while in view. We
-           interpolate the path's `d` ATTRIBUTE in JS rather than transitioning the
-           CSS `d` property (which only Chromium supports), so the morph runs in
-           Safari / iOS and Firefox too. KNOT and LINE share an identical command
-           structure, so their numbers can be lerped one-for-one. --- */
-    const knots = document.querySelectorAll('.hero-knot');
-    if (knots.length && !reduce) {
-      const reNum = /-?\d*\.?\d+/g;
-      const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2); // easeInOutCubic
-      const MORPH = 520; // ms per morph (animation speed)
-      const HOLD_KNOT = 650; // ms paused as the knot
-      const HOLD_LINE = 360; // ms paused as the line
-
-      knots.forEach((svg) => {
-        const path = svg.querySelector('path');
-        if (!path) return;
-        const knotD = path.getAttribute('d');
-        const lineD = path.getAttribute('data-line');
-        if (!knotD || !lineD) return;
-        const a = knotD.match(reNum).map(Number);
-        const b = lineD.match(reNum).map(Number);
-        if (!a || !b || a.length !== b.length) return;
-        const build = (t) => {
-          let i = 0;
-          return knotD.replace(reNum, () => {
-            const v = a[i] + (b[i] - a[i]) * t;
-            i += 1;
-            return v.toFixed(2);
-          });
-        };
-
-        let raf = null;
-        let timer = null;
-        let running = false;
-        const morph = (from, to, then) => {
-          let startTs = null;
-          const step = (ts) => {
-            if (!running) return;
-            if (startTs === null) startTs = ts;
-            const p = Math.min(1, (ts - startTs) / MORPH);
-            path.setAttribute('d', build(from + (to - from) * ease(p)));
-            if (p < 1) raf = requestAnimationFrame(step);
-            else then();
-          };
-          raf = requestAnimationFrame(step);
-        };
-        const toLine = () => morph(0, 1, () => (timer = setTimeout(toKnot, HOLD_LINE)));
-        const toKnot = () => morph(1, 0, () => (timer = setTimeout(toLine, HOLD_KNOT)));
-        const startLoop = () => {
-          if (running) return;
-          running = true;
-          timer = setTimeout(toLine, HOLD_KNOT);
-        };
-        const stopLoop = () => {
-          running = false;
-          if (raf) cancelAnimationFrame(raf);
-          if (timer) clearTimeout(timer);
-        };
-
-        // Loop continuously while the knot is in view; pause when it isn't.
-        if ('IntersectionObserver' in window) {
-          const io = new IntersectionObserver(
-            (entries) => entries.forEach((e) => (e.isIntersecting ? startLoop() : stopLoop())),
-            { threshold: 0.2 },
-          );
-          io.observe(svg);
-        } else {
-          startLoop();
-        }
-      });
-    }
 
     /* --- "worth": typewriter word + terracotta strike --- */
     const emph = document.querySelector('.hero-type');
@@ -237,34 +98,6 @@ const LINE =
 </script>
 
 <style>
-  /* --- the decorative knot (fills the right half of the hero) ---
-     Show/hide + centring are handled by Tailwind utilities (hidden / lg:flex /
-     justify-center). Width comes from Tailwind w-* utilities per instance (the
-     big right-column knot vs the smaller centred knot on tablet/phone). The
-     tangle<->line morph is driven in JS (see the script) for cross-browser
-     support, so there's no CSS `d` here. */
-  .hero-knot {
-    display: block;
-    height: auto;
-    color: var(--color-ink);
-    overflow: visible;
-  }
-  /* Subtle idle so the knot feels alive at rest (motion-safe only). */
-  @media (prefers-reduced-motion: no-preference) {
-    .hero-knot {
-      animation: knot-float 7s ease-in-out infinite;
-    }
-  }
-  @keyframes knot-float {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-4px);
-    }
-  }
-
   /* --- "worth": typewriter word + terracotta strike --- */
   .emph {
     position: relative;
