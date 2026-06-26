@@ -29,52 +29,57 @@ const LINE =
 ---
 
 <section class="pt-20 pb-section sm:pt-28">
-  <p class="text-label uppercase tracking-tagline text-ink">{SITE.tagline}</p>
+  <div class="grid items-center gap-x-12 gap-y-14 lg:grid-cols-[1.45fr_0.55fr]">
+    <!-- Left column: positioning copy -->
+    <div>
+      <p class="text-label uppercase tracking-tagline text-ink">{SITE.tagline}</p>
 
-  <h1 class="mt-5 text-4xl font-semibold leading-[1.04] tracking-tight text-ink sm:text-5xl">
-    AI that's <span class="emph hero-type" data-word="worth"
-      ><span class="sr-only">worth</span><span class="word" aria-hidden="true"
-        ><span class="sizer">worth</span><span class="live"><span class="typed">worth</span><span class="caret"></span></span></span
-      ></span
-    ><br />building.
-  </h1>
+      <h1 class="mt-5 text-4xl font-semibold leading-[1.04] tracking-tight text-ink sm:text-5xl">
+        AI that's <span class="emph hero-type" data-word="worth"
+          ><span class="sr-only">worth</span><span class="word" aria-hidden="true"
+            ><span class="sizer">worth</span><span class="live"><span class="typed">worth</span><span class="caret"></span></span></span
+          ></span
+        ><br />building.
+      </h1>
 
-  <p class="r r-2 mt-7 max-w-text text-lg text-ink">
-    {HERO.subhead}
-  </p>
+      <p class="r r-2 mt-7 max-w-text text-lg text-ink">
+        {HERO.subhead}
+      </p>
 
-  <div class="r r-3 mt-8">
-    <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
+      <div class="r r-3 mt-8">
+        <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
+      </div>
+    </div>
+
+    <!-- Right column: the knot that untangles into a downward arrow and scrolls
+         to the next section. Works without JS (anchor jump); JS upgrades it to a
+         smooth scroll. The SVG is decorative; the link carries the label. -->
+    <div class="r r-3 hero-knot-wrap flex justify-center">
+      <a
+        href="#assessment"
+        class="hero-scroll inline-flex rounded-sm text-ink"
+        aria-label="Scroll to the next section"
+      >
+        <svg
+          class="hero-knot"
+          viewBox="44 12 140 208"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d={LINE} />
+        </svg>
+      </a>
+    </div>
   </div>
 
   <!-- Industries served — static, space-separated, reads at a glance. -->
   <ul class="r r-4 mt-12 flex flex-wrap items-center gap-x-7 gap-y-2 border-t border-warm-grey pt-5 text-label uppercase tracking-label text-ink">
     {HERO.verticals.map((v) => <li>{v}</li>)}
   </ul>
-
-  <!-- The knot that untangles into a downward arrow, and scrolls to the next
-       section. Works without JS (anchor jump); JS upgrades it to a smooth
-       scroll. The SVG is decorative; the link carries an accessible label. -->
-  <div class="r r-4 mt-14 flex justify-center sm:mt-16">
-    <a
-      href="#assessment"
-      class="hero-scroll inline-flex rounded-sm text-ink"
-      aria-label="Scroll to the next section"
-    >
-      <svg
-        class="hero-knot"
-        viewBox="44 12 140 208"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="3"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        aria-hidden="true"
-      >
-        <path d={LINE} />
-      </svg>
-    </a>
-  </div>
 </section>
 
 <!-- is:inline so it runs during parse (pre-paint): arms the word before it can
@@ -152,9 +157,14 @@ const LINE =
 </script>
 
 <style define:vars={{ knot: `path("${KNOT}")`, line: `path("${LINE}")` }}>
-  /* --- the knot visual / scroll cue --- */
+  /* --- the knot visual / scroll cue (fills the right half of the hero) --- */
+  .hero-knot-wrap {
+    display: flex;
+    justify-content: center;
+  }
   .hero-knot {
-    width: 3.25rem;
+    display: block;
+    width: 10rem; /* fixed: the <a> is shrink-to-fit, so % has no basis */
     height: auto;
     color: var(--color-ink);
     overflow: visible;
