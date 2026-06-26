@@ -23,12 +23,18 @@ const here = Astro.url.pathname;
 const isActive = (path: string) => here.startsWith(href(path));
 ---
 
-<nav class="site-nav sticky top-0 z-50 border-b border-warm-grey bg-cream">
-  <div class="flex items-center gap-x-8 py-5">
-    <a href={href('/')} aria-label={`${SITE.legalEntityName} — home`} class="shrink-0">
-      <!-- height drives size; width auto preserves the locked aspect ratio -->
-      <img src={wordmark.src} alt={SITE.legalEntityName} height="56" class="h-14 w-auto" />
-    </a>
+<!-- Fixed (not sticky): iOS Safari composites fixed elements reliably, whereas
+     sticky here left page content ghosting above the bar on scroll. Centred to
+     max-w-page via inset-x-0 + mx-auto (no transform, which can re-trigger the
+     bug). z above the grain so it always occludes. BaseLayout offsets content
+     by the bar height. -->
+<nav class="site-nav fixed inset-x-0 top-0 z-[70] mx-auto max-w-page bg-cream px-gutter">
+  <div class="border-b border-warm-grey">
+    <div class="flex items-center gap-x-8 py-5">
+      <a href={href('/')} aria-label={`${SITE.legalEntityName} — home`} class="shrink-0">
+        <!-- height drives size; width auto preserves the locked aspect ratio -->
+        <img src={wordmark.src} alt={SITE.legalEntityName} height="56" class="h-14 w-auto" />
+      </a>
 
     <!-- md+ : inline links -->
     <ul class="ml-auto hidden items-center gap-x-8 md:flex">
@@ -67,11 +73,12 @@ const isActive = (path: string) => here.startsWith(href(path));
         <line x1="5" y1="5" x2="19" y2="19" />
         <line x1="19" y1="5" x2="5" y2="19" />
       </svg>
-    </button>
+      </button>
+    </div>
   </div>
 
-  <!-- below md : dropdown drawer -->
-  <div id="nav-menu" class="nav-menu hidden border-t border-warm-grey md:hidden">
+  <!-- below md : dropdown drawer (the bar's border-b above is the divider) -->
+  <div id="nav-menu" class="nav-menu hidden md:hidden">
     <ul class="flex flex-col pb-3 pt-1">
       {
         NAV_LINKS.map((link) => (

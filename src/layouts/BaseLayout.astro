@@ -78,15 +78,17 @@ const fontFace = `@font-face{font-family:'Inter Variable';font-style:normal;font
     <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
-    <!-- Subtle paper grain: a fixed, full-viewport noise overlay behind content.
-         Monochrome, very low opacity, multiply-blended onto the Cream paper. -->
+    <!-- Subtle paper grain: a full-document noise overlay. Monochrome, very low
+         opacity, no blend mode (kept off to avoid an iOS compositing bug). -->
     <div class="grain" aria-hidden="true"></div>
 
     {
       bare ? (
         <slot />
       ) : (
-        <div class="mx-auto flex min-h-screen max-w-page flex-col px-gutter">
+        // pt-24 clears the fixed Nav (logo h-14 + py-5 ≈ 96px) so content isn't
+        // hidden under it. The hero adds its own top breathing room below that.
+        <div class="mx-auto flex min-h-screen max-w-page flex-col px-gutter pt-24">
           <Nav />
           <!-- Sections own their vertical rhythm; no padding here so the hero
                can fill the first viewport. -->
