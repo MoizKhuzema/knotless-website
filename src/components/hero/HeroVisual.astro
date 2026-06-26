@@ -41,10 +41,11 @@ import CtaButton from '../CtaButton.astro';
     <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
   </div>
 
-  <!-- Industries served. On phones: a single even column (the labels are long,
-       so a wrap reads ragged). From sm up: the inline space-separated flow. -->
+  <!-- Industries served, as an even grid so it never leaves an orphaned line:
+       one column on phones, two on small screens, four on desktop (8 labels =
+       two clean rows). -->
   <ul
-    class="r r-4 mt-16 grid grid-cols-1 gap-y-3 border-t border-warm-grey pt-5 text-label uppercase tracking-label text-ink sm:flex sm:flex-wrap sm:items-center sm:gap-x-7 sm:gap-y-2"
+    class="r r-4 mt-16 grid grid-cols-1 gap-x-8 gap-y-3 border-t border-warm-grey pt-5 text-label uppercase tracking-label text-ink sm:grid-cols-2 sm:gap-y-4 lg:grid-cols-4"
   >
     {HERO.verticals.map((v) => <li>{v}</li>)}
   </ul>
