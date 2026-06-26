@@ -50,6 +50,11 @@ export interface SiteConfig {
    * wording can be tuned without editing page content. Currently "handled under".
    */
   privacyActWording: string;
+  /**
+   * Regions where technical delivery (the build) is carried out, via vetted
+   * partner firms. Order matters: [primary, lower-cost]. Surfaced on /what-we-do.
+   */
+  deliveryLocations: readonly string[];
 }
 
 export const SITE = {
@@ -75,4 +80,5 @@ export const SITE = {
     },
   ],
   privacyActWording: 'handled under',
+  deliveryLocations: ['Australia', 'Pakistan'], // TODO confirm — from /what-we-do brief
 } as const satisfies SiteConfig;
