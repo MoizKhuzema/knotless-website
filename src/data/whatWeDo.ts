@@ -126,20 +126,28 @@ export const WWD_STAGES = {
  */
 export const WWD_IMPLEMENTATION = {
   heading: 'The case is there? We build it.',
-  walkAway:
-    'If it isn’t, the Assessment stands on its own. You owe us nothing further, and that’s a real outcome, not a courtesy.',
-  buildHeading: 'The build',
-  buildLead: 'When it is, the build follows the findings:',
-  build: [
-    'Only the opportunities the numbers backed',
-    'In the order the plan set, inside the controls it defined',
-    'Scope and price fixed before any work starts',
-  ],
+  // The honest fork: no case → the Assessment stands alone; case → we build.
+  fork: {
+    no: {
+      label: 'If the case isn’t there',
+      body: 'The Assessment stands on its own. You owe us nothing further — a real outcome, not a courtesy.',
+    },
+    yes: {
+      label: 'If it is',
+      lead: 'The build follows the findings:',
+      points: [
+        'Only the opportunities the numbers backed',
+        'In the order the plan set, inside the controls it defined',
+        'Scope and price fixed before any work starts',
+      ],
+    },
+  },
   whoHeading: 'Who does the work',
+  // The accountability promise, set as a pull-quote.
+  pullQuote:
+    'No account manager. No handovers. The people who assessed the case are accountable for the build.',
   whoFirst: 'The founders run every build, start to finish',
   whoLast: 'Nothing reaches you without passing through us first',
-  close:
-    'No account manager. No handovers. The people who assessed the case are accountable for the build.',
 } as const;
 
 /** Section 5 — FAQs. */
