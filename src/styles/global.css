@@ -117,6 +117,11 @@
     font-family: var(--font-sans);
     /* Opt into Inter's typographic niceties (proper quotes, kerning). */
     font-feature-settings: 'cv11', 'ss01';
+    /* Use the optical-size axis when the font has one (display-tuned letterforms
+     * at large sizes). The currently-bundled Inter is weight-only, so this is a
+     * no-op today but applies automatically if the font is upgraded to one with
+     * an `opsz` axis. Large headings get tighter display tracking explicitly. */
+    font-optical-sizing: auto;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }

@@ -56,10 +56,10 @@ const isActive = (path: string) => here.startsWith(href(path));
       }
     </ul>
 
-    <!-- below md : hamburger toggle (44px tap target via padding) -->
+    <!-- below md : hamburger toggle (≥44px tap target: 24px icon + p-2.5) -->
     <button
       type="button"
-      class="nav-toggle -mr-2 ml-auto p-2 text-ink md:hidden"
+      class="nav-toggle -mr-2.5 ml-auto p-2.5 text-ink md:hidden"
       aria-label="Open menu"
       aria-expanded="false"
       aria-controls="nav-menu"
@@ -79,7 +79,7 @@ const isActive = (path: string) => here.startsWith(href(path));
 
   <!-- below md : dropdown drawer (the bar's border-b above is the divider) -->
   <div id="nav-menu" class="nav-menu hidden md:hidden">
-    <ul class="flex flex-col pb-3 pt-1">
+    <ul class="flex flex-col pb-8 pt-2">
       {
         NAV_LINKS.map((link) => (
           <li>
@@ -87,7 +87,7 @@ const isActive = (path: string) => here.startsWith(href(path));
               href={href(link.href)}
               aria-current={isActive(link.href) ? 'page' : undefined}
               class:list={[
-                'label block py-3 text-ink no-underline underline-offset-4',
+                'label block py-3.5 text-ink no-underline underline-offset-4',
                 isActive(link.href) ? 'underline' : '',
               ]}
             >
