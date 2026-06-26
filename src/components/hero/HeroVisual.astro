@@ -4,10 +4,11 @@
  *
  * The headline lands instantly, except the word "worth" types in; then the
  * terracotta strike draws beneath it (the one accent in this composition) and
- * the caret blinks twice and disappears. Below the copy, a line-art KNOT
- * untangles on load into a single straight line ending in a DOWNWARD arrow —
- * the brand promise ("AI Untangled") made literal, in the same path-morph
- * language as ArrowLink — and doubles as a "scroll to the next section" control.
+ * the caret blinks twice and disappears. In the right column a line-art KNOT is
+ * pulled straight by a hand that slides in from the edge, grips the lower end,
+ * drags it down (overstretching it), then lets go so it springs back to length —
+ * the brand promise ("AI Untangled") made literal. The resolved DOWNWARD arrow
+ * doubles as a "scroll to the next section" control.
  *
  * Everything is opacity/transform/`d`-morph only and fully disabled under
  * prefers-reduced-motion (the word, strike and knot are simply shown resolved;
@@ -73,6 +74,27 @@ const LINE =
           <path d={LINE} />
         </svg>
       </a>
+
+      <!-- The hand that pulls the knot straight, then lets it spring back.
+           Decorative; hidden by default and only ever shown by the JS
+           choreography (so reduced-motion / no-JS never see it). Icon: Lucide
+           "grab" (ISC). -->
+      <div class="hero-hand" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M18 11.5V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1.4" />
+          <path d="M14 10V8a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2" />
+          <path d="M10 9.9V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v5" />
+          <path d="M6 14a2 2 0 0 0-2-2a2 2 0 0 0-2 2" />
+          <path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-4a8 8 0 0 1-8-8 2 2 0 1 1 4 0" />
+        </svg>
+      </div>
     </div>
   </div>
 
@@ -90,19 +112,74 @@ const LINE =
   (() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    /* --- knot: arm tangled (pre-paint), then untangle --- */
+    /* --- knot: a hand pulls it straight, then it springs back ---
+       Timeline: knot is tangled at first paint → hand slides in from the right
+       and grips the lower end → pulls down (knot untangles via CSS `d` morph +
+       the SVG stretches past its length) → hand releases and retreats → the
+       arrow snaps back to true length with an elastic settle. */
     const knot = document.querySelector('.hero-knot');
+    const hand = document.querySelector('.hero-hand');
     const canMorphD = window.CSS && CSS.supports && CSS.supports('d', 'path("M0 0")');
-    if (knot && !reduce && canMorphD) {
+    const HOUSE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+    if (knot && hand && !reduce && canMorphD) {
       knot.classList.add('is-tangled'); // first paint = knot
-      const untangle = () => {
-        // next frame so the tangled state paints before the transition starts
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => knot.classList.remove('is-tangled')),
-        );
+
+      const play = async () => {
+        try {
+          // 1. hand slides in from the right edge to grip the lower end
+          await hand.animate(
+            [
+              { transform: 'translate(200px, -6px) rotate(10deg)', opacity: 0 },
+              { transform: 'translate(0px, -6px) rotate(10deg)', opacity: 1 },
+            ],
+            { duration: 600, easing: HOUSE, fill: 'forwards' },
+          ).finished;
+
+          await wait(130); // a beat to "grab"
+
+          // 2. pull down: untangle (d morph) + overstretch the arrow + hand drops
+          knot.classList.remove('is-tangled');
+          const stretch = knot.animate(
+            [{ transform: 'scaleY(1)' }, { transform: 'scaleY(1.28)' }],
+            { duration: 720, easing: HOUSE, fill: 'forwards' },
+          );
+          hand.animate(
+            [
+              { transform: 'translate(0px, -6px) rotate(10deg)' },
+              { transform: 'translate(0px, 58px) rotate(10deg)' },
+            ],
+            { duration: 720, easing: HOUSE, fill: 'forwards' },
+          );
+          await stretch.finished;
+
+          // 3. release: hand retreats off to the right; arrow springs back
+          hand.animate(
+            [
+              { transform: 'translate(0px, 58px) rotate(10deg)', opacity: 1 },
+              { transform: 'translate(210px, 58px) rotate(16deg)', opacity: 0 },
+            ],
+            { duration: 460, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' },
+          );
+          knot.animate(
+            [
+              { transform: 'scaleY(1.28)' },
+              { transform: 'scaleY(0.93)' },
+              { transform: 'scaleY(1.05)' },
+              { transform: 'scaleY(0.98)' },
+              { transform: 'scaleY(1)' },
+            ],
+            { duration: 950, easing: 'ease-out', fill: 'forwards' },
+          );
+        } catch (e) {
+          // If anything goes wrong, leave the resolved arrow.
+          knot.classList.remove('is-tangled');
+        }
       };
-      if (document.fonts && document.fonts.ready) document.fonts.ready.then(untangle);
-      else untangle();
+
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(play);
+      else play();
     }
 
     /* --- scroll cue: smooth-scroll to the next section --- */
@@ -159,6 +236,7 @@ const LINE =
 <style define:vars={{ knot: `path("${KNOT}")`, line: `path("${LINE}")` }}>
   /* --- the knot visual / scroll cue (fills the right half of the hero) --- */
   .hero-knot-wrap {
+    position: relative; /* anchor for the absolutely-positioned hand */
     display: flex;
     justify-content: center;
   }
@@ -168,10 +246,30 @@ const LINE =
     height: auto;
     color: var(--color-ink);
     overflow: visible;
+    transform-origin: top center; /* stretch pulls the lower end down */
   }
   .hero-knot path {
     d: var(--line); /* default / no-JS / reduced motion: resolved line */
-    transition: d 2.4s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: d 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* The pulling hand: hidden by default; the JS choreography reveals + moves it.
+     Never shown under reduced motion / no-JS. */
+  .hero-hand {
+    position: absolute;
+    left: 50%;
+    margin-left: -1.7rem; /* half of width, to centre on the arrow */
+    top: 56%;
+    width: 3.4rem;
+    color: var(--color-ink);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .hero-hand svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
   }
   .hero-knot.is-tangled path {
     d: var(--knot);
