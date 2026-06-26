@@ -44,7 +44,7 @@ const introDescription = WWD_INTRO.bodyParts
     <p class="r r-2 mt-7 max-w-text text-lg text-ink">
       {
         WWD_INTRO.bodyParts.map((p) =>
-          typeof p === 'string' ? p : <strong class="font-semibold">{p.strong}</strong>,
+          typeof p === 'string' ? p : <strong class="font-semibold text-terracotta">{p.strong}</strong>,
         )
       }
     </p>
@@ -74,7 +74,8 @@ const introDescription = WWD_INTRO.bodyParts
       }
     </div>
 
-    <p data-reveal class="mt-14 max-w-text text-lg text-ink">{WWD_QUESTIONS.close}</p>
+    <!-- No max-width so the closing line stays on one row where space allows. -->
+    <p data-reveal class="mt-14 text-lg text-ink">{WWD_QUESTIONS.close}</p>
   </section>
 
   <!-- Process strip — steps stretched edge-to-edge, joined by equal-length
