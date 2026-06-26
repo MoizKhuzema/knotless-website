@@ -3,13 +3,11 @@
  * /what-we-do — "One product. The whole story."
  *
  * Same editorial register as the homepage: accent-rule + heading blocks,
- * oversized warm-grey numerals for the stages, hairline-separated rows, the
- * reversed-Ink final CTA. Copy lives in src/data/whatWeDo.ts; the delivery
- * bullet and Privacy-Act wording are pulled from src/config/site.ts.
+ * disclosure accordions for the stages and FAQs, a two-outcomes fork for the
+ * build, and the reversed-Ink final CTA. Copy lives in src/data/whatWeDo.ts.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaButton from '../components/CtaButton.astro';
-import { SITE } from '../config/site';
 import {
   WWD_INTRO,
   WWD_QUESTIONS,
@@ -20,13 +18,11 @@ import {
   WWD_FINAL_CTA,
 } from '../data/whatWeDo';
 
-// The delivery bullet is the one place the page reaches into site.ts, so the
-// build regions and Privacy-Act phrasing stay single-sourced.
-const [primary, lowerCost] = SITE.deliveryLocations;
-const deliveryBullet = `Technical delivery is handled by a small set of vetted partner firms in ${SITE.deliveryLocations.join(
-  ' and ',
-)}. You choose where your build is delivered: ${primary} delivery, or ${lowerCost} delivery at a lower cost. Either way it’s disclosed up front, with every data flow ${SITE.privacyActWording} the Australian Privacy Act.`;
-const whoBullets = [WWD_IMPLEMENTATION.whoFirst, deliveryBullet, WWD_IMPLEMENTATION.whoLast];
+const whoBullets = [
+  WWD_IMPLEMENTATION.whoFirst,
+  WWD_IMPLEMENTATION.whoDelivery,
+  WWD_IMPLEMENTATION.whoLast,
+];
 
 // Plain-text intro body for the meta description (strip the emphasis markers).
 const introDescription = WWD_INTRO.bodyParts
@@ -169,7 +165,7 @@ const introDescription = WWD_INTRO.bodyParts
          step this whole section is about. Stretched arrows; stacks on mobile. -->
     <ol
       data-reveal
-      class="mt-10 flex flex-col items-center gap-4 border-b border-warm-grey pb-8 text-base font-medium text-ink sm:flex-row sm:gap-4"
+      class="mt-14 flex flex-col items-center gap-4 text-base font-medium text-ink sm:flex-row sm:gap-4"
     >
       {
         WWD_PROCESS.map((step, i) => (
@@ -206,22 +202,20 @@ const introDescription = WWD_INTRO.bodyParts
       }
     </ol>
 
-    <!-- The fork: the two honest outcomes, split by a hairline. The "if it is"
-         side picks up the terracotta build thread from the strip above. -->
+    <!-- The fork: the two honest outcomes, split by a hairline. The copy's own
+         "If it isn't" / "When it is" openings carry the condition. -->
     <div
       data-reveal
       class="mt-12 grid gap-x-12 gap-y-10 sm:grid-cols-2 sm:divide-x sm:divide-warm-grey"
     >
       <div class="sm:pr-12">
-        <p class="label text-ink">{WWD_IMPLEMENTATION.fork.no.label}</p>
-        <p class="mt-4 max-w-prose text-lg text-ink">{WWD_IMPLEMENTATION.fork.no.body}</p>
+        <p class="max-w-prose text-lg text-ink">{WWD_IMPLEMENTATION.forkNo}</p>
       </div>
       <div class="sm:pl-12">
-        <p class="label text-terracotta">{WWD_IMPLEMENTATION.fork.yes.label}</p>
-        <p class="mt-4 text-lg text-ink">{WWD_IMPLEMENTATION.fork.yes.lead}</p>
+        <p class="text-lg text-ink">{WWD_IMPLEMENTATION.buildLead}</p>
         <ul class="mt-4 space-y-2.5">
           {
-            WWD_IMPLEMENTATION.fork.yes.points.map((item) => (
+            WWD_IMPLEMENTATION.build.map((item) => (
               <li class="flex gap-3 text-ink">
                 <span aria-hidden="true" class="mt-[0.62em] h-px w-3 shrink-0 bg-warm-grey" />
                 <span>{item}</span>
@@ -232,14 +226,10 @@ const introDescription = WWD_INTRO.bodyParts
       </div>
     </div>
 
-    <!-- Who does the work: the accountability promise as a pull-quote, with the
-         specifics (founders, delivery choice, single channel) beneath. -->
+    <!-- Who does the work: the founders, the delivery choice, the single channel. -->
     <div data-reveal class="mt-16 max-w-text">
       <p class="label text-ink">{WWD_IMPLEMENTATION.whoHeading}</p>
-      <p class="mt-6 text-2xl font-medium leading-snug tracking-tight text-ink sm:text-3xl">
-        {WWD_IMPLEMENTATION.pullQuote}
-      </p>
-      <ul class="mt-8 space-y-2.5">
+      <ul class="mt-6 space-y-2.5">
         {
           whoBullets.map((item) => (
             <li class="flex gap-3 text-ink">

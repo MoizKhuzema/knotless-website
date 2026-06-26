@@ -126,27 +126,19 @@ export const WWD_STAGES = {
  */
 export const WWD_IMPLEMENTATION = {
   heading: 'The case is there? We build it.',
-  // The honest fork: no case → the Assessment stands alone; case → we build.
-  fork: {
-    no: {
-      label: 'If the case isn’t there',
-      body: 'The Assessment stands on its own. You owe us nothing further — a real outcome, not a courtesy.',
-    },
-    yes: {
-      label: 'If it is',
-      lead: 'The build follows the findings:',
-      points: [
-        'Only the opportunities the numbers backed',
-        'In the order the plan set, inside the controls it defined',
-        'Scope and price fixed before any work starts',
-      ],
-    },
-  },
+  // The two honest outcomes (verbatim from the brief), shown as a fork.
+  forkNo:
+    'If it isn’t, the Assessment stands on its own. You owe us nothing further, and that’s a real outcome, not a courtesy.',
+  buildLead: 'When it is, the build follows the findings:',
+  build: [
+    'Only the opportunities the numbers backed',
+    'In the order the plan set, inside the controls it defined',
+    'Scope and price fixed before any work starts',
+  ],
   whoHeading: 'Who does the work',
-  // The accountability promise, set as a pull-quote.
-  pullQuote:
-    'No account manager. No handovers. The people who assessed the case are accountable for the build.',
   whoFirst: 'The founders run every build, start to finish',
+  whoDelivery:
+    'Technical delivery is handled by a small set of vetted partner firms in Australia and Pakistan. You choose where your build is delivered: Australian delivery, or Pakistan delivery at a lower cost. Either way it’s disclosed up front, with every data flow handled under the Australian Privacy Act.',
   whoLast: 'Nothing reaches you without passing through us first',
 } as const;
 
