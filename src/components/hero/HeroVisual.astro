@@ -4,28 +4,29 @@
  *
  * The headline lands instantly, except the word "worth" types in; then the
  * terracotta strike draws beneath it (the one accent in this composition) and
- * the caret blinks twice and disappears. Below the copy, a line-art KNOT
- * untangles on load into a single straight line ending in a DOWNWARD arrow —
- * the brand promise ("AI Untangled") made literal, in the same path-morph
- * language as ArrowLink — and doubles as a "scroll to the next section" control.
+ * the caret blinks twice and disappears. Beside the copy, a line-art KNOT is the
+ * persistent, filled resting state; on load and each time the hero re-enters
+ * view it untangles into a single clean straight line — the brand promise
+ * ("AI Untangled") made literal — then settles back to the knot. It's a
+ * decorative mark (no arrow, no scroll control).
  *
  * Everything is opacity/transform/`d`-morph only and fully disabled under
- * prefers-reduced-motion (the word, strike and knot are simply shown resolved;
- * the scroll jump is instant). The knot is Ink only: terracotta stays reserved
- * for the strike so the hero keeps a single accent.
+ * prefers-reduced-motion (the word, strike and knot are simply shown at rest).
+ * The knot is Ink only: terracotta stays reserved for the strike so the hero
+ * keeps a single accent.
  */
 import { HERO } from '../../data/homepage';
 import { SITE } from '../../config/site';
 import CtaButton from '../CtaButton.astro';
 
-// Vertical knot (tangled) and resolved (straight line + downward arrowhead).
-// IDENTICAL command structure — M, six C, then "M L L" for the head — so `d`
-// interpolates cleanly. LINE is KNOT with every x pinned to the centre line, so
-// the morph collapses the tangle sideways into a straight vertical drop.
+// Vertical knot (tangled) and its resolved form (a clean straight line, no
+// arrow). IDENTICAL command structure — M then six C — so `d` interpolates
+// cleanly. LINE is KNOT with every x pinned to the centre line, so the morph
+// collapses the tangle sideways into a straight vertical drop.
 const KNOT =
-  'M112 28 C112 54 58 70 92 80 C126 90 132 52 144 70 C156 89 150 121 110 115 C78 110 70 85 102 95 C134 105 138 143 110 157 C84 171 112 188 112 204 M99 193 L112 205 L125 193';
+  'M112 28 C112 54 58 70 92 80 C126 90 132 52 144 70 C156 89 150 121 110 115 C78 110 70 85 102 95 C134 105 138 143 110 157 C84 171 112 188 112 204';
 const LINE =
-  'M112 28 C112 54 112 70 112 80 C112 90 112 52 112 70 C112 89 112 121 112 115 C112 110 112 85 112 95 C112 105 112 143 112 157 C112 171 112 188 112 204 M99 193 L112 205 L125 193';
+  'M112 28 C112 54 112 70 112 80 C112 90 112 52 112 70 C112 89 112 121 112 115 C112 110 112 85 112 95 C112 105 112 143 112 157 C112 171 112 188 112 204';
 ---
 
 <section class="pt-20 pb-section sm:pt-28">
@@ -52,42 +53,10 @@ const LINE =
 
       <!-- Knot mark for tablet & phone (the lg right-column knot is hidden below
            lg). Centred under the CTA so the "AI Untangled" moment exists on every
-           screen, not just desktop. Same untangle behaviour as the big knot. -->
-      <div class="r r-4 mt-12 flex justify-center lg:hidden">
-        <a
-          href="#assessment"
-          class="hero-scroll inline-flex rounded-sm text-ink"
-          aria-label="Scroll to the next section"
-        >
-          <svg
-            class="hero-knot w-28 sm:w-32 md:w-40"
-            viewBox="44 12 140 208"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="3"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d={KNOT} />
-          </svg>
-        </a>
-      </div>
-    </div>
-
-    <!-- Right column: the knot that untangles into a downward arrow and scrolls
-         to the next section. Works without JS (anchor jump); JS upgrades it to a
-         smooth scroll. The SVG is decorative; the link carries the label.
-         Hidden below lg: it only sits beside the copy in the two-column layout,
-         so on phones / tablet-portrait it would awkwardly stack under the CTA. -->
-    <div class="r r-3 hero-knot-wrap hidden justify-center lg:flex">
-      <a
-        href="#assessment"
-        class="hero-scroll inline-flex rounded-sm text-ink"
-        aria-label="Scroll to the next section"
-      >
+           screen, not just desktop. Decorative; same untangle behaviour. -->
+      <div class="r r-4 mt-12 flex justify-center text-ink lg:hidden">
         <svg
-          class="hero-knot w-52 xl:w-60"
+          class="hero-knot w-28 sm:w-32 md:w-40"
           viewBox="44 12 140 208"
           fill="none"
           stroke="currentColor"
@@ -98,7 +67,25 @@ const LINE =
         >
           <path d={KNOT} />
         </svg>
-      </a>
+      </div>
+    </div>
+
+    <!-- Right column: the decorative knot that fills the space and untangles into
+         a clean line. Hidden below lg, where the centred knot under the CTA takes
+         over (it would otherwise awkwardly stack beside the copy). -->
+    <div class="r r-3 hero-knot-wrap hidden justify-center text-ink lg:flex">
+      <svg
+        class="hero-knot w-52 xl:w-60"
+        viewBox="44 12 140 208"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d={KNOT} />
+      </svg>
     </div>
   </div>
 
@@ -110,9 +97,8 @@ const LINE =
 </section>
 
 <!-- is:inline so it runs during parse (pre-paint): arms the word before it can
-     flash, then types after fonts load. Also arms the knot in its tangled state
-     so the first paint shows the knot, then untangles it; and wires the smooth
-     scroll. -->
+     flash, then types after fonts load. The knot rests tangled (its default
+     state) and untangles on load + each time it re-enters view. -->
 <script is:inline>
   (() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -126,7 +112,7 @@ const LINE =
       const play = (knot) => {
         if (knot.dataset.busy) return;
         knot.dataset.busy = '1';
-        knot.classList.add('is-untangled'); // knot -> straight line + arrow
+        knot.classList.add('is-untangled'); // knot -> clean straight line
         setTimeout(() => {
           knot.classList.remove('is-untangled'); // settle back to the knot
           setTimeout(() => {
@@ -146,16 +132,6 @@ const LINE =
         knots.forEach(play);
       }
     }
-
-    /* --- scroll cue: smooth-scroll to the next section --- */
-    const target = document.querySelector('#assessment');
-    document.querySelectorAll('.hero-scroll').forEach((scroll) => {
-      if (!target) return;
-      scroll.addEventListener('click', (e) => {
-        e.preventDefault();
-        target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
-      });
-    });
 
     /* --- "worth": typewriter word + terracotta strike --- */
     const emph = document.querySelector('.hero-type');
@@ -199,11 +175,10 @@ const LINE =
 </script>
 
 <style define:vars={{ knot: `path("${KNOT}")`, line: `path("${LINE}")` }}>
-  /* --- the knot visual / scroll cue (fills the right half of the hero) ---
+  /* --- the decorative knot (fills the right half of the hero) ---
      Show/hide + centring are handled by Tailwind utilities (hidden / lg:flex /
-     justify-center) so display can be toggled responsively. */
-  /* Width comes from Tailwind w-* utilities per instance (the big right-column
-     knot vs the smaller centred knot on tablet/phone). */
+     justify-center). Width comes from Tailwind w-* utilities per instance (the
+     big right-column knot vs the smaller centred knot on tablet/phone). */
   .hero-knot {
     display: block;
     height: auto;
@@ -215,7 +190,7 @@ const LINE =
     transition: d 1.4s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .hero-knot.is-untangled path {
-    d: var(--line); /* untangled: straight line + downward arrow */
+    d: var(--line); /* untangled: a clean straight line */
   }
   @media (prefers-reduced-motion: reduce) {
     .hero-knot path {
@@ -236,17 +211,6 @@ const LINE =
     }
     50% {
       transform: translateY(-4px);
-    }
-  }
-
-  /* Gentle hover/focus nudge on the scroll cue (motion-safe). */
-  .hero-scroll {
-    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .hero-scroll:hover,
-    .hero-scroll:focus-visible {
-      transform: translateY(4px);
     }
   }
 
