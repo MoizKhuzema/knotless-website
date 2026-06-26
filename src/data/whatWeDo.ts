@@ -7,11 +7,21 @@
  * the business facts live in one place.
  */
 
-/** Section 1 — page intro. */
+/**
+ * Section 1 — page intro.
+ * `heading` is two lines (rendered on separate rows). `bodyParts` is the lead
+ * with the two services marked `strong` so the page can highlight them.
+ */
 export const WWD_INTRO = {
   eyebrow: 'What we do',
-  heading: 'One product. The whole story.',
-  body: 'Everything we sell is on this page: the Knotless Assessment, and the implementation that follows. No menu of services. No tiers to pick from. One product, one free call to scope it.',
+  heading: ['One product.', 'The whole story.'],
+  bodyParts: [
+    'Everything we sell is on this page: ',
+    { strong: 'the Knotless Assessment' },
+    ', and ',
+    { strong: 'the implementation that follows' },
+    '. No menu of services. No tiers to pick from. One product, one free call to scope it.',
+  ],
 } as const;
 
 /** Section 2 — the questions people bring us. */

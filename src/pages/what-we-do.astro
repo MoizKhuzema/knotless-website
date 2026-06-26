@@ -27,16 +27,27 @@ const deliveryBullet = `Technical delivery is handled by a small set of vetted p
   ' and ',
 )}. You choose where your build is delivered: ${primary} delivery, or ${lowerCost} delivery at a lower cost. Either way it’s disclosed up front, with every data flow ${SITE.privacyActWording} the Australian Privacy Act.`;
 const whoBullets = [WWD_IMPLEMENTATION.whoFirst, deliveryBullet, WWD_IMPLEMENTATION.whoLast];
+
+// Plain-text intro body for the meta description (strip the emphasis markers).
+const introDescription = WWD_INTRO.bodyParts
+  .map((p) => (typeof p === 'string' ? p : p.strong))
+  .join('');
 ---
 
-<BaseLayout title="What we do" description={WWD_INTRO.body}>
+<BaseLayout title="What we do" description={introDescription}>
   <!-- Section 1 — page intro (same register as the hero) -->
   <section class="pt-20 pb-section sm:pt-28">
     <p class="text-label uppercase tracking-tagline text-ink">{WWD_INTRO.eyebrow}</p>
-    <h1 class="mt-5 max-w-[18ch] text-[2.8rem] font-semibold leading-[1.04] tracking-tight text-ink sm:text-5xl">
-      {WWD_INTRO.heading}
+    <h1 class="mt-5 text-[2.8rem] font-semibold leading-[1.04] tracking-tight text-ink sm:text-5xl">
+      {WWD_INTRO.heading.map((line, i) => (i === 0 ? line : <><br />{line}</>))}
     </h1>
-    <p class="r r-2 mt-7 max-w-text text-lg text-ink">{WWD_INTRO.body}</p>
+    <p class="r r-2 mt-7 max-w-text text-lg text-ink">
+      {
+        WWD_INTRO.bodyParts.map((p) =>
+          typeof p === 'string' ? p : <strong class="font-semibold">{p.strong}</strong>,
+        )
+      }
+    </p>
   </section>
 
   <!-- Section 2 — the questions people bring us -->
@@ -49,12 +60,15 @@ const whoBullets = [WWD_IMPLEMENTATION.whoFirst, deliveryBullet, WWD_IMPLEMENTAT
       <p class="mt-6 max-w-text text-lg text-ink">{WWD_QUESTIONS.lead}</p>
     </div>
 
-    <div class="mt-14 grid gap-x-12 gap-y-10 sm:grid-cols-2">
+    <div class="mt-14 grid gap-6 sm:grid-cols-2 sm:auto-rows-fr">
       {
         WWD_QUESTIONS.vignettes.map((v) => (
-          <article data-reveal>
+          <article
+            data-reveal
+            class="flex h-full flex-col rounded-sm border border-warm-grey p-6 sm:p-7"
+          >
             <p class="text-xl font-medium leading-snug tracking-tight text-ink">“{v.quote}”</p>
-            <p class="mt-3 max-w-prose text-ink">{v.who}</p>
+            <p class="mt-4 italic text-ink">{v.who}</p>
           </article>
         ))
       }
@@ -63,21 +77,37 @@ const whoBullets = [WWD_IMPLEMENTATION.whoFirst, deliveryBullet, WWD_IMPLEMENTAT
     <p data-reveal class="mt-14 max-w-text text-lg text-ink">{WWD_QUESTIONS.close}</p>
   </section>
 
-  <!-- Process strip -->
+  <!-- Process strip — steps stretched edge-to-edge, joined by equal-length
+       connecting arrows (a growing hairline + arrowhead). Stacks with
+       down-arrows on mobile. -->
   <section class="pt-section-lg">
     <ol
       data-reveal
-      class="flex flex-wrap items-center gap-x-3 gap-y-2 border-y border-warm-grey py-7 text-base font-medium text-ink"
+      class="flex flex-col items-center gap-4 border-y border-warm-grey py-8 text-base font-medium text-ink sm:flex-row sm:gap-4"
     >
       {
         WWD_PROCESS.map((step, i) => (
           <>
             {i > 0 && (
-              <li aria-hidden="true" class="text-warm-grey">
-                →
+              <li
+                aria-hidden="true"
+                class="flex items-center justify-center text-warm-grey sm:flex-1"
+              >
+                <span class="hidden h-px flex-1 bg-warm-grey sm:block" />
+                <svg
+                  class="h-5 w-5 shrink-0 rotate-90 sm:-ml-px sm:rotate-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M9 6l6 6-6 6" />
+                </svg>
               </li>
             )}
-            <li>{step}</li>
+            <li class="shrink-0 text-center">{step}</li>
           </>
         ))
       }
