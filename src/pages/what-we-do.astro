@@ -34,14 +34,14 @@ const introDescription = WWD_INTRO.bodyParts
   <!-- Section 1 — page intro (same register as the hero) -->
   <section class="pt-20 pb-section sm:pt-28">
     <p class="text-label uppercase tracking-tagline text-ink">{WWD_INTRO.eyebrow}</p>
-    <h1 class="mt-5 text-[2.1rem] font-semibold leading-[1.04] tracking-[-0.035em] text-ink min-[420px]:text-[2.5rem] sm:text-5xl">
+    <h1 class="mt-5 text-[2.1rem] font-semibold leading-[1.02] tracking-[-0.035em] text-ink min-[420px]:text-[2.5rem] sm:text-[3.25rem] md:text-[4.25rem] lg:text-[5.75rem] xl:text-[6.75rem]">
       One <span class="emph-type" data-word="product."
         ><span class="sr-only">product.</span><span class="ew" aria-hidden="true"
           ><span class="ew-sizer">product.</span><span class="ew-live"><span class="ew-typed">product.</span><span class="ew-caret"></span></span></span
         ></span
       ><br />Whole story.
     </h1>
-    <p class="mt-7 max-w-text text-lg text-ink">
+    <p class="mt-8 max-w-text text-base text-ink sm:text-lg">
       {
         WWD_INTRO.bodyParts.map((p) =>
           typeof p === 'string' ? p : <strong class="font-semibold text-terracotta">{p.strong}</strong>,
