@@ -107,6 +107,8 @@
     color: var(--color-ink);
     font-size: var(--text-base);
     line-height: 1.6;
+    /* containing block for the full-document grain overlay below */
+    position: relative;
   }
 
   /* Reversed (Ink) sections use Cream text — an approved pair. Wrap a dark
@@ -120,9 +122,14 @@
    * grey, tiled and multiply-blended so it reads as faint paper texture.
    * Sits ON TOP of everything (above the sticky nav) so the whole page —
    * nav, logo, content — shares one grain and nothing looks out of place.
-   * pointer-events off so it never intercepts clicks. Tune with --grain-opacity. */
+   * pointer-events off so it never intercepts clicks. Tune with --grain-opacity.
+   *
+   * `position: absolute` (covering the whole document via body's relative box)
+   * rather than `fixed`: the noise is uniform so scrolling vs fixed is
+   * imperceptible, and it avoids the iOS Safari `fixed + mix-blend-mode` bug
+   * that let page content paint over the sticky nav. */
   .grain {
-    position: fixed;
+    position: absolute;
     inset: 0;
     z-index: 60;
     pointer-events: none;

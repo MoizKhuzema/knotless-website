@@ -121,15 +121,3 @@ const isActive = (path: string) => here.startsWith(href(path));
     });
   })();
 </script>
-
-<style>
-  /* Promote the sticky bar to its own compositing layer. Fixes an iOS Safari
-     repaint bug where page content can briefly paint over a sticky header
-     (made more likely by the fixed mix-blend-mode grain overlay). No visual
-     change — purely a paint hint. */
-  .site-nav {
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    isolation: isolate;
-  }
-</style>
