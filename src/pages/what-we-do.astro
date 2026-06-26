@@ -209,13 +209,15 @@ const introDescription = WWD_INTRO.bodyParts
       class="mt-12 grid gap-x-12 gap-y-10 sm:grid-cols-2 sm:divide-x sm:divide-warm-grey"
     >
       <div class="sm:pr-12">
-        <p class="max-w-prose text-lg text-ink">{WWD_IMPLEMENTATION.forkNo}</p>
+        <p class="label text-ink">{WWD_IMPLEMENTATION.fork.no.label}</p>
+        <p class="mt-3 max-w-prose text-ink">{WWD_IMPLEMENTATION.fork.no.body}</p>
       </div>
       <div class="sm:pl-12">
-        <p class="text-lg text-ink">{WWD_IMPLEMENTATION.buildLead}</p>
+        <p class="label text-terracotta">{WWD_IMPLEMENTATION.fork.yes.label}</p>
+        <p class="mt-3 text-ink">{WWD_IMPLEMENTATION.fork.yes.lead}</p>
         <ul class="mt-4 space-y-2.5">
           {
-            WWD_IMPLEMENTATION.build.map((item) => (
+            WWD_IMPLEMENTATION.fork.yes.points.map((item) => (
               <li class="flex gap-3 text-ink">
                 <span aria-hidden="true" class="mt-[0.62em] h-px w-3 shrink-0 bg-warm-grey" />
                 <span>{item}</span>

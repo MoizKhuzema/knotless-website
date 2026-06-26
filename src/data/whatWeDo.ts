@@ -126,15 +126,23 @@ export const WWD_STAGES = {
  */
 export const WWD_IMPLEMENTATION = {
   heading: 'The case is there? We build it.',
-  // The two honest outcomes (verbatim from the brief), shown as a fork.
-  forkNo:
-    'If it isn’t, the Assessment stands on its own. You owe us nothing further, and that’s a real outcome, not a courtesy.',
-  buildLead: 'When it is, the build follows the findings:',
-  build: [
-    'Only the opportunities the numbers backed',
-    'In the order the plan set, inside the controls it defined',
-    'Scope and price fixed before any work starts',
-  ],
+  // The two honest outcomes, shown as a fork. The condition is the label; the
+  // body keeps the brief's wording (no em-dashes).
+  fork: {
+    no: {
+      label: 'If it isn’t',
+      body: 'The Assessment stands on its own. You owe us nothing further, and that’s a real outcome, not a courtesy.',
+    },
+    yes: {
+      label: 'If it is',
+      lead: 'The build follows the findings:',
+      points: [
+        'Only the opportunities the numbers backed',
+        'In the order the plan set, inside the controls it defined',
+        'Scope and price fixed before any work starts',
+      ],
+    },
+  },
   whoHeading: 'Who does the work',
   whoFirst: 'The founders run every build, start to finish',
   whoDelivery:
