@@ -3,7 +3,12 @@
  * Section 2 — "AI is complicated. Knotless isn't."
  * Intro + three Assessment stages (each an in-page anchor target for the nav)
  * + "How to get started" three steps. Left-aligned editorial; one terracotta
- * accent (the rule under the heading). Numerals are warm grey, not accent.
+ * accent (the rule under each heading).
+ *
+ * Editorial device: oversized warm-grey numerals carry the rhythm (scale, not
+ * colour). Each stage row flips to an Ink panel on hover — the page's quiet,
+ * tactile moment — using only the approved Ink/Cream pair, on the house easing.
+ * Colour transitions are gentle and safe under reduced motion.
  */
 import { ASSESSMENT } from '../../data/homepage';
 import ArrowLink from '../ArrowLink.astro';
@@ -21,19 +26,27 @@ import ArrowLink from '../ArrowLink.astro';
   </div>
 
   <!-- Stages -->
-  <div class="mt-16 grid gap-px border-t border-warm-grey">
+  <div class="mt-16 border-t border-warm-grey">
     {
       ASSESSMENT.stages.map((stage) => (
         <article
           id={stage.id}
           data-reveal
-          class="scroll-mt-24 border-b border-warm-grey py-8 sm:grid sm:grid-cols-12 sm:gap-8"
+          class="group -mx-4 scroll-mt-24 rounded-sm border-b border-warm-grey px-4 py-7 transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-ink sm:grid sm:grid-cols-12 sm:items-baseline sm:gap-8"
         >
           <div class="sm:col-span-3">
-            <span class="text-2xl font-normal tracking-tight text-ink">{stage.n}</span>
-            <h3 class="mt-2 text-xl font-semibold tracking-tight text-ink">{stage.title}</h3>
+            <span class="block text-4xl font-light leading-none tracking-tight text-warm-grey transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream sm:text-5xl">
+              {stage.n}
+            </span>
           </div>
-          <p class="mt-3 max-w-prose text-ink sm:col-span-9 sm:mt-0">{stage.body}</p>
+          <div class="mt-3 sm:col-span-9 sm:mt-0">
+            <h3 class="text-xl font-semibold tracking-tight text-ink transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream">
+              {stage.title}
+            </h3>
+            <p class="mt-2 max-w-prose text-ink transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream">
+              {stage.body}
+            </p>
+          </div>
         </article>
       ))
     }
@@ -55,8 +68,10 @@ import ArrowLink from '../ArrowLink.astro';
     {
       ASSESSMENT.steps.map((step) => (
         <li data-reveal class="border-t border-warm-grey pt-5">
-          <span class="text-xl font-normal tracking-tight text-ink">{step.n}</span>
-          <h3 class="mt-3 text-lg font-semibold tracking-tight text-ink">{step.title}</h3>
+          <span class="block text-4xl font-light leading-none tracking-tight text-warm-grey">
+            {step.n}
+          </span>
+          <h3 class="mt-4 text-lg font-semibold tracking-tight text-ink">{step.title}</h3>
           <p class="mt-2 text-ink">{step.body}</p>
         </li>
       ))
