@@ -32,9 +32,9 @@ const introDescription = WWD_INTRO.bodyParts
 
 <BaseLayout title="What we do" description={introDescription}>
   <!-- Section 1 — page intro (same register as the hero) -->
-  <section class="pt-20 pb-section sm:pt-28">
+  <section class="pt-20 sm:pt-28">
     <p class="text-label uppercase tracking-tagline text-ink">{WWD_INTRO.eyebrow}</p>
-    <h1 class="mt-5 text-[2.1rem] font-semibold leading-[1.02] tracking-[-0.035em] text-ink min-[420px]:text-[2.5rem] sm:text-[3.25rem] md:text-[4.25rem] lg:text-[5.75rem] xl:text-[6.75rem]">
+    <h1 class="mt-5 text-[2.4rem] font-semibold leading-[1.02] tracking-[-0.035em] text-ink min-[420px]:text-[2.9rem] sm:text-[3.75rem] md:text-[4.25rem] lg:text-[5.75rem] xl:text-[6.75rem]">
       One <span class="emph-type" data-word="product."
         ><span class="sr-only">product.</span><span class="ew" aria-hidden="true"
           ><span class="ew-sizer">product.</span><span class="ew-live"><span class="ew-typed">product.</span><span class="ew-caret"></span></span></span
@@ -63,12 +63,17 @@ const introDescription = WWD_INTRO.bodyParts
       <p class="mt-6 max-w-text text-lg text-ink">{WWD_QUESTIONS.lead}</p>
     </div>
 
-    <div class="mt-10 grid gap-4 sm:mt-14 sm:grid-cols-2 sm:auto-rows-fr sm:gap-6">
+    {/* Mobile: a horizontal, snap-scrolling carousel (the next card peeks to
+        signal swipe) so six vignettes don't stack into one tall column. Desktop
+        (sm+) is the unchanged two-column grid. */}
+    <div
+      class="-mx-gutter mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-gutter pb-4 sm:mx-0 sm:mt-14 sm:grid sm:auto-rows-fr sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0"
+    >
       {
         WWD_QUESTIONS.vignettes.map((v) => (
           <article
             data-reveal
-            class="group flex h-full flex-col rounded-sm border border-warm-grey p-5 transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-ink hover:bg-ink sm:p-7"
+            class="group flex w-[78%] shrink-0 snap-center flex-col rounded-sm border border-warm-grey p-5 transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-ink hover:bg-ink sm:h-full sm:w-auto sm:shrink sm:p-7"
           >
             <p class="text-lg font-medium leading-snug tracking-tight text-ink transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream sm:text-xl">
               “{v.quote}”

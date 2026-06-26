@@ -17,14 +17,14 @@ import { SITE } from '../../config/site';
 import CtaButton from '../CtaButton.astro';
 ---
 
-<section class="pt-20 pb-section sm:pt-28">
+<section class="pt-20 sm:pt-28">
   <p class="text-label uppercase tracking-tagline text-ink">{SITE.tagline}</p>
 
-  <!-- Oversized, left-aligned headline. It ramps smoothly across breakpoints so
-       it commands the width on desktop (the deliberate "confident editorial"
-       whitespace) without overflowing the smaller phone/tablet columns. -->
+  <!-- Oversized, left-aligned headline — the page's largest type, clearly above
+       every section heading at every breakpoint. Ramps smoothly so it commands
+       the width on desktop without overflowing the phone/tablet columns. -->
   <h1
-    class="mt-5 text-[2.1rem] font-semibold leading-[1.02] tracking-[-0.035em] text-ink min-[420px]:text-[2.5rem] sm:text-[3.25rem] md:text-[4.25rem] lg:text-[5.75rem] xl:text-[6.75rem]"
+    class="mt-5 text-[2.4rem] font-semibold leading-[1.02] tracking-[-0.035em] text-ink min-[420px]:text-[2.9rem] sm:text-[3.75rem] md:text-[4.25rem] lg:text-[5.75rem] xl:text-[6.75rem]"
   >
     AI that's <span class="emph hero-type" data-word="worth"
       ><span class="sr-only">worth</span><span class="word" aria-hidden="true"
@@ -41,11 +41,11 @@ import CtaButton from '../CtaButton.astro';
     <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
   </div>
 
-  <!-- Industries served, as an even grid so it never leaves an orphaned line:
-       one column on phones, two on small screens, four on desktop (8 labels =
-       two clean rows). -->
+  <!-- Industries served, as an even grid so it never leaves an orphaned line.
+       On phones it's two compact columns set smaller than the AI UNTANGLED
+       eyebrow (so it reads as quiet metadata); four columns on desktop. -->
   <ul
-    class="r r-4 mt-16 grid grid-cols-1 gap-x-8 gap-y-3 border-t border-warm-grey pt-5 text-label uppercase tracking-label text-ink sm:grid-cols-2 sm:gap-y-4 lg:grid-cols-4"
+    class="r r-4 mt-14 grid grid-cols-2 gap-x-6 gap-y-2.5 border-t border-warm-grey pt-5 text-[0.6875rem] uppercase leading-snug tracking-label text-ink sm:gap-x-8 sm:gap-y-4 sm:text-label lg:grid-cols-4"
   >
     {HERO.verticals.map((v) => <li>{v}</li>)}
   </ul>

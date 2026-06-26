@@ -67,16 +67,31 @@ import ArrowLink from '../ArrowLink.astro';
   <!-- One continuous "thread" links the three steps into a sequence (sm+); it
        draws in left-to-right on reveal. On mobile the steps stack, so each keeps
        its own top hairline instead. -->
+  {/* Mobile: a connected vertical timeline (small numbered markers + a line) so
+      this sequence reads differently from the Assessment stages above, which use
+      large ghost numerals. Desktop (sm+) is the unchanged 3-column row with the
+      drawn-in thread. */}
   <div data-reveal class="step-thread mt-12">
-    <ol class="grid gap-12 sm:grid-cols-3">
+    <ol class="flex flex-col sm:grid sm:grid-cols-3 sm:gap-12">
       {
-        ASSESSMENT.steps.map((step) => (
-          <li class="border-t border-warm-grey pt-5 sm:border-t-0 sm:pt-7">
-            <span class="block text-4xl font-light leading-none tracking-tight text-warm-grey">
-              {step.n}
+        ASSESSMENT.steps.map((step, i) => (
+          <li class="relative flex gap-5 pb-10 last:pb-0 sm:block sm:gap-0 sm:pb-0 sm:pt-7">
+            {i < ASSESSMENT.steps.length - 1 && (
+              <span
+                aria-hidden="true"
+                class="absolute bottom-0 left-[17px] top-11 w-px bg-warm-grey sm:hidden"
+              />
+            )}
+            <span class="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-warm-grey bg-cream text-sm font-medium text-ink sm:hidden">
+              {i + 1}
             </span>
-            <h3 class="mt-4 text-lg font-semibold tracking-tight text-ink">{step.title}</h3>
-            <p class="mt-2 text-ink">{step.body}</p>
+            <div class="min-w-0 flex-1">
+              <span class="hidden text-4xl font-light leading-none tracking-tight text-warm-grey sm:block">
+                {step.n}
+              </span>
+              <h3 class="text-lg font-semibold tracking-tight text-ink sm:mt-4">{step.title}</h3>
+              <p class="mt-2 text-ink">{step.body}</p>
+            </div>
           </li>
         ))
       }
