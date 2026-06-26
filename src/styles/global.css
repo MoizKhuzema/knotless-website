@@ -151,7 +151,7 @@
     letter-spacing: var(--tracking-label);
   }
 
-  /* Typewriter word with a terracotta strike (the "worth"/"product" treatment).
+  /* Typewriter word (the "product" treatment): types in with a blinking caret.
    * Markup is inlined in the heading; the initialiser lives in BaseLayout.
    * The word reserves its width via a hidden sizer so typing never reflows. */
   .emph-type {
@@ -185,22 +185,6 @@
   /* Blink exactly twice, then the initialiser removes the caret on animationend. */
   .emph-type .ew-caret.is-blink {
     animation: ew-caret-blink 1.06s steps(1, end) 2;
-  }
-  /* Strike: shown by default; hidden while typing, then drawn back in. */
-  .emph-type::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0.04em;
-    height: 0.08em;
-    background-color: var(--color-terracotta);
-    transform: scaleX(1);
-    transform-origin: left;
-    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  .emph-type.is-typing::after {
-    transform: scaleX(0);
   }
   @keyframes ew-caret-blink {
     0% {
