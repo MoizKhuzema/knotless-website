@@ -76,6 +76,15 @@ const ARROW = 'M3 12 C7 12 9 12 11 12 C13 12 15 12 16 12 C18 12 20 12 21 12 L21 
     d: var(--arrow);
   }
 
+  /* Touch devices can't hover, so the knot would never resolve. Instead, resolve
+     it to the arrow when the link's section scrolls into view (reusing the
+     global [data-reveal] reveal). The d-transition still animates the morph. */
+  @media (hover: none) {
+    :global([data-reveal].is-visible) .arrow-link__knot path {
+      d: var(--arrow);
+    }
+  }
+
   /* Reduced motion: show the resolved arrow, no morph. */
   @media (prefers-reduced-motion: reduce) {
     .arrow-link__knot path {

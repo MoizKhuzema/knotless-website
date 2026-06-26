@@ -5,8 +5,9 @@
  * Brand: the wordmark_secondary "original" lockup for the light Cream
  * background — height-driven so it's never recoloured or stretched.
  *
- * Three equal-weight text links. No button here: the page's own CTAs carry the
- * primary action, so the nav stays quiet and symmetric.
+ * Responsive: from md up, three equal-weight text links sit inline (no button —
+ * the page's own CTAs carry the primary action). Below md the links collapse
+ * behind a hamburger that opens an accessible dropdown drawer.
  */
 import { SITE } from '../config/site';
 import { href } from '../lib/href';
@@ -22,30 +23,113 @@ const here = Astro.url.pathname;
 const isActive = (path: string) => here.startsWith(href(path));
 ---
 
-<nav
-  class="sticky top-0 z-50 flex flex-wrap items-center gap-x-8 gap-y-4 border-b border-warm-grey bg-cream py-5"
->
-  <a href={href('/')} aria-label={`${SITE.legalEntityName} — home`} class="shrink-0">
-    <!-- height drives size; width auto preserves the locked aspect ratio -->
-    <img src={wordmark.src} alt={SITE.legalEntityName} height="56" class="h-14 w-auto" />
-  </a>
+<nav class="site-nav sticky top-0 z-50 border-b border-warm-grey bg-cream">
+  <div class="flex items-center gap-x-8 py-5">
+    <a href={href('/')} aria-label={`${SITE.legalEntityName} — home`} class="shrink-0">
+      <!-- height drives size; width auto preserves the locked aspect ratio -->
+      <img src={wordmark.src} alt={SITE.legalEntityName} height="56" class="h-14 w-auto" />
+    </a>
 
-  <ul class="ml-auto flex flex-wrap items-center gap-x-8 gap-y-2">
-    {
-      NAV_LINKS.map((link) => (
-        <li>
-          <a
-            href={href(link.href)}
-            aria-current={isActive(link.href) ? 'page' : undefined}
-            class:list={[
-              'label text-ink no-underline underline-offset-4 hover:underline',
-              isActive(link.href) ? 'underline' : '',
-            ]}
-          >
-            {link.label}
-          </a>
-        </li>
-      ))
-    }
-  </ul>
+    <!-- md+ : inline links -->
+    <ul class="ml-auto hidden items-center gap-x-8 md:flex">
+      {
+        NAV_LINKS.map((link) => (
+          <li>
+            <a
+              href={href(link.href)}
+              aria-current={isActive(link.href) ? 'page' : undefined}
+              class:list={[
+                'label text-ink no-underline underline-offset-4 hover:underline',
+                isActive(link.href) ? 'underline' : '',
+              ]}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <!-- below md : hamburger toggle (44px tap target via padding) -->
+    <button
+      type="button"
+      class="nav-toggle -mr-2 ml-auto p-2 text-ink md:hidden"
+      aria-label="Open menu"
+      aria-expanded="false"
+      aria-controls="nav-menu"
+    >
+      <svg class="nav-icon-menu" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+        <line x1="3" y1="7" x2="21" y2="7" />
+        <line x1="3" y1="12" x2="21" y2="12" />
+        <line x1="3" y1="17" x2="21" y2="17" />
+      </svg>
+      <svg class="nav-icon-close hidden" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+        <line x1="5" y1="5" x2="19" y2="19" />
+        <line x1="19" y1="5" x2="5" y2="19" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- below md : dropdown drawer -->
+  <div id="nav-menu" class="nav-menu hidden border-t border-warm-grey md:hidden">
+    <ul class="flex flex-col pb-3 pt-1">
+      {
+        NAV_LINKS.map((link) => (
+          <li>
+            <a
+              href={href(link.href)}
+              aria-current={isActive(link.href) ? 'page' : undefined}
+              class:list={[
+                'label block py-3 text-ink no-underline underline-offset-4',
+                isActive(link.href) ? 'underline' : '',
+              ]}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
 </nav>
+
+<script is:inline>
+  (() => {
+    const nav = document.querySelector('.site-nav');
+    if (!nav) return;
+    const btn = nav.querySelector('.nav-toggle');
+    const menu = nav.querySelector('#nav-menu');
+    const iconMenu = nav.querySelector('.nav-icon-menu');
+    const iconClose = nav.querySelector('.nav-icon-close');
+    if (!btn || !menu) return;
+
+    const setOpen = (open) => {
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      menu.classList.toggle('hidden', !open);
+      iconMenu.classList.toggle('hidden', open);
+      iconClose.classList.toggle('hidden', !open);
+    };
+
+    btn.addEventListener('click', () => setOpen(btn.getAttribute('aria-expanded') !== 'true'));
+    // Close on Escape and on taps outside the nav.
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') setOpen(false);
+    });
+    document.addEventListener('click', (e) => {
+      if (!nav.contains(e.target)) setOpen(false);
+    });
+  })();
+</script>
+
+<style>
+  /* Promote the sticky bar to its own compositing layer. Fixes an iOS Safari
+     repaint bug where page content can briefly paint over a sticky header
+     (made more likely by the fixed mix-blend-mode grain overlay). No visual
+     change — purely a paint hint. */
+  .site-nav {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    isolation: isolate;
+  }
+</style>

@@ -34,7 +34,7 @@ const LINE =
     <div>
       <p class="text-label uppercase tracking-tagline text-ink">{SITE.tagline}</p>
 
-      <h1 class="mt-5 text-4xl font-semibold leading-[1.04] tracking-tight text-ink sm:text-5xl">
+      <h1 class="mt-5 text-[2.8rem] font-semibold leading-[1.04] tracking-tight text-ink sm:text-5xl">
         AI that's <span class="emph hero-type" data-word="worth"
           ><span class="sr-only">worth</span><span class="word" aria-hidden="true"
             ><span class="sizer">worth</span><span class="live"><span class="typed">worth</span><span class="caret"></span></span></span
@@ -53,8 +53,10 @@ const LINE =
 
     <!-- Right column: the knot that untangles into a downward arrow and scrolls
          to the next section. Works without JS (anchor jump); JS upgrades it to a
-         smooth scroll. The SVG is decorative; the link carries the label. -->
-    <div class="r r-3 hero-knot-wrap flex justify-center">
+         smooth scroll. The SVG is decorative; the link carries the label.
+         Hidden below lg: it only sits beside the copy in the two-column layout,
+         so on phones / tablet-portrait it would awkwardly stack under the CTA. -->
+    <div class="r r-3 hero-knot-wrap hidden justify-center lg:flex">
       <a
         href="#assessment"
         class="hero-scroll inline-flex rounded-sm text-ink"
@@ -76,8 +78,9 @@ const LINE =
     </div>
   </div>
 
-  <!-- Industries served — static, space-separated, reads at a glance. -->
-  <ul class="r r-4 mt-12 flex flex-wrap items-center gap-x-7 gap-y-2 border-t border-warm-grey pt-5 text-label uppercase tracking-label text-ink">
+  <!-- Industries served. On phones: a single even column (the labels are long,
+       so a wrap reads ragged). From sm up: the inline space-separated flow. -->
+  <ul class="r r-4 mt-12 grid grid-cols-1 gap-y-3 border-t border-warm-grey pt-5 text-label uppercase tracking-label text-ink sm:flex sm:flex-wrap sm:items-center sm:gap-x-7 sm:gap-y-2">
     {HERO.verticals.map((v) => <li>{v}</li>)}
   </ul>
 </section>
@@ -157,11 +160,9 @@ const LINE =
 </script>
 
 <style define:vars={{ knot: `path("${KNOT}")`, line: `path("${LINE}")` }}>
-  /* --- the knot visual / scroll cue (fills the right half of the hero) --- */
-  .hero-knot-wrap {
-    display: flex;
-    justify-content: center;
-  }
+  /* --- the knot visual / scroll cue (fills the right half of the hero) ---
+     Show/hide + centring are handled by Tailwind utilities (hidden / lg:flex /
+     justify-center) so display can be toggled responsively. */
   .hero-knot {
     display: block;
     width: 10rem; /* fixed: the <a> is shrink-to-fit, so % has no basis */
