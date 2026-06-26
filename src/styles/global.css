@@ -103,12 +103,17 @@
   }
 
   body {
+    /* Paper grain is baked into the page BACKGROUND (not a separate overlay):
+     * a faint, desaturated fractalNoise tiled over the Cream paper. As a
+     * background it creates no compositing layer, which avoids the iOS Safari
+     * repaint artifact that ghosted content over the nav. Alpha is baked low
+     * via feComponentTransfer; it shows on the Cream areas only. */
     background-color: var(--color-cream);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
     color: var(--color-ink);
     font-size: var(--text-base);
     line-height: 1.6;
-    /* containing block for the full-document grain overlay below */
-    position: relative;
   }
 
   /* Reversed (Ink) sections use Cream text — an approved pair. Wrap a dark
@@ -116,26 +121,6 @@
   .on-ink {
     background-color: var(--color-ink);
     color: var(--color-cream);
-  }
-
-  /* Paper grain overlay: inline SVG fractalNoise, desaturated to grey, tiled
-   * as a faint paper texture over the whole page (above the sticky nav) so
-   * everything shares one grain. pointer-events off so it never intercepts
-   * clicks. Tune with --grain-opacity.
-   *
-   * NOTE: no `mix-blend-mode` and `position: absolute` (not `fixed`). Both
-   * blend-mode and fixed positioning here triggered an iOS Safari compositing
-   * bug that ghosted page content above the sticky nav. As a plain low-opacity
-   * grey speckle on the mostly-cream page it reads almost identically, without
-   * forcing the broken compositing group. */
-  .grain {
-    position: absolute;
-    inset: 0;
-    z-index: 60;
-    pointer-events: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-size: 180px 180px;
-    opacity: var(--grain-opacity, 0.05);
   }
 
   ::selection {
