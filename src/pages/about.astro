@@ -64,23 +64,18 @@ import { ABOUT_INTRO, ABOUT_FOUNDERS, ABOUT_FINAL_CTA } from '../data/about';
         ))
       }
     </div>
-  </section>
 
-  <!-- Section 3 — one conclusion (the payoff, its own quiet beat) -->
-  <section class="pt-section-lg">
-    <div data-reveal class="max-w-text">
-      <span class="accent-rule"></span>
-      <h2 class="mt-6 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-        {ABOUT_INTRO.conclusionHeading}
-      </h2>
-      <p class="mt-6 text-base text-ink sm:text-lg">
+    <!-- One conclusion: the payoff, closing the same section the careers open. -->
+    <div data-reveal class="mt-12 max-w-text sm:mt-14">
+      <p class="label text-warm-grey">{ABOUT_INTRO.conclusionHeading}</p>
+      <p class="mt-4 text-base text-ink sm:text-lg">
         <strong class="font-semibold text-ink">{ABOUT_INTRO.conclusion.lead}</strong
         >{ABOUT_INTRO.conclusion.body}
       </p>
     </div>
   </section>
 
-  <!-- Section 4 — the names on the door -->
+  <!-- Section 3 — the names on the door -->
   <section class="pt-section-lg">
     <div data-reveal class="max-w-text">
       <span class="accent-rule"></span>
@@ -96,7 +91,7 @@ import { ABOUT_INTRO, ABOUT_FOUNDERS, ABOUT_FINAL_CTA } from '../data/about';
       data-reveal
       class="relative mt-10 flex aspect-[4/3] items-end overflow-hidden rounded-sm border border-warm-grey sm:mt-14 sm:aspect-[16/9]"
     >
-      <span class="label m-5 text-warm-grey">Insiya &amp; Huzefa — portrait</span>
+      <span class="label m-5 text-warm-grey">Insiya &amp; Huzefa</span>
     </div>
 
     <!-- Founder details: two left-aligned columns, name + title + bio. -->
@@ -112,10 +107,8 @@ import { ABOUT_INTRO, ABOUT_FOUNDERS, ABOUT_FINAL_CTA } from '../data/about';
       }
     </div>
 
-    <p data-reveal class="mt-10 text-base text-ink">{ABOUT_FOUNDERS.teamLine}</p>
-
     <!-- How we deliver: a titled block (same content-block header as the rest). -->
-    <div data-reveal class="mt-16 max-w-text">
+    <div data-reveal class="mt-12 max-w-text sm:mt-16">
       <p class="text-base font-semibold text-ink">{ABOUT_FOUNDERS.deliverHeading}</p>
       <div class="mt-3 space-y-4">
         {ABOUT_FOUNDERS.deliverBody.map((para) => <p class="text-base text-ink">{para}</p>)}

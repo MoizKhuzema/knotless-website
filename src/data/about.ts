@@ -20,7 +20,7 @@ export const ABOUT_INTRO = {
   lead: {
     pre: 'Knotless wasn’t a pivot or a bright idea. It’s ',
     strong: 'the same conclusion, reached twice',
-    post: ' — from two very different careers.',
+    post: ', from two very different careers.',
   },
   careersHeading: 'Where this comes from',
   conclusionHeading: 'One conclusion',
@@ -54,7 +54,6 @@ export const ABOUT_FOUNDERS = {
     'Insiya takes every Fit Call and runs every Assessment session. If you become a client, she’s the person who maps your business, asks the questions, and stands behind the findings. Based in Adelaide.',
     'Huzefa scopes every engagement and oversees every build, start to finish. If the case is there, he’s the person accountable for what gets built and how it lands inside your business. Based in Adelaide.',
   ],
-  teamLine: 'They’re supported by a small internal team.',
   deliverHeading: 'How we deliver',
   deliverBody: [
     'We’re founder-led by design, not by stage. Every project is designed and overseen personally by us. For technical delivery we work with a small set of vetted partner firms in Australia and Pakistan. You choose where your build is delivered: Australian delivery, or Pakistan delivery at a lower cost. Either way it’s disclosed up front, with every data flow handled under the Australian Privacy Act.',
