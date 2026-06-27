@@ -16,6 +16,14 @@ export const ABOUT_INTRO = {
   eyebrow: 'About us',
   metaDescription:
     'Two careers, one conclusion: judgement before technology. Meet Insiya and Huzefa Karbalai, the founders behind Knotless.',
+  // Hero standfirst — frames the page without giving away the conclusion.
+  lead: {
+    pre: 'Knotless wasn’t a pivot or a bright idea. It’s ',
+    strong: 'the same conclusion, reached twice',
+    post: ' — from two very different careers.',
+  },
+  careersHeading: 'Where this comes from',
+  conclusionHeading: 'One conclusion',
   careers: [
     {
       id: 'insiya',

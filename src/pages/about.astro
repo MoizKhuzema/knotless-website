@@ -2,10 +2,12 @@
 /**
  * /about — "Two careers. One conclusion."
  *
- * Same editorial register as the homepage and /what-we-do: eyebrow + typewriter
- * H1, an accent-rule heading block, founder blocks (name + title from site.ts),
- * a titled "How we deliver" block, and the reversed-Ink final CTA. Copy lives in
- * src/data/about.ts; founder names/titles in src/config/site.ts.
+ * Built entirely from the site's editorial system, left-aligned throughout:
+ * eyebrow + typewriter H1 hero (matching the homepage / what-we-do), then
+ * accent-rule + h2 sections. The two careers are 12-column bordered rows with
+ * terracotta markers (the homepage stages pattern); the conclusion is its own
+ * standfirst beat; the founders sit under a full-width combined-portrait band.
+ * Copy lives in src/data/about.ts; founder names/titles in src/config/site.ts.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaButton from '../components/CtaButton.astro';
@@ -14,7 +16,7 @@ import { ABOUT_INTRO, ABOUT_FOUNDERS, ABOUT_FINAL_CTA } from '../data/about';
 ---
 
 <BaseLayout title="About us" description={ABOUT_INTRO.metaDescription}>
-  <!-- Section 1 — page intro (same register as the other hero pages) -->
+  <!-- Section 1 — hero (same register as the homepage / what-we-do heroes) -->
   <section class="pt-20 sm:pt-28">
     <p class="text-label uppercase tracking-tagline text-ink">{ABOUT_INTRO.eyebrow}</p>
     <h1 class="mt-5 text-[2.4rem] font-semibold leading-[1.02] tracking-[-0.035em] text-ink min-[420px]:text-[2.9rem] sm:text-[3.75rem] md:text-[4.25rem] lg:text-[5.75rem] xl:text-[6.75rem]">
@@ -25,57 +27,60 @@ import { ABOUT_INTRO, ABOUT_FOUNDERS, ABOUT_FINAL_CTA } from '../data/about';
       ></span>
     </h1>
 
-    <!-- Two careers → one conclusion, told by layout. Two parallel streams
-         (Insiya / Huzefa) sit either side of a central hairline that threads
-         down past them and resolves into a single, centred statement — the
-         "two into one" read with no fragile diagonal connectors. Generous air
-         between the heading and the streams. -->
-    <div data-reveal class="mt-16 sm:mt-24">
-      <!-- The two streams. A central hairline divides them on desktop; on mobile
-           they stack with a hairline rule between. -->
-      <div class="relative grid gap-10 sm:grid-cols-2 sm:gap-0">
-        <span
-          class="absolute left-1/2 top-0 hidden h-full w-px -translate-x-1/2 bg-warm-grey sm:block"
-          aria-hidden="true"></span>
-        {
-          ABOUT_INTRO.careers.map((c, i) => (
-            <div
-              class:list={[
-                i === 1 && 'border-t border-warm-grey pt-10 sm:border-t-0 sm:pt-0',
-                i === 0 ? 'sm:pr-12 lg:pr-16' : 'sm:pl-12 lg:pl-16',
-              ]}
-            >
-              <div class="flex items-baseline gap-2.5">
-                <span class="h-1.5 w-1.5 shrink-0 translate-y-[-0.15em] rounded-full bg-ink" aria-hidden="true" />
-                <h2 class="text-lg font-semibold tracking-tight text-ink sm:text-xl">{c.name}</h2>
-              </div>
-              <p class="mt-2 text-base italic text-warm-grey">{c.teaser}</p>
-              <p class="mt-4 text-base text-ink">{c.experience}</p>
+    <p class="mt-8 max-w-text text-base text-ink sm:text-lg">
+      {ABOUT_INTRO.lead.pre}<strong class="font-semibold text-ink">{ABOUT_INTRO.lead.strong}</strong
+      >{ABOUT_INTRO.lead.post}
+    </p>
+  </section>
+
+  <!-- Section 2 — where this comes from: the two careers as bordered rows -->
+  <section class="pt-section-lg">
+    <div data-reveal>
+      <span class="accent-rule"></span>
+      <h2 class="mt-6 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+        {ABOUT_INTRO.careersHeading}
+      </h2>
+    </div>
+
+    <!-- Each career: a terracotta marker + name + teaser in the left column, the
+         full experience in the right column (stacked on mobile). The homepage
+         stages pattern, so it reads as native and stays left-aligned. -->
+    <div class="mt-10 border-t border-warm-grey sm:mt-14">
+      {
+        ABOUT_INTRO.careers.map((c) => (
+          <article
+            data-reveal
+            class="border-b border-warm-grey py-6 sm:grid sm:grid-cols-12 sm:items-baseline sm:gap-8 sm:py-7"
+          >
+            <div class="sm:col-span-4">
+              <h3 class="flex items-center gap-3 text-lg font-semibold tracking-tight text-ink">
+                <span aria-hidden="true" class="h-2 w-2 shrink-0 rounded-full bg-terracotta" />
+                {c.name}
+              </h3>
+              <p class="label mt-2 pl-5 text-warm-grey">{c.teaser}</p>
             </div>
-          ))
-        }
-      </div>
-
-      <!-- The central line threads on, then resolves — a short stem the streams
-           converge into (desktop only; straight hairline, nothing to break). -->
-      <div class="relative hidden h-12 sm:block" aria-hidden="true">
-        <span class="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-warm-grey"></span>
-        <span class="absolute bottom-0 left-1/2 h-1.5 w-1.5 -translate-x-1/2 translate-y-1/2 rounded-full bg-terracotta"></span>
-      </div>
-
-      <!-- The single conclusion: a centred resolution set larger than the
-           streams above it, so two columns visibly funnel into one statement. -->
-      <div class="mt-12 border-t border-warm-grey pt-10 text-center sm:mt-0 sm:border-t-0 sm:pt-8">
-        <p class="label text-warm-grey">{ABOUT_INTRO.conclusion.label}</p>
-        <p class="mx-auto mt-5 max-w-text text-xl leading-snug tracking-tight text-ink">
-          <strong class="font-semibold">{ABOUT_INTRO.conclusion.lead}</strong
-          >{ABOUT_INTRO.conclusion.body}
-        </p>
-      </div>
+            <p class="mt-3 max-w-prose text-ink sm:col-span-8 sm:mt-0">{c.experience}</p>
+          </article>
+        ))
+      }
     </div>
   </section>
 
-  <!-- Section 2 — who you'll work with -->
+  <!-- Section 3 — one conclusion (the payoff, its own quiet beat) -->
+  <section class="pt-section-lg">
+    <div data-reveal class="max-w-text">
+      <span class="accent-rule"></span>
+      <h2 class="mt-6 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+        {ABOUT_INTRO.conclusionHeading}
+      </h2>
+      <p class="mt-6 text-base text-ink sm:text-lg">
+        <strong class="font-semibold text-ink">{ABOUT_INTRO.conclusion.lead}</strong
+        >{ABOUT_INTRO.conclusion.body}
+      </p>
+    </div>
+  </section>
+
+  <!-- Section 4 — the names on the door -->
   <section class="pt-section-lg">
     <div data-reveal class="max-w-text">
       <span class="accent-rule"></span>
@@ -84,52 +89,27 @@ import { ABOUT_INTRO, ABOUT_FOUNDERS, ABOUT_FINAL_CTA } from '../data/about';
       </h2>
     </div>
 
-    <!-- One combined founder portrait, centred, with the two founders flanking
-         it: Insiya (and her details) to the left, Huzefa to the right. The
-         portrait is a human-shaped OUTLINE placeholder (two figures together) —
-         not a box. Drop a cut-out PNG of the founders in its place when ready.
-         Desktop: details | portrait | details. Mobile: portrait, then Insiya,
-         then Huzefa, stacked. -->
-    <div class="mt-12 grid items-center gap-10 sm:mt-16 sm:grid-cols-[1fr_auto_1fr] sm:gap-8 lg:gap-12">
-      <!-- Insiya — left -->
-      <div data-reveal class="order-2 sm:order-1 sm:text-right">
-        <h3 class="text-lg font-semibold tracking-tight text-ink sm:text-xl">{SITE.founders[0].name}</h3>
-        <p class="label mt-2 text-ink">{SITE.founders[0].title}</p>
-        <p class="mt-4 max-w-prose text-base text-ink sm:ml-auto">{ABOUT_FOUNDERS.bios[0]}</p>
-      </div>
+    <!-- One combined portrait of both founders, as a full-width editorial band
+         (left-aligned caption). Drop an <img class="h-full w-full object-cover">
+         inside when the photo is ready; it crops to the band. -->
+    <div
+      data-reveal
+      class="relative mt-10 flex aspect-[4/3] items-end overflow-hidden rounded-sm border border-warm-grey sm:mt-14 sm:aspect-[16/9]"
+    >
+      <span class="label m-5 text-warm-grey">Insiya &amp; Huzefa — portrait</span>
+    </div>
 
-      <!-- Combined portrait placeholder: two human-shaped outlines, together. -->
-      <div data-reveal class="order-1 mx-auto sm:order-2">
-        <svg
-          class="w-40 sm:w-44 lg:w-52"
-          viewBox="0 0 240 175"
-          fill="var(--color-cream)"
-          stroke="var(--color-warm-grey)"
-          stroke-width="2"
-          aria-hidden="true"
-        >
-          <!-- left figure -->
-          <circle cx="78" cy="52" r="30" vector-effect="non-scaling-stroke" />
-          <path
-            d="M20 195 L20 148 C20 126 44 114 78 114 C112 114 136 126 136 148 L136 195 Z"
-            vector-effect="non-scaling-stroke"
-          />
-          <!-- right figure (drawn over, so it sits in front where they meet) -->
-          <circle cx="162" cy="52" r="30" vector-effect="non-scaling-stroke" />
-          <path
-            d="M104 195 L104 148 C104 126 128 114 162 114 C196 114 220 126 220 148 L220 195 Z"
-            vector-effect="non-scaling-stroke"
-          />
-        </svg>
-        <p class="label mt-3 text-center text-warm-grey">Portrait</p>
-      </div>
-
-      <!-- Huzefa — right -->
-      <div data-reveal class="order-3 sm:text-left">
-        <h3 class="text-lg font-semibold tracking-tight text-ink sm:text-xl">{SITE.founders[1].name}</h3>
-        <p class="label mt-2 text-ink">{SITE.founders[1].title}</p>
-        <p class="mt-4 max-w-prose text-base text-ink">{ABOUT_FOUNDERS.bios[1]}</p>
-      </div>
+    <!-- Founder details: two left-aligned columns, name + title + bio. -->
+    <div class="mt-12 grid gap-10 sm:mt-14 sm:grid-cols-2 sm:gap-12">
+      {
+        SITE.founders.map((founder, i) => (
+          <div data-reveal>
+            <h3 class="text-lg font-semibold tracking-tight text-ink sm:text-xl">{founder.name}</h3>
+            <p class="label mt-2 text-ink">{founder.title}</p>
+            <p class="mt-4 max-w-prose text-base text-ink">{ABOUT_FOUNDERS.bios[i]}</p>
+          </div>
+        ))
+      }
     </div>
 
     <p data-reveal class="mt-10 text-base text-ink">{ABOUT_FOUNDERS.teamLine}</p>
@@ -143,7 +123,7 @@ import { ABOUT_INTRO, ABOUT_FOUNDERS, ABOUT_FINAL_CTA } from '../data/about';
     </div>
   </section>
 
-  <!-- Section 3 — final CTA (reversed Ink panel) -->
+  <!-- Section 5 — final CTA (reversed Ink panel; the page's one dark moment) -->
   <section class="pt-section-lg">
     <div data-reveal class="on-ink flex flex-col items-center rounded-sm px-6 py-20 text-center">
       <span class="accent-rule"></span>
