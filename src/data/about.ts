@@ -22,6 +22,7 @@ export const ABOUT_INTRO = {
     strong: 'opposite sides of the same problem',
     post: '.',
   },
+  cta: { label: 'Book a free Fit Call', href: '/contact' },
   careersHeading: 'Where this comes from',
   conclusionHeading: 'One conclusion',
   careers: [
