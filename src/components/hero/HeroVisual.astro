@@ -17,7 +17,9 @@ import { SITE } from '../../config/site';
 import CtaButton from '../CtaButton.astro';
 ---
 
-<section class="pt-20 sm:pt-28">
+<!-- On mobile the hero fills the first screen (content centred) so the next
+     section sits below the fold and reveals on scroll; top-aligned from sm up. -->
+<section class="hero-screen sm:pt-28">
   <p class="text-label uppercase tracking-tagline text-ink">{SITE.tagline}</p>
 
   <!-- Oversized, left-aligned headline — the page's largest type, clearly above

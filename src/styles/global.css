@@ -251,3 +251,19 @@
     }
   }
 }
+
+/* ---------------------------------------------------------------------
+ * Hero fills the first screen on phones (content centred) so the section that
+ * follows starts below the fold and reveals on scroll, instead of peeking into
+ * the first viewport and revealing at load. Desktop keeps the normal
+ * top-aligned rhythm (sm:pt-28 on the section). Unlayered on purpose so it wins
+ * over the Tailwind utility layer. 6rem ≈ the fixed nav offset (pt-24).
+ * ------------------------------------------------------------------- */
+@media (max-width: 639px) {
+  .hero-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100dvh - 6rem);
+  }
+}
