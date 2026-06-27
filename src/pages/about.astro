@@ -25,73 +25,52 @@ import { ABOUT_INTRO, ABOUT_FOUNDERS, ABOUT_FINAL_CTA } from '../data/about';
       ></span>
     </h1>
 
-    <!-- Convergence diagram: two careers (click to expand) meet in one
-         conclusion. Mobile = a single vertical spine (career, career, then the
-         conclusion node). Desktop = two career nodes side by side, a pair of
-         lines converging to a centred node, then the conclusion below. -->
-    <div data-reveal class="mt-12 sm:mt-16">
-      <!-- The two career nodes -->
-      <div class="relative grid gap-8 sm:grid-cols-2 sm:gap-x-16">
-        <!-- mobile spine connecting the two career nodes -->
+    <!-- Two careers → one conclusion, told by layout. Two parallel streams
+         (Insiya / Huzefa) sit either side of a central hairline that threads
+         down past them and resolves into a single, centred statement — the
+         "two into one" read with no fragile diagonal connectors. Generous air
+         between the heading and the streams. -->
+    <div data-reveal class="mt-16 sm:mt-24">
+      <!-- The two streams. A central hairline divides them on desktop; on mobile
+           they stack with a hairline rule between. -->
+      <div class="relative grid gap-10 sm:grid-cols-2 sm:gap-0">
         <span
-          class="absolute left-[1.25rem] top-12 h-[calc(100%-3rem)] w-px bg-warm-grey sm:hidden"
+          class="absolute left-1/2 top-0 hidden h-full w-px -translate-x-1/2 bg-warm-grey sm:block"
           aria-hidden="true"></span>
         {
-          ABOUT_INTRO.careers.map((c) => (
-            <details class="career group relative">
-              <summary class="flex cursor-pointer list-none items-center gap-4">
-                <span class="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-warm-grey bg-cream text-label font-semibold uppercase tracking-label text-ink">
-                  {c.name.charAt(0)}
-                </span>
-                <span class="min-w-0">
-                  <span class="block text-lg font-semibold tracking-tight text-ink sm:text-xl">
-                    {c.name}
-                  </span>
-                  <span class="block text-base text-warm-grey">{c.teaser}</span>
-                </span>
-                <span
-                  class="career-chev ml-auto shrink-0 text-warm-grey transition-transform duration-300 group-open:rotate-45"
-                  aria-hidden="true"
-                >
-                  +
-                </span>
-              </summary>
-              <p class="mt-4 max-w-prose pl-14 text-base text-ink sm:pl-0">{c.experience}</p>
-            </details>
+          ABOUT_INTRO.careers.map((c, i) => (
+            <div
+              class:list={[
+                i === 1 && 'border-t border-warm-grey pt-10 sm:border-t-0 sm:pt-0',
+                i === 0 ? 'sm:pr-12 lg:pr-16' : 'sm:pl-12 lg:pl-16',
+              ]}
+            >
+              <div class="flex items-baseline gap-2.5">
+                <span class="h-1.5 w-1.5 shrink-0 translate-y-[-0.15em] rounded-full bg-ink" aria-hidden="true" />
+                <h2 class="text-lg font-semibold tracking-tight text-ink sm:text-xl">{c.name}</h2>
+              </div>
+              <p class="mt-2 text-base italic text-warm-grey">{c.teaser}</p>
+              <p class="mt-4 text-base text-ink">{c.experience}</p>
+            </div>
           ))
         }
       </div>
 
-      <!-- Converging connector → conclusion. The desktop lines live in an SVG
-           that scales to the row width; non-scaling-stroke keeps them crisp. -->
-      <div class="relative mt-2 sm:mt-0">
-        <svg
-          class="hidden h-12 w-full sm:block"
-          viewBox="0 0 100 40"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <line x1="25" y1="0" x2="50" y2="38" stroke="var(--color-warm-grey)" vector-effect="non-scaling-stroke" />
-          <line x1="75" y1="0" x2="50" y2="38" stroke="var(--color-warm-grey)" vector-effect="non-scaling-stroke" />
-        </svg>
-        <!-- mobile spine continues into the conclusion node -->
-        <span
-          class="absolute left-[1.25rem] top-0 h-8 w-px bg-warm-grey sm:hidden"
-          aria-hidden="true"></span>
+      <!-- The central line threads on, then resolves — a short stem the streams
+           converge into (desktop only; straight hairline, nothing to break). -->
+      <div class="relative hidden h-12 sm:block" aria-hidden="true">
+        <span class="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-warm-grey"></span>
+        <span class="absolute bottom-0 left-1/2 h-1.5 w-1.5 -translate-x-1/2 translate-y-1/2 rounded-full bg-terracotta"></span>
       </div>
 
-      <!-- Conclusion node -->
-      <div class="relative mt-8 flex items-start gap-4 sm:mt-2 sm:justify-center sm:text-center">
-        <span
-          class="relative z-10 mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-terracotta sm:hidden"
-          aria-hidden="true"></span>
-        <div class="max-w-text">
-          <p class="text-label uppercase tracking-tagline text-terracotta">{ABOUT_INTRO.conclusion.label}</p>
-          <p class="mt-3 text-base text-ink sm:text-lg">
-            <strong class="font-semibold text-ink">{ABOUT_INTRO.conclusion.lead}</strong
-            >{ABOUT_INTRO.conclusion.body}
-          </p>
-        </div>
+      <!-- The single conclusion: a centred resolution set larger than the
+           streams above it, so two columns visibly funnel into one statement. -->
+      <div class="mt-12 border-t border-warm-grey pt-10 text-center sm:mt-0 sm:border-t-0 sm:pt-8">
+        <p class="label text-warm-grey">{ABOUT_INTRO.conclusion.label}</p>
+        <p class="mx-auto mt-5 max-w-text text-xl leading-snug tracking-tight text-ink">
+          <strong class="font-semibold">{ABOUT_INTRO.conclusion.lead}</strong
+          >{ABOUT_INTRO.conclusion.body}
+        </p>
       </div>
     </div>
   </section>
@@ -153,19 +132,6 @@ import { ABOUT_INTRO, ABOUT_FOUNDERS, ABOUT_FINAL_CTA } from '../data/about';
 </BaseLayout>
 
 <style>
-  /* Career disclosures: hide the native marker; the "+" rotates to "×" on open. */
-  .career > summary {
-    list-style: none;
-  }
-  .career > summary::-webkit-details-marker {
-    display: none;
-  }
-  .career-chev {
-    font-size: 1.5rem;
-    line-height: 1;
-    font-weight: 300;
-  }
-
   /* Terracotta strike under "One" — the single accent in the heading. Draws in
      on load; shown resolved under reduced motion. */
   .one-emph {
