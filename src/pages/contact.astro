@@ -1,0 +1,153 @@
+---
+/**
+ * /contact — "Book your Fit Call."
+ *
+ * Same editorial register as the other pages: eyebrow + typewriter H1, a
+ * standfirst, then the Fit Call form. Copy lives in src/data/contact.ts; the
+ * contact email comes from src/config/site.ts.
+ *
+ * The form works client-side today (native validation + an inline success
+ * state). To wire it to email/CRM later, set FORM_ENDPOINT below to a POST URL
+ * (Formspree, Netlify Forms, a Worker, etc.) — the script will then submit the
+ * collected FormData there and show the same success state on a 2xx response.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../config/site';
+import { CONTACT } from '../data/contact';
+---
+
+<BaseLayout title="Contact us" description={CONTACT.metaDescription}>
+  <section class="pt-20 sm:pt-28">
+    <p class="text-label uppercase tracking-tagline text-ink">{CONTACT.eyebrow}</p>
+    <h1 class="mt-5 text-[2.4rem] font-semibold leading-[1.02] tracking-[-0.035em] text-ink min-[420px]:text-[2.9rem] sm:text-[3.75rem] md:text-[4.25rem] lg:text-[5.75rem] xl:text-[6.75rem]">
+      Book your Fit <span class="emph-type" data-word="Call."
+        ><span class="sr-only">Call.</span><span class="ew" aria-hidden="true"
+          ><span class="ew-sizer">Call.</span><span class="ew-live"><span class="ew-typed">Call.</span><span class="ew-caret"></span></span></span
+        ></span
+      ></span>
+    </h1>
+
+    <p class="mt-8 max-w-text text-base text-ink sm:text-lg">{CONTACT.body}</p>
+
+    <!-- Fit Call form. Native validation handles required/email; the inline
+         script below progressively enhances submit (fetch when an endpoint is
+         set, otherwise a local success state). -->
+    <form
+      class="contact-form mt-12 max-w-text sm:mt-14"
+      novalidate
+      aria-describedby="form-status"
+    >
+      <div class="grid gap-x-8 gap-y-8 sm:grid-cols-2">
+        {
+          CONTACT.fields.map((field) => (
+            <div class:list={[field.id === 'name' || field.id === 'email' ? '' : 'sm:col-span-2']}>
+              <label for={field.id} class="label block text-ink">
+                {field.label}
+                {field.optional && <span class="ml-1.5 lowercase tracking-normal text-warm-grey">(optional)</span>}
+              </label>
+              <input
+                id={field.id}
+                name={field.id}
+                type={field.type}
+                autocomplete={field.autocomplete}
+                required={field.required}
+                class="mt-2 w-full rounded-sm border border-warm-grey bg-white px-4 py-3 text-[1rem] text-ink transition-colors placeholder:text-warm-grey focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink sm:text-base"
+              />
+            </div>
+          ))
+        }
+      </div>
+
+      <!-- Submit: the primary-button treatment, as a real <button> for the form. -->
+      <button
+        type="submit"
+        class="contact-submit mt-10 inline-block rounded-sm border border-ink bg-ink px-7 py-3 text-label font-medium uppercase tracking-label text-cream no-underline transition-colors hover:bg-cream hover:text-ink disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {CONTACT.submitLabel}
+      </button>
+
+      <p id="form-status" role="status" aria-live="polite" class="sr-only"></p>
+    </form>
+
+    <!-- Success state: hidden until a successful submit, then swapped in. -->
+    <div class="contact-success mt-12 hidden max-w-text sm:mt-14" tabindex="-1">
+      <span class="accent-rule"></span>
+      <h2 class="mt-6 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+        {CONTACT.success.heading}
+      </h2>
+      <p class="mt-6 text-base text-ink sm:text-lg">{CONTACT.success.body}</p>
+    </div>
+
+    <p class="mt-8 text-base text-ink">
+      {CONTACT.altLabel}{' '}
+      <a
+        href={`mailto:${SITE.contactEmail}`}
+        class="font-semibold text-ink underline decoration-warm-grey underline-offset-4 transition-colors hover:decoration-ink"
+        >{SITE.contactEmail}</a
+      >
+    </p>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+  (() => {
+    // Set this to a POST endpoint to wire the form to email/CRM later. While it's
+    // empty the form validates and shows the success state without sending.
+    const FORM_ENDPOINT = '';
+
+    const form = document.querySelector('.contact-form');
+    if (!form) return;
+    const status = form.querySelector('#form-status');
+    const submit = form.querySelector('.contact-submit');
+    const success = document.querySelector('.contact-success');
+    const submitLabel = submit ? submit.textContent : '';
+
+    const setStatus = (msg) => {
+      if (status) status.textContent = msg;
+    };
+
+    const showSuccess = () => {
+      form.classList.add('hidden');
+      if (success) {
+        success.classList.remove('hidden');
+        success.focus();
+      }
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      // Native validation: surface the browser's own messages on invalid fields.
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        setStatus('Please complete the required fields.');
+        return;
+      }
+
+      if (!FORM_ENDPOINT) {
+        // No endpoint wired yet — confirm locally so the flow is testable.
+        showSuccess();
+        return;
+      }
+
+      if (submit) {
+        submit.disabled = true;
+        submit.textContent = 'Sending…';
+      }
+      try {
+        const res = await fetch(FORM_ENDPOINT, {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+          body: new FormData(form),
+        });
+        if (!res.ok) throw new Error('Request failed');
+        showSuccess();
+      } catch (err) {
+        setStatus('Something went wrong. Please email us instead.');
+        if (submit) {
+          submit.disabled = false;
+          submit.textContent = submitLabel;
+        }
+      }
+    });
+  })();
+</script>
