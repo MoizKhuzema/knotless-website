@@ -150,10 +150,10 @@ const introDescription = WWD_INTRO.bodyParts
               tabindex="0"
               class="stage-panel"
             >
-              <p class="text-lg font-medium leading-snug tracking-tight text-ink">{stage.oneLiner}</p>
+              <p class="text-base italic leading-snug text-ink">{stage.oneLiner}</p>
               <div class="mt-6 grid gap-8 sm:grid-cols-2">
                 <div>
-                  <p class="text-lg font-semibold tracking-tight text-ink">{WWD_STAGES.labels.whatWeDo}</p>
+                  <p class="text-base font-semibold text-ink">{WWD_STAGES.labels.whatWeDo}</p>
                   <ul class="mt-3 space-y-2.5">
                     {stage.whatWeDo.map((item) => (
                       <li class="flex gap-3 text-ink">
@@ -164,7 +164,7 @@ const introDescription = WWD_INTRO.bodyParts
                   </ul>
                 </div>
                 <div>
-                  <p class="text-lg font-semibold tracking-tight text-ink">{WWD_STAGES.labels.walkAway}</p>
+                  <p class="text-base font-semibold text-ink">{WWD_STAGES.labels.walkAway}</p>
                   <ul class="mt-3 space-y-2.5">
                     {stage.walkAway.map((item) => (
                       <li class="flex gap-3 text-ink">
@@ -194,28 +194,23 @@ const introDescription = WWD_INTRO.bodyParts
     {/* Decision fork: after the findings, two honest outcomes branch from one
          point. A small org-chart fork on desktop; a left-spine branch on mobile. */}
     <div data-reveal class="mt-12 sm:mt-16">
-      <!-- desktop: top node -> bar -> two drops aligned to the columns below -->
-      <div class="relative mx-auto mb-2 hidden h-14 w-1/2 sm:block" aria-hidden="true">
-        <span class="absolute left-1/2 top-0 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-terracotta"></span>
-        <span class="absolute left-1/2 top-2.5 h-5 w-px -translate-x-1/2 bg-warm-grey"></span>
-        <span class="absolute inset-x-0 top-[1.875rem] h-px bg-warm-grey"></span>
-        <span class="absolute bottom-0 left-0 top-[1.875rem] w-px bg-warm-grey"></span>
-        <span class="absolute bottom-0 right-0 top-[1.875rem] w-px bg-warm-grey"></span>
-      </div>
-
-      <div class="relative grid gap-y-10 pl-6 sm:grid-cols-2 sm:gap-x-12 sm:pl-0">
+      <div class="relative grid gap-y-10 pl-6 sm:grid-cols-2 sm:gap-x-16 sm:pl-0">
+        <!-- desktop: a terracotta decision node at the centre + a line the two
+             outcomes flank symmetrically (right-aligned left / left-aligned right) -->
+        <span class="absolute left-1/2 top-0 hidden h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-terracotta sm:block" aria-hidden="true"></span>
+        <span class="absolute bottom-0 left-1/2 top-3 hidden w-px -translate-x-1/2 bg-warm-grey sm:block" aria-hidden="true"></span>
         <!-- mobile: a left spine + node the two outcomes branch from -->
         <span class="absolute left-1 top-2 bottom-2 w-px bg-warm-grey sm:hidden" aria-hidden="true"></span>
         <span class="absolute left-1 top-0 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-terracotta sm:hidden" aria-hidden="true"></span>
 
-        <div class="relative">
+        <div class="relative sm:pt-6 sm:text-right">
           <span class="absolute right-full top-[0.7em] h-px w-5 bg-warm-grey sm:hidden" aria-hidden="true"></span>
-          <p class="text-lg font-semibold tracking-tight text-ink">{WWD_IMPLEMENTATION.fork.no.label}</p>
-          <p class="mt-3 max-w-prose text-ink">{WWD_IMPLEMENTATION.fork.no.body}</p>
+          <p class="text-base font-semibold text-ink">{WWD_IMPLEMENTATION.fork.no.label}</p>
+          <p class="mt-3 text-ink sm:ml-auto sm:max-w-prose">{WWD_IMPLEMENTATION.fork.no.body}</p>
         </div>
-        <div class="relative">
+        <div class="relative sm:pt-6">
           <span class="absolute right-full top-[0.7em] h-px w-5 bg-warm-grey sm:hidden" aria-hidden="true"></span>
-          <p class="text-lg font-semibold tracking-tight text-terracotta">{WWD_IMPLEMENTATION.fork.yes.label}</p>
+          <p class="text-base font-semibold text-terracotta">{WWD_IMPLEMENTATION.fork.yes.label}</p>
           <p class="mt-3 text-ink">{WWD_IMPLEMENTATION.fork.yes.lead}</p>
           <ul class="mt-4 space-y-2.5">
             {
@@ -234,7 +229,7 @@ const introDescription = WWD_INTRO.bodyParts
     <!-- Who does the work: the founders, the delivery choice, the single channel —
          set as hairline-separated principles (distinct from the dash lists). -->
     <div data-reveal class="mt-16 max-w-text">
-      <p class="text-lg font-semibold tracking-tight text-ink">{WWD_IMPLEMENTATION.whoHeading}</p>
+      <p class="text-base font-semibold text-ink">{WWD_IMPLEMENTATION.whoHeading}</p>
       <div class="mt-6 border-t border-warm-grey">
         {whoBullets.map((item) => <p class="border-b border-warm-grey py-4 text-ink">{item}</p>)}
       </div>
