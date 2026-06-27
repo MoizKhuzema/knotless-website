@@ -1,0 +1,92 @@
+---
+/**
+ * /about — "Two careers. One conclusion."
+ *
+ * Same editorial register as the homepage and /what-we-do: eyebrow + typewriter
+ * H1, an accent-rule heading block, founder blocks (name + title from site.ts),
+ * a titled "How we deliver" block, and the reversed-Ink final CTA. Copy lives in
+ * src/data/about.ts; founder names/titles in src/config/site.ts.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CtaButton from '../components/CtaButton.astro';
+import { SITE } from '../config/site';
+import { ABOUT_INTRO, ABOUT_FOUNDERS, ABOUT_FINAL_CTA } from '../data/about';
+---
+
+<BaseLayout title="About us" description={ABOUT_INTRO.metaDescription}>
+  <!-- Section 1 — page intro (same register as the other hero pages) -->
+  <section class="pt-20 sm:pt-28">
+    <p class="text-label uppercase tracking-tagline text-ink">{ABOUT_INTRO.eyebrow}</p>
+    <h1 class="mt-5 text-[2.4rem] font-semibold leading-[1.02] tracking-[-0.035em] text-ink min-[420px]:text-[2.9rem] sm:text-[3.75rem] md:text-[4.25rem] lg:text-[5.75rem] xl:text-[6.75rem]">
+      Two careers.<br />One <span class="emph-type" data-word="conclusion."
+        ><span class="sr-only">conclusion.</span><span class="ew" aria-hidden="true"
+          ><span class="ew-sizer">conclusion.</span><span class="ew-live"><span class="ew-typed">conclusion.</span><span class="ew-caret"></span></span></span
+        ></span
+      ></span>
+    </h1>
+
+    <div class="mt-8 max-w-text space-y-5">
+      {
+        ABOUT_INTRO.body.map((p) => (
+          <p class="text-base text-ink sm:text-lg">
+            <strong class:list={['font-semibold', p.accent ? 'text-terracotta' : 'text-ink']}>
+              {p.lead}
+            </strong>
+            {p.rest}
+          </p>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Section 2 — who you'll work with -->
+  <section class="pt-section-lg">
+    <div data-reveal class="max-w-text">
+      <span class="accent-rule"></span>
+      <h2 class="mt-6 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+        {ABOUT_FOUNDERS.heading}
+      </h2>
+    </div>
+
+    <!-- Founder blocks: photo + name + title + bio. Stacked on mobile (the bios
+         need width), two columns from sm up. The circle is a placeholder outline
+         for the headshot — drop an <img> inside and it crops to the circle. -->
+    <div class="mt-12 grid gap-10 sm:mt-16 sm:grid-cols-2 sm:gap-12">
+      {
+        SITE.founders.map((founder, i) => (
+          <div data-reveal>
+            <div class="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-warm-grey sm:h-28 sm:w-28">
+              {/* headshot goes here */}
+            </div>
+            <h3 class="mt-5 text-lg font-semibold tracking-tight text-ink">{founder.name}</h3>
+            <p class="label mt-2 text-ink">{founder.title}</p>
+            <p class="mt-4 max-w-prose text-base text-ink">{ABOUT_FOUNDERS.bios[i]}</p>
+          </div>
+        ))
+      }
+    </div>
+
+    <p data-reveal class="mt-10 text-base text-ink">{ABOUT_FOUNDERS.teamLine}</p>
+
+    <!-- How we deliver: a titled block (same content-block header as the rest). -->
+    <div data-reveal class="mt-16 max-w-text">
+      <p class="text-base font-semibold text-ink">{ABOUT_FOUNDERS.deliverHeading}</p>
+      <div class="mt-3 space-y-4">
+        {ABOUT_FOUNDERS.deliverBody.map((para) => <p class="text-base text-ink">{para}</p>)}
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3 — final CTA (reversed Ink panel) -->
+  <section class="pt-section-lg">
+    <div data-reveal class="on-ink flex flex-col items-center rounded-sm px-6 py-20 text-center">
+      <span class="accent-rule"></span>
+      <h2 class="mt-6 text-2xl font-semibold tracking-tight sm:text-3xl">{ABOUT_FINAL_CTA.heading}</h2>
+      <div class="mt-9">
+        <CtaButton href={ABOUT_FINAL_CTA.cta.href} variant="inverse">
+          {ABOUT_FINAL_CTA.cta.label}
+        </CtaButton>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
