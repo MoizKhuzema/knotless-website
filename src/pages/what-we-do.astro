@@ -63,27 +63,40 @@ const introDescription = WWD_INTRO.bodyParts
       <p class="mt-6 max-w-text text-lg text-ink">{WWD_QUESTIONS.lead}</p>
     </div>
 
-    {/* Mobile: a horizontal, snap-scrolling carousel (the next card peeks to
-        signal swipe) so six vignettes don't stack into one tall column. Desktop
-        (sm+) is the unchanged two-column grid. */}
-    <div
-      class="-mx-gutter mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-gutter pb-4 sm:mx-0 sm:mt-14 sm:grid sm:auto-rows-fr sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0"
-    >
-      {
-        WWD_QUESTIONS.vignettes.map((v) => (
-          <article
-            data-reveal
-            class="group flex w-[78%] shrink-0 snap-center flex-col rounded-sm border border-warm-grey p-5 transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-ink hover:bg-ink sm:h-full sm:w-auto sm:shrink sm:p-7"
-          >
-            <p class="text-lg font-medium leading-snug tracking-tight text-ink transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream sm:text-xl">
-              “{v.quote}”
-            </p>
-            <p class="mt-3 text-sm italic text-ink transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream sm:mt-4 sm:text-base">
-              {v.who}
-            </p>
-          </article>
-        ))
-      }
+    {/* A horizontal, snap-scrolling carousel on every viewport: swipe / trackpad
+        on touch, plus prev/next arrows and gentle autoplay on desktop. The next
+        card peeks to signal there's more. */}
+    <div data-reveal class="relative mt-10 sm:mt-14">
+      <button
+        type="button"
+        class="vig-prev absolute left-1 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-warm-grey bg-cream text-ink transition-colors hover:bg-ink hover:text-cream sm:flex"
+        aria-label="Previous statements"
+      >
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+      </button>
+      <button
+        type="button"
+        class="vig-next absolute right-1 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-warm-grey bg-cream text-ink transition-colors hover:bg-ink hover:text-cream sm:flex"
+        aria-label="Next statements"
+      >
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+      </button>
+      <div class="vig-track -mx-gutter flex snap-x snap-mandatory gap-4 overflow-x-auto px-gutter pb-4 sm:mx-0 sm:gap-6 sm:px-0">
+        {
+          WWD_QUESTIONS.vignettes.map((v) => (
+            <article
+              class="group flex w-[80%] shrink-0 snap-center flex-col rounded-sm border border-warm-grey p-5 transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-ink hover:bg-ink sm:w-[46%] sm:p-7 lg:w-[31%]"
+            >
+              <p class="text-lg font-medium leading-snug tracking-tight text-ink transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream sm:text-xl">
+                “{v.quote}”
+              </p>
+              <p class="mt-3 text-sm italic text-ink transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream sm:mt-4 sm:text-base">
+                {v.who}
+              </p>
+            </article>
+          ))
+        }
+      </div>
     </div>
 
     <!-- No max-width so the closing line stays on one row where space allows. -->
@@ -109,7 +122,7 @@ const introDescription = WWD_INTRO.bodyParts
             <summary class="flex cursor-pointer list-none items-start justify-between gap-6 py-8 [&::-webkit-details-marker]:hidden">
               <div>
                 <p class="label text-ink">{stage.title}</p>
-                <p class="mt-3 text-xl font-medium leading-snug tracking-tight text-ink">
+                <p class="mt-3 text-lg font-medium leading-snug tracking-tight text-ink sm:text-xl">
                   {stage.oneLiner}
                 </p>
               </div>
@@ -298,6 +311,68 @@ const introDescription = WWD_INTRO.bodyParts
     </div>
   </section>
 </BaseLayout>
+
+<script is:inline>
+  // "Sound familiar?" carousel: prev/next arrows, native swipe/trackpad scroll,
+  // and gentle autoplay on desktop (paused on hover/focus, off-screen, hidden
+  // tab, and under reduced motion). Mobile relies on swipe (no autoplay).
+  (() => {
+    const track = document.querySelector('.vig-track');
+    if (!track) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const wide = () => window.matchMedia('(min-width: 640px)').matches;
+    const prev = document.querySelector('.vig-prev');
+    const next = document.querySelector('.vig-next');
+
+    const stepX = () => {
+      const card = track.querySelector('article');
+      const gap = parseFloat(getComputedStyle(track).columnGap) || 16;
+      return card ? card.offsetWidth + gap : track.clientWidth;
+    };
+    const maxLeft = () => track.scrollWidth - track.clientWidth;
+    const go = (dir) => {
+      const behavior = reduce ? 'auto' : 'smooth';
+      if (dir > 0 && track.scrollLeft >= maxLeft() - 2) return track.scrollTo({ left: 0, behavior });
+      if (dir < 0 && track.scrollLeft <= 2) return track.scrollTo({ left: maxLeft(), behavior });
+      track.scrollBy({ left: dir * stepX(), behavior });
+    };
+    if (prev) prev.addEventListener('click', () => go(-1));
+    if (next) next.addEventListener('click', () => go(1));
+
+    // Autoplay ping-pongs so it never makes a long jump back to the start.
+    let timer = null;
+    let dir = 1;
+    const tick = () => {
+      if (dir > 0 && track.scrollLeft >= maxLeft() - 2) dir = -1;
+      else if (dir < 0 && track.scrollLeft <= 2) dir = 1;
+      track.scrollBy({ left: dir * stepX(), behavior: 'smooth' });
+    };
+    const start = () => {
+      if (reduce || timer || !wide()) return;
+      timer = setInterval(tick, 4500);
+    };
+    const stop = () => {
+      if (timer) clearInterval(timer);
+      timer = null;
+    };
+    ['pointerenter', 'focusin'].forEach((e) => track.addEventListener(e, stop));
+    ['pointerleave', 'focusout'].forEach((e) => track.addEventListener(e, start));
+    [prev, next].forEach((b) => {
+      if (!b) return;
+      b.addEventListener('pointerenter', stop);
+      b.addEventListener('pointerleave', start);
+    });
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(
+        (entries) => entries.forEach((e) => (e.isIntersecting ? start() : stop())),
+        { threshold: 0.2 },
+      ).observe(track);
+    } else {
+      start();
+    }
+  })();
+</script>
 
 <style>
   /* Disclosure chevron (stages + FAQ): rotates when its <details> is open. */
