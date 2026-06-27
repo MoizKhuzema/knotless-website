@@ -41,7 +41,7 @@ const introDescription = WWD_INTRO.bodyParts
         ></span
       ><br />Whole story.
     </h1>
-    <p class="mt-8 max-w-text text-base text-ink sm:text-lg">
+    <p class="mt-8 max-w-text text-base text-ink">
       {
         WWD_INTRO.bodyParts.map((p) =>
           typeof p === 'string' ? p : <strong class="font-semibold text-terracotta">{p.strong}</strong>,
@@ -60,7 +60,7 @@ const introDescription = WWD_INTRO.bodyParts
       <h2 class="mt-6 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
         {WWD_QUESTIONS.heading}
       </h2>
-      <p class="mt-6 max-w-text text-lg text-ink">{WWD_QUESTIONS.lead}</p>
+      <p class="mt-6 max-w-text text-base text-ink">{WWD_QUESTIONS.lead}</p>
     </div>
 
     {/* A horizontal, snap-scrolling carousel on every viewport: swipe / trackpad
@@ -87,10 +87,10 @@ const introDescription = WWD_INTRO.bodyParts
             <article
               class="group flex w-[80%] shrink-0 snap-center flex-col rounded-sm border border-warm-grey p-5 transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-ink hover:bg-ink sm:w-[46%] sm:p-7 lg:w-[31%]"
             >
-              <p class="text-lg font-medium leading-snug tracking-tight text-ink transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream sm:text-xl">
+              <p class="text-lg font-medium leading-snug tracking-tight text-ink transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream">
                 “{v.quote}”
               </p>
-              <p class="mt-3 text-sm italic text-ink transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream sm:mt-4 sm:text-base">
+              <p class="mt-3 text-sm italic text-ink transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream sm:mt-4">
                 {v.who}
               </p>
             </article>
@@ -100,7 +100,7 @@ const introDescription = WWD_INTRO.bodyParts
     </div>
 
     <!-- No max-width so the closing line stays on one row where space allows. -->
-    <p data-reveal class="mt-14 text-lg text-ink">{WWD_QUESTIONS.close}</p>
+    <p data-reveal class="mt-14 text-base text-ink">{WWD_QUESTIONS.close}</p>
   </section>
 
   <!-- Section 3 — what you get at each stage -->
@@ -110,7 +110,7 @@ const introDescription = WWD_INTRO.bodyParts
       <h2 class="mt-6 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
         {WWD_STAGES.heading}
       </h2>
-      <p class="mt-6 text-lg text-ink">{WWD_STAGES.lead}</p>
+      <p class="mt-6 text-base text-ink">{WWD_STAGES.lead}</p>
     </div>
 
     <div class="mt-16 border-t border-warm-grey">
@@ -122,7 +122,7 @@ const introDescription = WWD_INTRO.bodyParts
             <summary class="flex cursor-pointer list-none items-start justify-between gap-6 py-8 [&::-webkit-details-marker]:hidden">
               <div>
                 <p class="label text-ink">{stage.title}</p>
-                <p class="mt-3 text-lg font-medium leading-snug tracking-tight text-ink sm:text-xl">
+                <p class="mt-3 text-lg font-medium leading-snug tracking-tight text-ink">
                   {stage.oneLiner}
                 </p>
               </div>
@@ -301,8 +301,8 @@ const introDescription = WWD_INTRO.bodyParts
   <section class="pt-section-lg">
     <div data-reveal class="on-ink flex flex-col items-center rounded-sm px-6 py-20 text-center">
       <span class="accent-rule"></span>
-      <h2 class="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">{WWD_FINAL_CTA.heading}</h2>
-      <p class="mt-4 max-w-prose text-lg text-cream">{WWD_FINAL_CTA.body}</p>
+      <h2 class="mt-6 text-2xl font-semibold tracking-tight sm:text-3xl">{WWD_FINAL_CTA.heading}</h2>
+      <p class="mt-4 max-w-prose text-base text-cream">{WWD_FINAL_CTA.body}</p>
       <div class="mt-9">
         <CtaButton href={WWD_FINAL_CTA.cta.href} variant="inverse">
           {WWD_FINAL_CTA.cta.label}

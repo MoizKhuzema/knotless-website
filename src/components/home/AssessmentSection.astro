@@ -23,7 +23,7 @@ import ArrowLink from '../ArrowLink.astro';
     <h2 class="mt-6 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
       {ASSESSMENT.heading}
     </h2>
-    <p class="mt-6 max-w-text text-lg text-ink">{ASSESSMENT.intro}</p>
+    <p class="mt-6 max-w-text text-base text-ink">{ASSESSMENT.intro}</p>
   </div>
 
   <!-- Stages: no numbers — a terracotta marker + the stage name lead, with the
@@ -37,7 +37,7 @@ import ArrowLink from '../ArrowLink.astro';
           data-reveal
           class="group scroll-mt-24 border-b border-warm-grey py-6 transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-ink sm:grid sm:grid-cols-12 sm:items-baseline sm:gap-8 sm:py-7"
         >
-          <h3 class="flex items-center gap-3 text-lg font-semibold tracking-tight text-ink transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream sm:col-span-4 sm:text-xl">
+          <h3 class="flex items-center gap-3 text-lg font-semibold tracking-tight text-ink transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream sm:col-span-4">
             <span aria-hidden="true" class="h-2 w-2 shrink-0 rounded-full bg-terracotta" />
             {stage.title}
           </h3>
