@@ -3,17 +3,30 @@
  * /contact — "Book your Fit Call."
  *
  * Same editorial register as the other pages: eyebrow + typewriter H1, a
- * standfirst, then the Fit Call form. Copy lives in src/data/contact.ts; the
- * contact email comes from src/config/site.ts.
+ * standfirst, then the Fit Call enquiry form. Copy lives in src/data/contact.ts;
+ * the contact email comes from src/config/site.ts.
  *
- * The form works client-side today (native validation + an inline success
- * state). To wire it to email/CRM later, set FORM_ENDPOINT below to a POST URL
- * (Formspree, Netlify Forms, a Worker, etc.) — the script will then submit the
- * collected FormData there and show the same success state on a 2xx response.
+ * FORM HANDLING — Netlify Forms (no third-party service):
+ *   - The <form> carries `data-netlify="true"`, a matching hidden `form-name`
+ *     field, and a `netlify-honeypot` field for spam. Netlify detects the form
+ *     in the static HTML at deploy time and handles submissions itself.
+ *   - The script POSTs the fields (url-encoded, incl. form-name) to Netlify and
+ *     shows the inline success state; native validation runs first.
+ *   - Netlify stores submissions in the site's Forms dashboard. To get them in
+ *     the Outlook/M365 inbox, add ONE email notification in the Netlify UI:
+ *       Site configuration → Forms → Form notifications → Add notification →
+ *       Email notification → send to SITE.contactEmail (hello@knotless.ai).
+ *   - Netlify Forms only processes on the deployed Netlify site (not local dev).
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { href as withBase } from '../lib/href';
 import { SITE } from '../config/site';
 import { CONTACT } from '../data/contact';
+
+// Form name registered with Netlify (shown in the Forms dashboard). The hidden
+// `form-name` field below must match this exactly.
+const FORM_NAME = 'fit-call';
+const FORM_ACTION = withBase('/contact');
 ---
 
 <BaseLayout title="Contact us" description={CONTACT.metaDescription}>
@@ -29,18 +42,34 @@ import { CONTACT } from '../data/contact';
 
     <p class="mt-8 max-w-text text-base text-ink sm:text-lg">{CONTACT.body}</p>
 
-    <!-- Fit Call form. Native validation handles required/email; the inline
-         script below progressively enhances submit (fetch when an endpoint is
-         set, otherwise a local success state). -->
+    <!-- Fit Call enquiry form, handled by Netlify Forms. `name` + the hidden
+         `form-name` must match; `netlify-honeypot` names the anti-spam field.
+         Native validation runs first; the script below submits via fetch and
+         shows the inline success state. -->
     <form
       class="contact-form mt-12 max-w-text sm:mt-14"
+      name={FORM_NAME}
+      method="POST"
+      action={FORM_ACTION}
+      data-netlify="true"
+      netlify-honeypot="bot-field"
       novalidate
       aria-describedby="form-status"
     >
+      <!-- Required by Netlify for the dashboard/notification routing. -->
+      <input type="hidden" name="form-name" value={FORM_NAME} />
+      <!-- Honeypot: hidden from people; bots that fill it are dropped by Netlify. -->
+      <p class="hidden" aria-hidden="true">
+        <label>
+          Don’t fill this in if you’re human:
+          <input name="bot-field" tabindex="-1" autocomplete="off" />
+        </label>
+      </p>
+
       <div class="grid gap-x-8 gap-y-8 sm:grid-cols-2">
         {
           CONTACT.fields.map((field) => (
-            <div class:list={[field.id === 'name' || field.id === 'email' ? '' : 'sm:col-span-2']}>
+            <div class:list={[field.id === 'name' || field.id === 'company' ? '' : 'sm:col-span-2']}>
               <label for={field.id} class="label block text-ink">
                 {field.label}
                 {field.optional && <span class="ml-1.5 lowercase tracking-normal text-warm-grey">(optional)</span>}
@@ -91,10 +120,6 @@ import { CONTACT } from '../data/contact';
 
 <script is:inline>
   (() => {
-    // Set this to a POST endpoint to wire the form to email/CRM later. While it's
-    // empty the form validates and shows the success state without sending.
-    const FORM_ENDPOINT = '';
-
     const form = document.querySelector('.contact-form');
     if (!form) return;
     const status = form.querySelector('#form-status');
@@ -123,21 +148,19 @@ import { CONTACT } from '../data/contact';
         return;
       }
 
-      if (!FORM_ENDPOINT) {
-        // No endpoint wired yet — confirm locally so the flow is testable.
-        showSuccess();
-        return;
-      }
-
       if (submit) {
         submit.disabled = true;
         submit.textContent = 'Sending…';
       }
+
       try {
-        const res = await fetch(FORM_ENDPOINT, {
+        // Netlify Forms: POST the fields url-encoded (including form-name and the
+        // honeypot) to the site. Netlify matches on form-name and stores/notifies.
+        const body = new URLSearchParams(new FormData(form)).toString();
+        const res = await fetch(form.getAttribute('action') || '/', {
           method: 'POST',
-          headers: { Accept: 'application/json' },
-          body: new FormData(form),
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body,
         });
         if (!res.ok) throw new Error('Request failed');
         showSuccess();

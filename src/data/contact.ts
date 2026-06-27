@@ -13,7 +13,6 @@ export const CONTACT = {
   body: 'Tell us who you are and we’ll come back within one business day to set a time. Thirty minutes, free, with the founders. No preparation needed.',
   fields: [
     { id: 'name', label: 'Name', type: 'text', autocomplete: 'name', required: true },
-    { id: 'email', label: 'Email', type: 'email', autocomplete: 'email', required: true },
     {
       id: 'company',
       label: 'Company',
@@ -21,6 +20,7 @@ export const CONTACT = {
       autocomplete: 'organization',
       required: true,
     },
+    { id: 'email', label: 'Email', type: 'email', autocomplete: 'email', required: true },
     {
       id: 'phone',
       label: 'Phone',
