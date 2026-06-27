@@ -25,17 +25,74 @@ import { ABOUT_INTRO, ABOUT_FOUNDERS, ABOUT_FINAL_CTA } from '../data/about';
       ></span>
     </h1>
 
-    <div class="mt-8 max-w-text space-y-5">
-      {
-        ABOUT_INTRO.body.map((p) => (
-          <p class="text-base text-ink sm:text-lg">
-            <strong class:list={['font-semibold', p.accent ? 'text-terracotta' : 'text-ink']}>
-              {p.lead}
-            </strong>
-            {p.rest}
+    <!-- Convergence diagram: two careers (click to expand) meet in one
+         conclusion. Mobile = a single vertical spine (career, career, then the
+         conclusion node). Desktop = two career nodes side by side, a pair of
+         lines converging to a centred node, then the conclusion below. -->
+    <div data-reveal class="mt-12 sm:mt-16">
+      <!-- The two career nodes -->
+      <div class="relative grid gap-8 sm:grid-cols-2 sm:gap-x-16">
+        <!-- mobile spine connecting the two career nodes -->
+        <span
+          class="absolute left-[1.25rem] top-12 h-[calc(100%-3rem)] w-px bg-warm-grey sm:hidden"
+          aria-hidden="true"></span>
+        {
+          ABOUT_INTRO.careers.map((c) => (
+            <details class="career group relative">
+              <summary class="flex cursor-pointer list-none items-center gap-4">
+                <span class="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-warm-grey bg-cream text-label font-semibold uppercase tracking-label text-ink">
+                  {c.name.charAt(0)}
+                </span>
+                <span class="min-w-0">
+                  <span class="block text-lg font-semibold tracking-tight text-ink sm:text-xl">
+                    {c.name}
+                  </span>
+                  <span class="block text-base text-warm-grey">{c.teaser}</span>
+                </span>
+                <span
+                  class="career-chev ml-auto shrink-0 text-warm-grey transition-transform duration-300 group-open:rotate-45"
+                  aria-hidden="true"
+                >
+                  +
+                </span>
+              </summary>
+              <p class="mt-4 max-w-prose pl-14 text-base text-ink sm:pl-0">{c.experience}</p>
+            </details>
+          ))
+        }
+      </div>
+
+      <!-- Converging connector → conclusion. The desktop lines live in an SVG
+           that scales to the row width; non-scaling-stroke keeps them crisp. -->
+      <div class="relative mt-2 sm:mt-0">
+        <svg
+          class="hidden h-12 w-full sm:block"
+          viewBox="0 0 100 40"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <line x1="25" y1="0" x2="50" y2="38" stroke="var(--color-warm-grey)" vector-effect="non-scaling-stroke" />
+          <line x1="75" y1="0" x2="50" y2="38" stroke="var(--color-warm-grey)" vector-effect="non-scaling-stroke" />
+        </svg>
+        <!-- mobile spine continues into the conclusion node -->
+        <span
+          class="absolute left-[1.25rem] top-0 h-8 w-px bg-warm-grey sm:hidden"
+          aria-hidden="true"></span>
+      </div>
+
+      <!-- Conclusion node -->
+      <div class="relative mt-8 flex items-start gap-4 sm:mt-2 sm:justify-center sm:text-center">
+        <span
+          class="relative z-10 mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-terracotta sm:hidden"
+          aria-hidden="true"></span>
+        <div class="max-w-text">
+          <p class="text-label uppercase tracking-tagline text-terracotta">{ABOUT_INTRO.conclusion.label}</p>
+          <p class="mt-3 text-base text-ink sm:text-lg">
+            <strong class="font-semibold text-ink">{ABOUT_INTRO.conclusion.lead}</strong
+            >{ABOUT_INTRO.conclusion.body}
           </p>
-        ))
-      }
+        </div>
+      </div>
     </div>
   </section>
 
@@ -48,22 +105,26 @@ import { ABOUT_INTRO, ABOUT_FOUNDERS, ABOUT_FINAL_CTA } from '../data/about';
       </h2>
     </div>
 
-    <!-- Founder blocks: photo + name + title + bio. Stacked on mobile (the bios
-         need width), two columns from sm up. The circle is a placeholder outline
-         for the headshot — drop an <img> inside and it crops to the circle. -->
-    <div class="mt-12 grid gap-10 sm:mt-16 sm:grid-cols-2 sm:gap-12">
-      {
-        SITE.founders.map((founder, i) => (
-          <div data-reveal>
-            <div class="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-warm-grey sm:h-28 sm:w-28">
-              {/* headshot goes here */}
+    <!-- One combined founder portrait beside both founders' details. Mobile =
+         portrait on top, the two bios stacked below. Desktop = portrait left
+         (~2fr), details right (~3fr). The portrait is a placeholder box for the
+         photo — drop an <img class="h-full w-full object-cover"> inside it. -->
+    <div class="mt-12 grid gap-10 sm:mt-16 sm:grid-cols-[2fr_3fr] sm:gap-12 lg:gap-16">
+      <div data-reveal class="flex aspect-[4/5] items-center justify-center overflow-hidden rounded-sm border border-warm-grey">
+        <span class="label text-warm-grey">Portrait</span>
+      </div>
+
+      <div class="space-y-10">
+        {
+          SITE.founders.map((founder, i) => (
+            <div data-reveal>
+              <h3 class="text-lg font-semibold tracking-tight text-ink sm:text-xl">{founder.name}</h3>
+              <p class="label mt-2 text-ink">{founder.title}</p>
+              <p class="mt-4 max-w-prose text-base text-ink">{ABOUT_FOUNDERS.bios[i]}</p>
             </div>
-            <h3 class="mt-5 text-lg font-semibold tracking-tight text-ink">{founder.name}</h3>
-            <p class="label mt-2 text-ink">{founder.title}</p>
-            <p class="mt-4 max-w-prose text-base text-ink">{ABOUT_FOUNDERS.bios[i]}</p>
-          </div>
-        ))
-      }
+          ))
+        }
+      </div>
     </div>
 
     <p data-reveal class="mt-10 text-base text-ink">{ABOUT_FOUNDERS.teamLine}</p>
@@ -92,6 +153,19 @@ import { ABOUT_INTRO, ABOUT_FOUNDERS, ABOUT_FINAL_CTA } from '../data/about';
 </BaseLayout>
 
 <style>
+  /* Career disclosures: hide the native marker; the "+" rotates to "×" on open. */
+  .career > summary {
+    list-style: none;
+  }
+  .career > summary::-webkit-details-marker {
+    display: none;
+  }
+  .career-chev {
+    font-size: 1.5rem;
+    line-height: 1;
+    font-weight: 300;
+  }
+
   /* Terracotta strike under "One" — the single accent in the heading. Draws in
      on load; shown resolved under reduced motion. */
   .one-emph {

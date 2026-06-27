@@ -7,30 +7,36 @@
  */
 
 /**
- * Section 1 — page intro. The heading ("Two careers. One conclusion.") is
- * rendered in the page so "conclusion." can use the typewriter treatment.
- * `body` is a list of paragraphs; each has a bold `lead` (terracotta when
- * `accent`) and the remaining `rest`.
+ * Section 1 — page intro, rendered as a convergence diagram: two careers
+ * (`careers`) that meet in one `conclusion`. The heading ("Two careers. One
+ * conclusion.") is rendered in the page so "conclusion." can be typed. Each
+ * career shows a `teaser` collapsed and the full `experience` when expanded.
  */
 export const ABOUT_INTRO = {
   eyebrow: 'About us',
   metaDescription:
     'Two careers, one conclusion: judgement before technology. Meet Insiya and Huzefa Karbalai, the founders behind Knotless.',
-  body: [
+  careers: [
     {
-      lead: 'Insiya',
-      rest: ' spent a decade in client success, working with mid-market and SME firms across industries. Same pattern everywhere: capable people stuck doing repetitive work, and budgets too thin to fix it. Not a technology problem. A human one, and nobody was solving it at a size these businesses could buy.',
+      id: 'insiya',
+      name: 'Insiya',
+      teaser: 'A decade in client success',
+      experience:
+        'Insiya spent a decade in client success, working with mid-market and SME firms across industries. Same pattern everywhere: capable people stuck doing repetitive work, and budgets too thin to fix it. Not a technology problem. A human one, and nobody was solving it at a size these businesses could buy.',
     },
     {
-      lead: 'Huzefa',
-      rest: ' spent fifteen years accountable for making technology rollouts work inside real businesses. The lesson: the hard part is never the technology. It’s real budgets, real constraints, and almost nobody asking the questions that decide whether any of it pays off. What’s the real problem? What’s the risk? Is this the right tool?',
-    },
-    {
-      lead: 'Knotless is those careers pointed at one problem.',
-      accent: true,
-      rest: ' We built the firm neither of us could find: judgement before technology. We work out where AI pays you back, and where it won’t. Then we build only what the numbers backed.',
+      id: 'huzefa',
+      name: 'Huzefa',
+      teaser: 'Fifteen years in technology rollouts',
+      experience:
+        'Huzefa spent fifteen years accountable for making technology rollouts work inside real businesses. The lesson: the hard part is never the technology. It’s real budgets, real constraints, and almost nobody asking the questions that decide whether any of it pays off. What’s the real problem? What’s the risk? Is this the right tool?',
     },
   ],
+  conclusion: {
+    label: 'One conclusion',
+    lead: 'Knotless',
+    body: ' is those careers pointed at one problem. We built the firm neither of us could find: judgement before technology. We work out where AI pays you back, and where it won’t. Then we build only what the numbers backed.',
+  },
 } as const;
 
 /** Section 2 — who you'll work with. Names/titles from site.ts; bios paired by index. */
