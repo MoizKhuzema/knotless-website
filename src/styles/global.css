@@ -36,8 +36,8 @@
   --color-warm-grey: #8a8580; /* muted text, hairlines, secondary icons  */
 
   /* --- Type family -------------------------------------------------- */
-  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto,
-    sans-serif;
+  --font-sans: 'Inter Variable', 'Inter Fallback', system-ui, -apple-system,
+    'Segoe UI', Roboto, sans-serif;
 
   /* --- Type scale ---------------------------------------------------
    * Editorial scale, rem-based (root = 16px). Body is a generous 18px,
@@ -87,6 +87,23 @@
   --container-prose: 38rem; /* ~68–70 chars at 18px body          */
   --container-text: 48rem; /* headings / standfirst column      */
   --container-page: 72rem; /* outer editorial width             */
+}
+
+/* ---------------------------------------------------------------------
+ * Metric-matched fallback for Inter (zero-download, local fonts only).
+ * Shown for the brief moment before the preloaded Inter woff2 swaps in; the
+ * overrides make a local Arial/Helvetica render at Inter's metrics so there's
+ * no reflow on swap (CLS ≈ 0). On platforms without these locals it simply
+ * falls through to system-ui (no harm). Inter is always the final rendered face.
+ * Override values are the standard Inter→Arial set.
+ * ------------------------------------------------------------------- */
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial'), local('Helvetica Neue'), local('Helvetica');
+  ascent-override: 90.2%;
+  descent-override: 22.48%;
+  line-gap-override: 0%;
+  size-adjust: 107.4%;
 }
 
 /* ---------------------------------------------------------------------
