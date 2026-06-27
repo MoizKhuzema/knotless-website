@@ -31,12 +31,18 @@ interface Props {
   title: string;
   /** Meta description for SEO / link previews. */
   description?: string;
+  /** OpenGraph type (e.g. "website", "article"). */
+  ogType?: string;
+  /** JSON-LD structured data for this page (an object or array). Serialised
+   *  into a <script type="application/ld+json"> tag. */
+  schema?: unknown;
   /** Hide the shared Nav/Footer chrome (e.g. for the styleguide). */
   bare?: boolean;
 }
 
-const { title, description = '', bare = false } = Astro.props;
+const { title, description = '', ogType = 'website', schema, bare = false } = Astro.props;
 const fullTitle = `${title} | ${SITE.legalEntityName}`;
+const ogImageAlt = `${SITE.legalEntityName} — ${SITE.tagline}`;
 
 // Absolute URLs for canonical + OG. Astro.url.pathname already includes the
 // base; og path is base-prefixed via href() before being made absolute.
@@ -48,7 +54,7 @@ const fontFace = `@font-face{font-family:'Inter Variable';font-style:normal;font
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en-AU">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -68,14 +74,26 @@ const fontFace = `@font-face{font-family:'Inter Variable';font-style:normal;font
     <link rel="apple-touch-icon" sizes="180x180" href={href('/apple-touch-icon.png')} />
 
     <!-- Open Graph / social -->
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={SITE.legalEntityName} />
+    <meta property="og:locale" content="en_AU" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={ogImageAlt} />
+
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
+
+    <!-- JSON-LD structured data (per page). -->
+    {schema && <script type="application/ld+json" set:html={JSON.stringify(schema)} />}
   </head>
   <body>
     {

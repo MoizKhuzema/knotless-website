@@ -1,0 +1,33 @@
+---
+/**
+ * 404 — branded "not found" page. Same editorial register as the heroes;
+ * routes the visitor back to the home page and the Fit Call. Astro emits this
+ * as 404.html, which Netlify serves for unmatched URLs automatically.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CtaButton from '../components/CtaButton.astro';
+import { href } from '../lib/href';
+---
+
+<BaseLayout
+  title="Page not found"
+  description="The page you’re looking for isn’t here. Head back home, or book a free Fit Call with the founders of Knotless."
+>
+  <section class="hero-screen sm:pt-28">
+    <p class="text-label uppercase tracking-tagline text-ink">Error 404</p>
+    <h1 class="mt-5 text-[2.4rem] font-semibold leading-[1.02] tracking-[-0.035em] text-ink min-[420px]:text-[2.9rem] sm:text-[3.75rem] md:text-[4.25rem] lg:text-[5.75rem]">
+      This page isn’t here.
+    </h1>
+    <p class="mt-8 max-w-text text-base text-ink sm:text-lg">
+      The link may be broken, or the page may have moved. Let’s get you back on track.
+    </p>
+    <div class="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
+      <CtaButton href="/contact">Book a free Fit Call</CtaButton>
+      <a
+        href={href('/')}
+        class="label text-ink underline decoration-warm-grey underline-offset-4 transition-colors hover:decoration-ink"
+        >Back to home</a
+      >
+    </div>
+  </section>
+</BaseLayout>

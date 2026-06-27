@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
 import { SITE } from './src/config/site';
@@ -23,6 +24,14 @@ export default defineConfig({
   // URLs to match, so internal links resolve directly on GitHub Pages without
   // relying on a 301 redirect.
   trailingSlash: 'always',
+  // Auto-generated XML sitemap (sitemap-index.xml + sitemap-0.xml), built from
+  // `site` above (the primaryDomain by default). robots.txt points crawlers to
+  // it. lastmod is stamped at build; the 404 page is excluded.
+  integrations: [
+    sitemap({
+      filter: (page) => !page.includes('/404'),
+    }),
+  ],
   vite: {
     plugins: [tailwindcss()],
   },

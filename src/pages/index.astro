@@ -10,9 +10,22 @@ import AssessmentSection from '../components/home/AssessmentSection.astro';
 import FoundersSection from '../components/home/FoundersSection.astro';
 import FinalCtaSection from '../components/home/FinalCtaSection.astro';
 import { HERO } from '../data/homepage';
+import { graph, organization, website, webPage } from '../lib/schema';
+
+const title = 'AI that’s worth building';
+const description = HERO.subhead;
+const origin = Astro.site!.origin;
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
+
+// Connected @graph: the canonical Organization + WebSite, plus this WebPage.
+const schema = graph([
+  organization(origin),
+  website(origin),
+  webPage(origin, { url: pageUrl, name: title, description }),
+]);
 ---
 
-<BaseLayout title="AI that’s worth building" description={HERO.subhead}>
+<BaseLayout title={title} description={description} schema={schema}>
   <HeroVisual />
   <AssessmentSection />
   <FoundersSection />

@@ -8,6 +8,7 @@
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaButton from '../components/CtaButton.astro';
+import { graph, webPage, service } from '../lib/schema';
 import {
   WWD_INTRO,
   WWD_QUESTIONS,
@@ -27,9 +28,23 @@ const whoBullets = [
 const introDescription = WWD_INTRO.bodyParts
   .map((p) => (typeof p === 'string' ? p : p.strong))
   .join('');
+
+const origin = Astro.site!.origin;
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
+
+// Service node (provided by the Organization) + this WebPage.
+const schema = graph([
+  webPage(origin, { url: pageUrl, name: 'What we do', description: introDescription }),
+  service(origin, {
+    url: pageUrl,
+    name: 'AI Assessment and Implementation',
+    serviceType: 'Artificial intelligence consulting',
+    description: introDescription,
+  }),
+]);
 ---
 
-<BaseLayout title="What we do" description={introDescription}>
+<BaseLayout title="What we do" description={introDescription} schema={schema}>
   <!-- Section 1 — page intro. On mobile it fills the first screen (content
        centred) so the next section sits below the fold and reveals on scroll;
        top-aligned from sm up. -->

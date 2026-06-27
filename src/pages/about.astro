@@ -13,9 +13,23 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaButton from '../components/CtaButton.astro';
 import { SITE } from '../config/site';
 import { ABOUT_INTRO, ABOUT_FOUNDERS, ABOUT_FINAL_CTA } from '../data/about';
+import { graph, webPage, founderPersons } from '../lib/schema';
+
+const origin = Astro.site!.origin;
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
+
+// A Person node per founder (from SITE.founders), plus this WebPage.
+const schema = graph([
+  webPage(origin, {
+    url: pageUrl,
+    name: 'About us',
+    description: ABOUT_INTRO.metaDescription,
+  }),
+  ...founderPersons(origin),
+]);
 ---
 
-<BaseLayout title="About us" description={ABOUT_INTRO.metaDescription}>
+<BaseLayout title="About us" description={ABOUT_INTRO.metaDescription} schema={schema}>
   <!-- Section 1 — hero (same register as the homepage / what-we-do heroes).
        On mobile it fills the first screen (content centred) so the next section
        sits below the fold and reveals on scroll; top-aligned from sm up. -->
