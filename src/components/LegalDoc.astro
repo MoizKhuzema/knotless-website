@@ -1,0 +1,84 @@
+---
+/**
+ * Shared shell for the long-form legal pages (Privacy, Terms).
+ *
+ * Renders the page in the site's editorial register: eyebrow + H1, a
+ * version/last-updated line, a "Contents" jump-list built from the document's
+ * H2s, then the policy body (markdown compiled to HTML and injected). A small
+ * footer cross-links the sibling document. The body markup is styled by the
+ * `.legal-prose` rules in global.css.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { href } from '../lib/href';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  description: string;
+  version: string;
+  lastUpdated: string;
+  headings: Heading[];
+  html: string;
+  sibling: { label: string; href: string };
+}
+
+const { eyebrow, title, description, version, lastUpdated, headings, html, sibling } =
+  Astro.props;
+
+// Numbered sections only (skip the document H1; the "Plain English first" intro
+// is an H2 and stays in the list as the opening item).
+const toc = headings.filter((h) => h.depth === 2);
+---
+
+<BaseLayout title={title} description={description}>
+  <section class="pt-20 sm:pt-28">
+    <p class="text-label uppercase tracking-tagline text-ink">{eyebrow}</p>
+    <h1
+      class="mt-5 text-[2.4rem] font-semibold leading-[1.04] tracking-[-0.035em] text-ink min-[420px]:text-[2.9rem] sm:text-[3.75rem] lg:text-[4.5rem]"
+    >
+      {title}
+    </h1>
+    <p class="label mt-6 text-warm-grey">Version {version} · Last updated {lastUpdated}</p>
+
+    <!-- Contents: jump links to each section. Two compact columns from sm up so
+         the full list stays scannable without pushing the body far down. -->
+    <nav aria-label="Contents" class="mt-12 border-y border-warm-grey py-8 sm:mt-14">
+      <p class="label text-warm-grey">On this page</p>
+      <ol class="mt-4 grid gap-x-10 gap-y-2.5 sm:grid-cols-2">
+        {
+          toc.map((h) => (
+            <li>
+              <a
+                href={`#${h.slug}`}
+                class="text-base text-ink underline decoration-warm-grey underline-offset-4 transition-colors hover:decoration-ink"
+              >
+                {h.text}
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+
+    <!-- Policy body (markdown → HTML, tokens already substituted). -->
+    <div class="legal-prose mt-12 max-w-text sm:mt-14" set:html={html}></div>
+
+    <!-- Cross-link to the sibling document. -->
+    <div class="mt-16 border-t border-warm-grey pt-8">
+      <p class="text-base text-ink">
+        See also{' '}
+        <a
+          href={href(sibling.href)}
+          class="font-semibold text-ink underline decoration-warm-grey underline-offset-4 transition-colors hover:decoration-ink"
+          >{sibling.label}</a
+        >.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

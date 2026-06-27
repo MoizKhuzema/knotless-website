@@ -221,6 +221,68 @@
     }
   }
 
+  /* Long-form legal/policy prose (rendered from markdown via set:html). Sized
+   * from the type tokens so it matches the rest of the site; generous leading
+   * for sustained reading. Section headings get scroll-margin so in-page jump
+   * links don't land under the fixed nav. */
+  .legal-prose > * + * {
+    margin-top: 1rem;
+  }
+  .legal-prose > h2 {
+    margin-top: 3.5rem;
+    scroll-margin-top: 7rem;
+    font-size: var(--text-xl);
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: var(--tracking-tight);
+  }
+  .legal-prose > h2:first-child {
+    margin-top: 0;
+  }
+  .legal-prose p,
+  .legal-prose li {
+    font-size: var(--text-base);
+    line-height: 1.75;
+  }
+  .legal-prose strong {
+    font-weight: 600;
+  }
+  .legal-prose em {
+    font-style: italic;
+  }
+  .legal-prose a {
+    text-decoration: underline;
+    text-decoration-color: var(--color-warm-grey);
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.2s;
+  }
+  .legal-prose a:hover {
+    text-decoration-color: var(--color-ink);
+  }
+  .legal-prose ul,
+  .legal-prose ol {
+    margin-top: 1rem;
+    padding-left: 1.5rem;
+  }
+  .legal-prose ul {
+    list-style: disc;
+  }
+  .legal-prose ol {
+    list-style: decimal;
+  }
+  .legal-prose li {
+    margin-top: 0.5rem;
+    padding-left: 0.25rem;
+  }
+  .legal-prose li::marker {
+    color: var(--color-warm-grey);
+  }
+  /* The markdown uses --- between sections; the heading rhythm carries the
+   * separation, so the rules themselves are hidden. */
+  .legal-prose hr {
+    display: none;
+  }
+
   /* Scroll-reveal: elements marked [data-reveal] start hidden and fade up when
    * the IntersectionObserver in BaseLayout adds .is-visible. Under reduced
    * motion they're shown immediately (the script adds .is-visible up front). */

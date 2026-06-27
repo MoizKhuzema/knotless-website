@@ -1,0 +1,42 @@
+---
+/**
+ * /terms — Website Terms of Use.
+ *
+ * The copy lives in src/legal/terms-of-use.md (compiled to HTML here). The
+ * bracketed [tokens] in that file are substituted from src/config/site.ts so
+ * the ABN, address and contact email stay single-sourced. Layout/styling is in
+ * LegalDoc.astro + the `.legal-prose` rules in global.css.
+ */
+import LegalDoc from '../components/LegalDoc.astro';
+import { SITE } from '../config/site';
+import { compiledContent, getHeadings } from '../legal/terms-of-use.md';
+
+const VERSION = '1.0';
+const LAST_UPDATED = '27 June 2026';
+
+const mail = (addr: string) => `<a href="mailto:${addr}">${addr}</a>`;
+
+const substitutions: Record<string, string> = {
+  '[ABN]': SITE.abn,
+  '[Registered address, City, State, Postcode, Australia]': SITE.registeredAddress,
+  '[PRIVACY_EMAIL]': mail(SITE.privacyEmail),
+  '[CONTACT_EMAIL]': mail(SITE.contactEmail),
+  '[DATE]': LAST_UPDATED,
+};
+
+let html = await compiledContent();
+for (const [token, value] of Object.entries(substitutions)) {
+  html = html.replaceAll(token, value);
+}
+---
+
+<LegalDoc
+  eyebrow="Legal"
+  title="Website Terms of Use"
+  description="The terms that govern your use of the Knotless AI website. These are not the contract for our services."
+  version={VERSION}
+  lastUpdated={LAST_UPDATED}
+  headings={getHeadings()}
+  html={html}
+  sibling={{ label: 'our Privacy Policy', href: '/privacy' }}
+/>
