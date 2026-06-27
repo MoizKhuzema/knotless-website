@@ -84,25 +84,51 @@ import { ABOUT_INTRO, ABOUT_FOUNDERS, ABOUT_FINAL_CTA } from '../data/about';
       </h2>
     </div>
 
-    <!-- One combined founder portrait beside both founders' details. Mobile =
-         portrait on top, the two bios stacked below. Desktop = portrait left
-         (~2fr), details right (~3fr). The portrait is a placeholder box for the
-         photo — drop an <img class="h-full w-full object-cover"> inside it. -->
-    <div class="mt-12 grid gap-10 sm:mt-16 sm:grid-cols-[2fr_3fr] sm:gap-12 lg:gap-16">
-      <div data-reveal class="flex aspect-[4/5] items-center justify-center overflow-hidden rounded-sm border border-warm-grey">
-        <span class="label text-warm-grey">Portrait</span>
+    <!-- One combined founder portrait, centred, with the two founders flanking
+         it: Insiya (and her details) to the left, Huzefa to the right. The
+         portrait is a human-shaped OUTLINE placeholder (two figures together) —
+         not a box. Drop a cut-out PNG of the founders in its place when ready.
+         Desktop: details | portrait | details. Mobile: portrait, then Insiya,
+         then Huzefa, stacked. -->
+    <div class="mt-12 grid items-center gap-10 sm:mt-16 sm:grid-cols-[1fr_auto_1fr] sm:gap-8 lg:gap-12">
+      <!-- Insiya — left -->
+      <div data-reveal class="order-2 sm:order-1 sm:text-right">
+        <h3 class="text-lg font-semibold tracking-tight text-ink sm:text-xl">{SITE.founders[0].name}</h3>
+        <p class="label mt-2 text-ink">{SITE.founders[0].title}</p>
+        <p class="mt-4 max-w-prose text-base text-ink sm:ml-auto">{ABOUT_FOUNDERS.bios[0]}</p>
       </div>
 
-      <div class="space-y-10">
-        {
-          SITE.founders.map((founder, i) => (
-            <div data-reveal>
-              <h3 class="text-lg font-semibold tracking-tight text-ink sm:text-xl">{founder.name}</h3>
-              <p class="label mt-2 text-ink">{founder.title}</p>
-              <p class="mt-4 max-w-prose text-base text-ink">{ABOUT_FOUNDERS.bios[i]}</p>
-            </div>
-          ))
-        }
+      <!-- Combined portrait placeholder: two human-shaped outlines, together. -->
+      <div data-reveal class="order-1 mx-auto sm:order-2">
+        <svg
+          class="w-40 sm:w-44 lg:w-52"
+          viewBox="0 0 240 175"
+          fill="var(--color-cream)"
+          stroke="var(--color-warm-grey)"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <!-- left figure -->
+          <circle cx="78" cy="52" r="30" vector-effect="non-scaling-stroke" />
+          <path
+            d="M20 195 L20 148 C20 126 44 114 78 114 C112 114 136 126 136 148 L136 195 Z"
+            vector-effect="non-scaling-stroke"
+          />
+          <!-- right figure (drawn over, so it sits in front where they meet) -->
+          <circle cx="162" cy="52" r="30" vector-effect="non-scaling-stroke" />
+          <path
+            d="M104 195 L104 148 C104 126 128 114 162 114 C196 114 220 126 220 148 L220 195 Z"
+            vector-effect="non-scaling-stroke"
+          />
+        </svg>
+        <p class="label mt-3 text-center text-warm-grey">Portrait</p>
+      </div>
+
+      <!-- Huzefa — right -->
+      <div data-reveal class="order-3 sm:text-left">
+        <h3 class="text-lg font-semibold tracking-tight text-ink sm:text-xl">{SITE.founders[1].name}</h3>
+        <p class="label mt-2 text-ink">{SITE.founders[1].title}</p>
+        <p class="mt-4 max-w-prose text-base text-ink">{ABOUT_FOUNDERS.bios[1]}</p>
       </div>
     </div>
 
