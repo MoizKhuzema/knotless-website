@@ -16,11 +16,11 @@ export const ABOUT_INTRO = {
   eyebrow: 'About us',
   metaDescription:
     'Two careers, one conclusion: judgement before technology. Meet Insiya and Huzefa Karbalai, the founders behind Knotless.',
-  // Hero standfirst — frames the page without giving away the conclusion.
+  // Hero standfirst — sets up the two careers without pre-empting the conclusion.
   lead: {
-    pre: 'Knotless wasn’t a pivot or a bright idea. It’s ',
-    strong: 'the same conclusion, reached twice',
-    post: ', from two very different careers.',
+    pre: 'Before Knotless, we spent our careers on ',
+    strong: 'opposite sides of the same problem',
+    post: '.',
   },
   careersHeading: 'Where this comes from',
   conclusionHeading: 'One conclusion',
@@ -30,20 +30,20 @@ export const ABOUT_INTRO = {
       name: 'Insiya',
       teaser: 'A decade in client success',
       experience:
-        'Insiya spent a decade in client success, working with mid-market and SME firms across industries. Same pattern everywhere: capable people stuck doing repetitive work, and budgets too thin to fix it. Not a technology problem. A human one, and nobody was solving it at a size these businesses could buy.',
+        'The same pattern across every mid-market and SME client: capable people stuck on repetitive work, budgets too thin to fix it. Not a technology problem. A human one nobody was solving at a price these businesses could pay.',
     },
     {
       id: 'huzefa',
       name: 'Huzefa',
       teaser: 'Fifteen years in technology rollouts',
       experience:
-        'Huzefa spent fifteen years accountable for making technology rollouts work inside real businesses. The lesson: the hard part is never the technology. It’s real budgets, real constraints, and almost nobody asking the questions that decide whether any of it pays off. What’s the real problem? What’s the risk? Is this the right tool?',
+        'Getting technology to actually land inside real businesses taught one lesson: the hard part is never the tech. It’s the budgets, the constraints, and the questions nobody stops to ask. What’s the real problem? What’s the risk? Is this even the right tool?',
     },
   ],
   conclusion: {
     label: 'One conclusion',
     lead: 'Knotless',
-    body: ' is those careers pointed at one problem. We built the firm neither of us could find: judgement before technology. We work out where AI pays you back, and where it won’t. Then we build only what the numbers backed.',
+    body: ' is the firm neither of us could find: judgement before technology. We work out where AI pays off and where it won’t, then build only what the numbers back.',
   },
 } as const;
 
@@ -51,13 +51,13 @@ export const ABOUT_INTRO = {
 export const ABOUT_FOUNDERS = {
   heading: 'The names on the door.',
   bios: [
-    'Insiya takes every Fit Call and runs every Assessment session. If you become a client, she’s the person who maps your business, asks the questions, and stands behind the findings. Based in Adelaide.',
-    'Huzefa scopes every engagement and oversees every build, start to finish. If the case is there, he’s the person accountable for what gets built and how it lands inside your business. Based in Adelaide.',
+    'Takes every Fit Call and runs every Assessment. She maps your business, asks the questions, and stands behind the findings.',
+    'Scopes every engagement and oversees every build. If the case is there, he’s accountable for what gets built and how it lands.',
   ],
+  location: 'Both based in Adelaide.',
   deliverHeading: 'How we deliver',
   deliverBody: [
-    'We’re founder-led by design, not by stage. Every project is designed and overseen personally by us. For technical delivery we work with a small set of vetted partner firms in Australia and Pakistan. You choose where your build is delivered: Australian delivery, or Pakistan delivery at a lower cost. Either way it’s disclosed up front, with every data flow handled under the Australian Privacy Act.',
-    'We chose this model deliberately: you get senior judgement on every decision and specialist hands on the build, without paying for a bench. Nothing reaches you without passing through us first.',
+    'We’re founder-led by design. Every project is scoped and overseen by us personally; for the build we use a small set of vetted partner firms in Australia and Pakistan. You choose where your build is delivered: Australian, or Pakistan at a lower cost, disclosed up front, with every data flow handled under the Australian Privacy Act. Senior judgement on every decision, specialist hands on the build, no bench to pay for.',
   ],
 } as const;
 
