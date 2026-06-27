@@ -11,7 +11,6 @@ import CtaButton from '../components/CtaButton.astro';
 import {
   WWD_INTRO,
   WWD_QUESTIONS,
-  WWD_PROCESS,
   WWD_STAGES,
   WWD_IMPLEMENTATION,
   WWD_FAQS,
@@ -113,60 +112,73 @@ const introDescription = WWD_INTRO.bodyParts
       <p class="mt-6 text-base text-ink">{WWD_STAGES.lead}</p>
     </div>
 
-    <div class="mt-16 border-t border-warm-grey">
-      {
-        WWD_STAGES.stages.map((stage, i) => (
-          <details id={stage.id} data-reveal open={i === 0} class="scroll-mt-24 border-b border-warm-grey">
-            {/* Collapsed: the stage identity a visitor scans to self-select.
-                Click to reveal what we do / what you walk away with. */}
-            <summary class="flex cursor-pointer list-none items-start justify-between gap-6 py-8 [&::-webkit-details-marker]:hidden">
-              <div>
-                <p class="label text-ink">{stage.title}</p>
-                <p class="mt-3 text-lg font-medium leading-snug tracking-tight text-ink">
-                  {stage.oneLiner}
-                </p>
-              </div>
-              <svg
-                class="disclosure-chevron mt-1.5 h-6 w-6 shrink-0 text-warm-grey"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </summary>
+    {/* Stage selector: pick one stage, see only its detail. Tabs are scrollable
+        pills on mobile and a vertical rail on desktop — distinct from the
+        homepage stepper/rows and the questions carousel. Progressive: with no JS,
+        the first panel shows. */}
+    <div data-reveal class="mt-10 sm:mt-14 sm:grid sm:grid-cols-12 sm:gap-10 lg:gap-14">
+      <div
+        role="tablist"
+        aria-label="Assessment stages"
+        class="stage-tabs -mx-gutter flex gap-2 overflow-x-auto px-gutter pb-1 sm:col-span-5 sm:mx-0 sm:flex-col sm:gap-0 sm:overflow-visible sm:border-l sm:border-warm-grey sm:px-0 sm:pb-0 lg:col-span-4"
+      >
+        {
+          WWD_STAGES.stages.map((stage, i) => (
+            <button
+              type="button"
+              role="tab"
+              id={`tab-${stage.id}`}
+              aria-controls={`panel-${stage.id}`}
+              aria-selected={i === 0 ? 'true' : 'false'}
+              tabindex={i === 0 ? 0 : -1}
+              class="stage-tab"
+            >
+              {stage.title}
+            </button>
+          ))
+        }
+      </div>
 
-            <div class="grid gap-8 pb-10 sm:grid-cols-2">
-              <div>
-                <p class="text-lg font-semibold tracking-tight text-ink">{WWD_STAGES.labels.whatWeDo}</p>
-                <ul class="mt-3 space-y-2.5">
-                  {stage.whatWeDo.map((item) => (
-                    <li class="flex gap-3 text-ink">
-                      <span aria-hidden="true" class="mt-[0.62em] h-px w-3 shrink-0 bg-warm-grey" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <p class="text-lg font-semibold tracking-tight text-ink">{WWD_STAGES.labels.walkAway}</p>
-                <ul class="mt-3 space-y-2.5">
-                  {stage.walkAway.map((item) => (
-                    <li class="flex gap-3 text-ink">
-                      <span aria-hidden="true" class="mt-[0.62em] h-px w-3 shrink-0 bg-warm-grey" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
+      <div class="mt-8 sm:col-span-7 sm:mt-0 lg:col-span-8">
+        {
+          WWD_STAGES.stages.map((stage, i) => (
+            <div
+              role="tabpanel"
+              id={`panel-${stage.id}`}
+              aria-labelledby={`tab-${stage.id}`}
+              hidden={i !== 0}
+              tabindex="0"
+              class="stage-panel"
+            >
+              <p class="text-lg font-medium leading-snug tracking-tight text-ink">{stage.oneLiner}</p>
+              <div class="mt-6 grid gap-8 sm:grid-cols-2">
+                <div>
+                  <p class="text-lg font-semibold tracking-tight text-ink">{WWD_STAGES.labels.whatWeDo}</p>
+                  <ul class="mt-3 space-y-2.5">
+                    {stage.whatWeDo.map((item) => (
+                      <li class="flex gap-3 text-ink">
+                        <span aria-hidden="true" class="mt-[0.62em] h-px w-3 shrink-0 bg-warm-grey" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <p class="text-lg font-semibold tracking-tight text-ink">{WWD_STAGES.labels.walkAway}</p>
+                  <ul class="mt-3 space-y-2.5">
+                    {stage.walkAway.map((item) => (
+                      <li class="flex gap-3 text-ink">
+                        <span aria-hidden="true" class="mt-[0.62em] h-px w-3 shrink-0 bg-warm-grey" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
-          </details>
-        ))
-      }
+          ))
+        }
+      </div>
     </div>
   </section>
 
@@ -179,86 +191,53 @@ const introDescription = WWD_INTRO.bodyParts
       </h2>
     </div>
 
-    <!-- The path merged in as the lead-in: it ends at Build (terracotta) — the
-         step this whole section is about. Stretched arrows; stacks on mobile. -->
-    <ol
-      data-reveal
-      class="mt-10 flex flex-wrap items-center gap-x-2 gap-y-1 text-base font-medium text-ink sm:mt-14 sm:flex-nowrap sm:gap-4"
-    >
-      {
-        WWD_PROCESS.map((step, i) => (
-          <>
-            {i > 0 && (
-              <li
-                aria-hidden="true"
-                class="flex items-center justify-center text-warm-grey sm:flex-1"
-              >
-                <span class="hidden h-px flex-1 bg-warm-grey sm:block" />
-                <svg
-                  class="h-4 w-4 shrink-0 sm:-ml-px sm:h-5 sm:w-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M9 6l6 6-6 6" />
-                </svg>
-              </li>
-            )}
-            <li
-              class:list={[
-                'shrink-0 text-center',
-                i === WWD_PROCESS.length - 1 ? 'font-semibold text-terracotta' : '',
-              ]}
-            >
-              {step}
-            </li>
-          </>
-        ))
-      }
-    </ol>
-
-    <!-- The fork: the two honest outcomes, split by a hairline. The copy's own
-         "If it isn't" / "When it is" openings carry the condition. -->
-    <div
-      data-reveal
-      class="mt-12 grid gap-x-12 gap-y-10 sm:grid-cols-2 sm:divide-x sm:divide-warm-grey"
-    >
-      <div class="sm:pr-12">
-        <p class="text-lg font-semibold tracking-tight text-ink">{WWD_IMPLEMENTATION.fork.no.label}</p>
-        <p class="mt-3 max-w-prose text-ink">{WWD_IMPLEMENTATION.fork.no.body}</p>
+    {/* Decision fork: after the findings, two honest outcomes branch from one
+         point. A small org-chart fork on desktop; a left-spine branch on mobile. */}
+    <div data-reveal class="mt-12 sm:mt-16">
+      <!-- desktop: top node -> bar -> two drops aligned to the columns below -->
+      <div class="relative mx-auto mb-2 hidden h-14 w-1/2 sm:block" aria-hidden="true">
+        <span class="absolute left-1/2 top-0 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-terracotta"></span>
+        <span class="absolute left-1/2 top-2.5 h-5 w-px -translate-x-1/2 bg-warm-grey"></span>
+        <span class="absolute inset-x-0 top-[1.875rem] h-px bg-warm-grey"></span>
+        <span class="absolute bottom-0 left-0 top-[1.875rem] w-px bg-warm-grey"></span>
+        <span class="absolute bottom-0 right-0 top-[1.875rem] w-px bg-warm-grey"></span>
       </div>
-      <div class="sm:pl-12">
-        <p class="text-lg font-semibold tracking-tight text-terracotta">{WWD_IMPLEMENTATION.fork.yes.label}</p>
-        <p class="mt-3 text-ink">{WWD_IMPLEMENTATION.fork.yes.lead}</p>
-        <ul class="mt-4 space-y-2.5">
-          {
-            WWD_IMPLEMENTATION.fork.yes.points.map((item) => (
-              <li class="flex gap-3 text-ink">
-                <span aria-hidden="true" class="mt-[0.62em] h-px w-3 shrink-0 bg-warm-grey" />
-                <span>{item}</span>
-              </li>
-            ))
-          }
-        </ul>
+
+      <div class="relative grid gap-y-10 pl-6 sm:grid-cols-2 sm:gap-x-12 sm:pl-0">
+        <!-- mobile: a left spine + node the two outcomes branch from -->
+        <span class="absolute left-1 top-2 bottom-2 w-px bg-warm-grey sm:hidden" aria-hidden="true"></span>
+        <span class="absolute left-1 top-0 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-terracotta sm:hidden" aria-hidden="true"></span>
+
+        <div class="relative">
+          <span class="absolute right-full top-[0.7em] h-px w-5 bg-warm-grey sm:hidden" aria-hidden="true"></span>
+          <p class="text-lg font-semibold tracking-tight text-ink">{WWD_IMPLEMENTATION.fork.no.label}</p>
+          <p class="mt-3 max-w-prose text-ink">{WWD_IMPLEMENTATION.fork.no.body}</p>
+        </div>
+        <div class="relative">
+          <span class="absolute right-full top-[0.7em] h-px w-5 bg-warm-grey sm:hidden" aria-hidden="true"></span>
+          <p class="text-lg font-semibold tracking-tight text-terracotta">{WWD_IMPLEMENTATION.fork.yes.label}</p>
+          <p class="mt-3 text-ink">{WWD_IMPLEMENTATION.fork.yes.lead}</p>
+          <ul class="mt-4 space-y-2.5">
+            {
+              WWD_IMPLEMENTATION.fork.yes.points.map((item) => (
+                <li class="flex gap-3 text-ink">
+                  <span aria-hidden="true" class="mt-[0.62em] h-px w-3 shrink-0 bg-warm-grey" />
+                  <span>{item}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
       </div>
     </div>
 
-    <!-- Who does the work: the founders, the delivery choice, the single channel. -->
+    <!-- Who does the work: the founders, the delivery choice, the single channel —
+         set as hairline-separated principles (distinct from the dash lists). -->
     <div data-reveal class="mt-16 max-w-text">
       <p class="text-lg font-semibold tracking-tight text-ink">{WWD_IMPLEMENTATION.whoHeading}</p>
-      <ul class="mt-6 space-y-2.5">
-        {
-          whoBullets.map((item) => (
-            <li class="flex gap-3 text-ink">
-              <span aria-hidden="true" class="mt-[0.62em] h-px w-3 shrink-0 bg-warm-grey" />
-              <span>{item}</span>
-            </li>
-          ))
-        }
-      </ul>
+      <div class="mt-6 border-t border-warm-grey">
+        {whoBullets.map((item) => <p class="border-b border-warm-grey py-4 text-ink">{item}</p>)}
+      </div>
     </div>
   </section>
 
@@ -374,6 +353,40 @@ const introDescription = WWD_INTRO.bodyParts
   })();
 </script>
 
+<script is:inline>
+  // "What you get at each stage" tabs: show one stage panel at a time, with
+  // roving-tabindex + arrow-key support. No-JS shows the first panel only.
+  (() => {
+    const tablist = document.querySelector('[role="tablist"][aria-label="Assessment stages"]');
+    if (!tablist) return;
+    const tabs = [...tablist.querySelectorAll('[role="tab"]')];
+    const select = (tab, focus) => {
+      tabs.forEach((t) => {
+        const on = t === tab;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.tabIndex = on ? 0 : -1;
+        const panel = document.getElementById(t.getAttribute('aria-controls'));
+        if (panel) panel.hidden = !on;
+      });
+      if (focus) tab.focus();
+    };
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => select(tab));
+      tab.addEventListener('keydown', (e) => {
+        let n = null;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') n = tabs[(i + 1) % tabs.length];
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') n = tabs[(i - 1 + tabs.length) % tabs.length];
+        else if (e.key === 'Home') n = tabs[0];
+        else if (e.key === 'End') n = tabs[tabs.length - 1];
+        if (n) {
+          e.preventDefault();
+          select(n, true);
+        }
+      });
+    });
+  })();
+</script>
+
 <style>
   /* Disclosure chevron (stages + FAQ): rotates when its <details> is open. */
   .disclosure-chevron {
@@ -390,5 +403,58 @@ const introDescription = WWD_INTRO.bodyParts
   }
   .vig-track::-webkit-scrollbar {
     display: none; /* WebKit / Chromium */
+  }
+  .stage-tabs {
+    scrollbar-width: none;
+  }
+  .stage-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Stage tabs: pills on mobile, a vertical rail on desktop. */
+  .stage-tab {
+    flex-shrink: 0;
+    white-space: nowrap;
+    border: 1px solid var(--color-warm-grey);
+    border-radius: 9999px;
+    padding: 0.5rem 1rem;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--color-ink);
+    cursor: pointer;
+    transition:
+      background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+      color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .stage-tab[aria-selected='true'] {
+    background-color: var(--color-ink);
+    color: var(--color-cream);
+    border-color: var(--color-ink);
+  }
+  @media (min-width: 640px) {
+    .stage-tab {
+      white-space: normal;
+      border: 0;
+      border-left: 2px solid transparent;
+      border-radius: 0;
+      margin-left: -1px;
+      padding: 0.625rem 1.25rem;
+      text-align: left;
+      font-size: var(--text-base);
+      color: var(--color-warm-grey);
+    }
+    .stage-tab:hover {
+      color: var(--color-ink);
+    }
+    .stage-tab[aria-selected='true'] {
+      background-color: transparent;
+      border-left-color: var(--color-terracotta);
+      color: var(--color-ink);
+      font-weight: 600;
+    }
+  }
+  .stage-panel:focus-visible {
+    outline: none;
   }
 </style>
