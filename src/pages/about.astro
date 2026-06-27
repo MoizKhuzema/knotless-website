@@ -18,7 +18,7 @@ import { ABOUT_INTRO, ABOUT_FOUNDERS, ABOUT_FINAL_CTA } from '../data/about';
   <section class="pt-20 sm:pt-28">
     <p class="text-label uppercase tracking-tagline text-ink">{ABOUT_INTRO.eyebrow}</p>
     <h1 class="mt-5 text-[2.4rem] font-semibold leading-[1.02] tracking-[-0.035em] text-ink min-[420px]:text-[2.9rem] sm:text-[3.75rem] md:text-[4.25rem] lg:text-[5.75rem] xl:text-[6.75rem]">
-      Two careers.<br />One <span class="emph-type" data-word="conclusion."
+      Two careers.<br /><span class="one-emph">One</span> <span class="emph-type" data-word="conclusion."
         ><span class="sr-only">conclusion.</span><span class="ew" aria-hidden="true"
           ><span class="ew-sizer">conclusion.</span><span class="ew-live"><span class="ew-typed">conclusion.</span><span class="ew-caret"></span></span></span
         ></span
@@ -90,3 +90,35 @@ import { ABOUT_INTRO, ABOUT_FOUNDERS, ABOUT_FINAL_CTA } from '../data/about';
     </div>
   </section>
 </BaseLayout>
+
+<style>
+  /* Terracotta strike under "One" — the single accent in the heading. Draws in
+     on load; shown resolved under reduced motion. */
+  .one-emph {
+    position: relative;
+    white-space: nowrap;
+  }
+  .one-emph::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.04em;
+    height: 0.08em;
+    background-color: var(--color-terracotta);
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: one-strike 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards;
+  }
+  @keyframes one-strike {
+    to {
+      transform: scaleX(1);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .one-emph::after {
+      transform: scaleX(1);
+      animation: none;
+    }
+  }
+</style>
