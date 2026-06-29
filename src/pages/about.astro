@@ -22,14 +22,14 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
 const schema = graph([
   webPage(origin, {
     url: pageUrl,
-    name: 'About us',
+    name: 'About Us',
     description: ABOUT_INTRO.metaDescription,
   }),
   ...founderPersons(origin),
 ]);
 ---
 
-<BaseLayout title="About us" description={ABOUT_INTRO.metaDescription} schema={schema}>
+<BaseLayout title="About Us" description={ABOUT_INTRO.metaDescription} schema={schema}>
   <!-- Section 1 — hero (same register as the homepage / what-we-do heroes).
        On mobile it fills the first screen (content centred) so the next section
        sits below the fold and reveals on scroll; top-aligned from sm up. -->

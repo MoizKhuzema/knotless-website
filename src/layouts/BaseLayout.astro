@@ -41,7 +41,8 @@ interface Props {
 }
 
 const { title, description = '', ogType = 'website', schema, bare = false } = Astro.props;
-const fullTitle = `${title} | ${SITE.legalEntityName}`;
+// Tab/SEO title: short page name + the short brand ("Home - Knotless").
+const fullTitle = `${title} - Knotless`;
 const ogImageAlt = `${SITE.legalEntityName} — ${SITE.tagline}`;
 
 // Absolute URLs for canonical + OG. Astro.url.pathname already includes the

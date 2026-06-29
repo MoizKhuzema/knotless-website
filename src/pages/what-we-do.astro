@@ -34,7 +34,7 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
 
 // Service node (provided by the Organization) + this WebPage.
 const schema = graph([
-  webPage(origin, { url: pageUrl, name: 'What we do', description: introDescription }),
+  webPage(origin, { url: pageUrl, name: 'What We Do', description: introDescription }),
   service(origin, {
     url: pageUrl,
     name: 'AI Assessment and Implementation',
@@ -44,7 +44,7 @@ const schema = graph([
 ]);
 ---
 
-<BaseLayout title="What we do" description={introDescription} schema={schema}>
+<BaseLayout title="What We Do" description={introDescription} schema={schema}>
   <!-- Section 1 — page intro. On mobile it fills the first screen (content
        centred) so the next section sits below the fold and reveals on scroll;
        top-aligned from sm up. -->
