@@ -12,7 +12,7 @@ the people named at the end will answer plainly.
 
 This policy explains how **Knotless AI Pty Ltd** (ABN **[ABN]**) ("Knotless",
 "we", "us", "our") handles personal information. It covers our website at
-**knotless.com.au** and **knotless.ai**, the free Fit Call, the Knotless
+**knotless.com.au** and **knotless.au**, the free Fit Call, the Knotless
 Assessment, and any implementation work we deliver.
 
 We handle personal information in line with the *Privacy Act 1988* (Cth) and

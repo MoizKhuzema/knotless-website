@@ -12,15 +12,16 @@ export const CONTACT = {
     'Book a free 30-minute Fit Call with the founders of Knotless. Tell us who you are and we’ll come back within one business day to set a time.',
   body: 'Tell us who you are and we’ll come back within one business day to set a time. Thirty minutes, free, with the founders. No preparation needed.',
   fields: [
-    { id: 'name', label: 'Name', type: 'text', autocomplete: 'name', required: true },
+    { id: 'name', label: 'Name', type: 'text', autocomplete: 'name', required: true, optional: false },
     {
       id: 'company',
       label: 'Company',
       type: 'text',
       autocomplete: 'organization',
       required: true,
+      optional: false,
     },
-    { id: 'email', label: 'Email', type: 'email', autocomplete: 'email', required: true },
+    { id: 'email', label: 'Email', type: 'email', autocomplete: 'email', required: true, optional: false },
     {
       id: 'phone',
       label: 'Phone',

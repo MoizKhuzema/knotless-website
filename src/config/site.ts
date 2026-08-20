@@ -64,11 +64,11 @@ export const SITE = {
   tagline: 'AI Untangled.',
   abn: 'XX XXX XXX XXX', // PLACEHOLDER — not in brief
   registeredAddress: 'PLACEHOLDER address line, Adelaide SA 5000, Australia', // PLACEHOLDER (founders are Adelaide-based)
-  contactEmail: 'hello@knotless.ai',
-  privacyEmail: 'privacy@knotless.ai', // TODO confirm — inferred from primary domain
+  contactEmail: 'hello@knotless.com.au',
+  privacyEmail: 'privacy@knotless.com.au',
   companyLinkedinUrl: 'https://www.linkedin.com/company/knotless-ai', // TODO confirm
-  primaryDomain: 'knotless.ai',
-  secondaryDomain: 'knotless.com.au', // TODO confirm — not in brief
+  primaryDomain: 'knotless.com.au',
+  secondaryDomain: 'knotless.au',
   founders: [
     {
       // Surname 'Karbalai' hidden for now — restore to 'Insiya Karbalai' when ready.

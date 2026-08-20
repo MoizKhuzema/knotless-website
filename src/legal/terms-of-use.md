@@ -9,7 +9,7 @@ here is unclear, the contact at the end will answer plainly.
 
 ## 1. Who we are
 
-This website (**knotless.com.au** and **knotless.ai**) is run by **Knotless AI
+This website (**knotless.com.au** and **knotless.au**) is run by **Knotless AI
 Pty Ltd** (ABN **[ABN]**) ("Knotless", "we", "us", "our"). You can reach us at
 **[CONTACT_EMAIL]**.
 

@@ -6,10 +6,10 @@
  * which serialises it into a <script type="application/ld+json"> tag.
  *
  * Cross-references use stable @ids anchored to the site origin (e.g.
- * `https://knotless.ai/#organization`), so nodes on different pages all point at
+ * `https://knotless.com.au/#organization`), so nodes on different pages all point at
  * the single canonical Organization/WebSite defined on the homepage.
  *
- * `site` is the absolute origin (Astro.site.origin, e.g. "https://knotless.ai").
+ * `site` is the absolute origin (Astro.site.origin, e.g. "https://knotless.com.au").
  */
 import { SITE } from '../config/site';
 
