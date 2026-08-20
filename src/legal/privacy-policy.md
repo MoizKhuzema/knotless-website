@@ -230,7 +230,7 @@ reasons explained there. If that applies to your request, we will tell you.
 ## 12. How to make a complaint
 
 If you think we have mishandled your personal information, tell us first. Email
-**[PRIVACY_EMAIL]**, addressed to **Insiya Karbalai**, and we will
+**[PRIVACY_EMAIL]**, addressed to **Insiya**, and we will
 look into it and respond. If you are not satisfied with our response, you can
 complain to the OAIC at **oaic.gov.au**, by phone on **1300 363 992**, or by
 mail to GPO Box 5288, Sydney NSW 2001.
@@ -243,7 +243,7 @@ mail to GPO Box 5288, Sydney NSW 2001.
 ABN **[ABN]**
 **[Registered address, City, State, Postcode, Australia]**
 
-Privacy contact: **Insiya Karbalai** (primary), **Huzefa Karbalai** (secondary)
+Privacy contact: **Insiya** (primary), **Huzefa** (secondary)
 Email: **[PRIVACY_EMAIL]**
 
 ---

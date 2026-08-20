@@ -21,16 +21,18 @@ import ArrowLink from '../ArrowLink.astro';
     {FOUNDERS_SECTION.body.map((para) => <p>{para}</p>)}
   </div>
 
-  <!-- Founder blocks (name + title from site.ts). The circle is a placeholder
-       outline for the headshot — drop an <img> inside and it crops to the circle. -->
+  <!-- Founder blocks (name + title from site.ts). The circular headshot
+       placeholder is hidden for now (no founder photos yet). To bring it back,
+       un-comment the <div> below; the h3 loses its top margin while it's hidden
+       so the block sits flush. -->
   <div class="mt-12 grid grid-cols-2 gap-6 sm:mt-16 sm:gap-10">
     {
       SITE.founders.map((founder) => (
         <div data-reveal>
-          <div class="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-warm-grey sm:h-28 sm:w-28">
-            {/* headshot goes here */}
-          </div>
-          <h3 class="mt-4 text-lg font-semibold tracking-tight text-ink sm:mt-5">{founder.name}</h3>
+          {/* Headshot hidden for now — restore this block (and add back `mt-4 sm:mt-5` on the h3) when photos are ready:
+          <div class="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-warm-grey sm:h-28 sm:w-28"></div>
+          */}
+          <h3 class="text-lg font-semibold tracking-tight text-ink">{founder.name}</h3>
           <p class="label mt-1.5 text-ink sm:mt-2">{founder.title}</p>
         </div>
       ))

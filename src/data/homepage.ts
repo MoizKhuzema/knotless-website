@@ -79,7 +79,7 @@ export const ASSESSMENT = {
 export const FOUNDERS_SECTION = {
   heading: "Who you'll be talking to",
   body: [
-    'Knotless is run by Insiya and Huzefa Karbalai, husband and wife, both based in Adelaide.',
+    'Knotless is run by Insiya and Huzefa, husband and wife, both based in Adelaide.',
     'Insiya spent over a decade in client success and account management, working with mid-market and SME firms across industries. She watched the same pattern repeat everywhere: capable people stuck doing repetitive work because there was no other option, and budgets stretched too thin to fix it.',
     'Huzefa spent fifteen years on the buyer’s side of complex technology rollouts. He learned the hard part of any technology is never the technology. It’s making it work inside a real business, with real budgets, real constraints, and people who just need it to work.',
     'Knotless is what happens when those two disciplines work on the same problem.',

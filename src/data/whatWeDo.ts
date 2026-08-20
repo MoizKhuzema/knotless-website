@@ -146,7 +146,7 @@ export const WWD_IMPLEMENTATION = {
   whoHeading: 'Who does the work',
   whoFirst: 'The founders run every build, start to finish',
   whoDelivery:
-    'Technical delivery is handled by a small set of vetted partner firms in Australia and Pakistan. You choose where your build is delivered: Australian delivery, or Pakistan delivery at a lower cost. Either way it’s disclosed up front, with every data flow handled under the Australian Privacy Act.',
+    'Technical delivery is handled by a small set of vetted partner firms. You choose where your build is delivered, disclosed up front, with every data flow handled under the Australian Privacy Act.',
   whoLast: 'Nothing reaches you without passing through us first',
 } as const;
 

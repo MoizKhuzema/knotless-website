@@ -14,7 +14,8 @@ import { SITE } from '../config/site';
 import { href } from '../lib/href';
 import wordmark from '../assets/logo/wordmark_secondary/Wordmark_Secondary.svg';
 
-const year = new Date().getFullYear();
+// Used only by the (currently hidden) copyright line — restore alongside it.
+// const year = new Date().getFullYear();
 
 const LINKS = [
   { label: 'Privacy', href: '/privacy' },
@@ -28,7 +29,7 @@ const LINKS = [
   <div class="flex items-center justify-between gap-6">
     <!-- Negative margin cancels the wordmark's baked-in left clear space so the
          glyph aligns with the legal text below. -->
-    <img src={wordmark.src} alt={SITE.legalEntityName} width="381" height="165" class="-ml-[0.86rem] h-10 w-auto" />
+    <img src={wordmark.src} alt={SITE.legalEntityName} width="381" height="165" class="-ml-[1.4rem] h-16 w-auto sm:h-[4.5rem]" />
     <a
       href={SITE.companyLinkedinUrl}
       target="_blank"
@@ -47,16 +48,28 @@ const LINKS = [
     </a>
   </div>
 
-  <!-- Legal block -->
+  <!-- Contact block: email + each founder's direct number (from site.ts). -->
   <div class="mt-10 not-italic">
+    {/* Legal identity hidden for now — un-comment to restore entity name, ABN and address:
     <p class="text-ink">
       <span class="font-medium">{SITE.legalEntityName}</span>
       <span aria-hidden="true"> · </span>ABN {SITE.abn}
     </p>
     <p class="mt-1">{SITE.registeredAddress}</p>
-    <p class="mt-1">
+    */}
+    <p>
       <a class="hover:text-ink" href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>
     </p>
+    <div class="mt-3 flex flex-col gap-y-1 sm:flex-row sm:gap-x-8">
+      {
+        SITE.founders.map((f) => (
+          <p>
+            <span class="text-warm-grey">{f.name}</span>{' '}
+            <a class="hover:text-ink" href={`tel:${f.phone.replace(/\s+/g, '')}`}>{f.phone}</a>
+          </p>
+        ))
+      }
+    </div>
   </div>
 
   <!-- Link row -->
@@ -75,5 +88,7 @@ const LINKS = [
     }
   </ul>
 
+  {/* Copyright line hidden for now — un-comment to restore:
   <p class="mt-8 label">© {year} {SITE.legalEntityName}. All rights reserved.</p>
+  */}
 </footer>

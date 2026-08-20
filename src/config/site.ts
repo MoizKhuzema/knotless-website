@@ -20,6 +20,8 @@ export interface Founder {
   name: string;
   /** Role / title, e.g. "Co-Founder & CEO". */
   title: string;
+  /** Direct contact number (shown in the footer). */
+  phone: string;
   /** Full LinkedIn profile URL. */
   linkedinUrl: string;
 }
@@ -69,13 +71,17 @@ export const SITE = {
   secondaryDomain: 'knotless.com.au', // TODO confirm — not in brief
   founders: [
     {
-      name: 'Insiya Karbalai',
+      // Surname 'Karbalai' hidden for now — restore to 'Insiya Karbalai' when ready.
+      name: 'Insiya',
       title: 'Co-Founder & CEO',
+      phone: '+61 416 588 531',
       linkedinUrl: 'https://www.linkedin.com/in/placeholder-insiya', // PLACEHOLDER
     },
     {
-      name: 'Huzefa Karbalai',
+      // Surname 'Karbalai' hidden for now — restore to 'Huzefa Karbalai' when ready.
+      name: 'Huzefa',
       title: 'Co-Founder & COO',
+      phone: '+61 433 353 544',
       linkedinUrl: 'https://www.linkedin.com/in/placeholder-huzefa', // PLACEHOLDER
     },
   ],

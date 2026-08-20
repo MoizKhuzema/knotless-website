@@ -15,7 +15,7 @@
 export const ABOUT_INTRO = {
   eyebrow: 'About us',
   metaDescription:
-    'Two careers, one conclusion: judgement before technology. Meet Insiya and Huzefa Karbalai, the founders behind Knotless.',
+    'Two careers, one conclusion: judgement before technology. Meet Insiya and Huzefa, the founders behind Knotless.',
   // Hero standfirst — sets up the two careers without pre-empting the conclusion.
   lead: {
     pre: 'Before Knotless, we spent our careers on ',
@@ -58,7 +58,7 @@ export const ABOUT_FOUNDERS = {
   location: 'Both based in Adelaide.',
   deliverHeading: 'How we deliver',
   deliverBody: [
-    'We’re founder-led by design. Every project is scoped and overseen by us personally; for the build we use a small set of vetted partner firms in Australia and Pakistan. You choose where your build is delivered: Australian, or Pakistan at a lower cost, disclosed up front, with every data flow handled under the Australian Privacy Act. Senior judgement on every decision, specialist hands on the build, no bench to pay for.',
+    'We’re founder-led by design. Every project is scoped and overseen by us personally; for the build we use a small set of vetted partner firms. You choose where your build is delivered, disclosed up front, with every data flow handled under the Australian Privacy Act. Senior judgement on every decision, specialist hands on the build, no bench to pay for.',
   ],
 } as const;
 
