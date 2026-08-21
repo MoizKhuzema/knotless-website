@@ -33,8 +33,9 @@ export const CONTACT = {
   ],
   submitLabel: 'Request my Fit Call',
   /** Shown after a successful submit (the form is replaced by this). The
-   *  heading reads "Request received." — split so a terracotta strike can be
-   *  drawn through the word "Request" (the logo's strike, performed on a word). */
+   *  heading reads "Request received." — the words are wiped on left-to-right
+   *  behind a single terracotta edge (the logo's mark as an impression pressed
+   *  across the line). Kept split for the copy; rendered as one wiped unit. */
   success: {
     headingWord: 'Request',
     headingRest: ' received.',
