@@ -98,11 +98,18 @@ const FORM_ACTION = withBase('/contact');
       <p id="form-status" role="status" aria-live="polite" class="sr-only"></p>
     </form>
 
-    <!-- Success state: hidden until a successful submit, then swapped in. -->
-    <div class="contact-success mt-12 hidden max-w-text sm:mt-14" tabindex="-1">
+    <!-- Success state: hidden until a successful submit, then swapped in.
+         `data-reveal` reuses the fade-up + accent-rule draw-in; the strike is
+         drawn through "Request". aria-live announces it to screen readers. -->
+    <div
+      class="contact-success mt-12 hidden max-w-text sm:mt-14"
+      data-reveal
+      aria-live="polite"
+      tabindex="-1"
+    >
       <span class="accent-rule"></span>
       <h2 class="mt-6 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-        {CONTACT.success.heading}
+        <span class="strike-word">{CONTACT.success.headingWord}</span>{CONTACT.success.headingRest}
       </h2>
       <p class="mt-6 text-base text-ink sm:text-lg">{CONTACT.success.body}</p>
     </div>
@@ -132,10 +139,26 @@ const FORM_ACTION = withBase('/contact');
     };
 
     const showSuccess = () => {
+      // Clear the form and restore the button first, so no submitted data lingers
+      // in the DOM and a returning user never sees a stale "Sending…".
+      if (submit) {
+        submit.disabled = false;
+        submit.textContent = submitLabel;
+      }
+      setStatus('');
+      form.reset();
       form.classList.add('hidden');
+
       if (success) {
         success.classList.remove('hidden');
+        // Move focus + let aria-live announce immediately (not gated by the anim).
         success.focus();
+        // Add .is-visible on the next frames so the fade-up / accent-rule / strike
+        // transitions run from their start state instead of snapping. Under
+        // reduced motion the CSS defines no transitions, so it just shows drawn.
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => success.classList.add('is-visible')),
+        );
       }
     };
 

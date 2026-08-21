@@ -186,6 +186,27 @@
     background-color: var(--color-terracotta);
   }
 
+  /* The logo's strike, performed on a word: a terracotta line through the
+   * optical centre of the lowercase letters, extending a touch past the word
+   * edges (like the wordmark strike past the "o"). Fully drawn by default
+   * (no-JS / reduced motion); the [data-reveal] rules below animate it drawing
+   * in. Same single-accent device as .accent-rule — never a second colour. */
+  .strike-word {
+    position: relative;
+    white-space: nowrap;
+  }
+  .strike-word::after {
+    content: '';
+    position: absolute;
+    left: -0.04em;
+    right: -0.04em;
+    top: 0.56em;
+    height: 0.08em;
+    border-radius: 0.04em;
+    background-color: var(--color-terracotta);
+    transform-origin: left;
+  }
+
   /* All-caps label / eyebrow / metadata styling. */
   .label {
     font-size: var(--text-label);
@@ -327,6 +348,26 @@
     }
     [data-reveal].is-visible .accent-rule {
       transform: scaleX(1);
+    }
+
+    /* Success moment: the strike draws left-to-right through the word ~200ms
+     * after the accent rule, same easing. Base rule above leaves it full-width,
+     * so under reduced motion (this whole block is skipped) it shows drawn. */
+    [data-reveal] .strike-word::after {
+      transform: scaleX(0);
+      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.35s;
+    }
+    [data-reveal].is-visible .strike-word::after {
+      transform: scaleX(1);
+    }
+
+    /* Body copy fades in last, after the strike. */
+    [data-reveal].contact-success > p {
+      opacity: 0;
+      transition: opacity 0.5s ease 0.6s;
+    }
+    [data-reveal].contact-success.is-visible > p {
+      opacity: 1;
     }
   }
 }

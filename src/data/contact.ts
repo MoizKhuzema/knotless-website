@@ -32,9 +32,12 @@ export const CONTACT = {
     },
   ],
   submitLabel: 'Request my Fit Call',
-  /** Shown after a successful submit (the form is replaced by this). */
+  /** Shown after a successful submit (the form is replaced by this). The
+   *  heading reads "Request received." — split so a terracotta strike can be
+   *  drawn through the word "Request" (the logo's strike, performed on a word). */
   success: {
-    heading: 'Request received.',
+    headingWord: 'Request',
+    headingRest: ' received.',
     body: 'Thanks — we’ll be in touch within one business day to set a time.',
   },
   /** The "Prefer email?" line under the form; the address comes from site.ts. */
