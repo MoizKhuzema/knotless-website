@@ -11,7 +11,7 @@ export const HERO = {
   // lockup shown in the hero, so it isn't repeated as separate text.
   headline: "AI that's worth building.",
   subhead:
-    'We quantify what AI is worth in your business, then build only what pays back. For growing Australian businesses, 10 to 200 staff.',
+    'We quantify what AI is worth in your business, then build only what pays back. For growing Australian businesses.',
   verticals: [
     'Accounting & bookkeeping',
     'Consulting',
