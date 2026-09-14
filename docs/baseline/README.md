@@ -80,3 +80,47 @@ playwright-core` so it stays out of `package.json`), pointing `executablePath` a
 the cached Chrome for Testing binary under
 `~/Library/Caches/ms-playwright/`. Context options that matter:
 `deviceScaleFactor: 1`, `reducedMotion: 'reduce'`, `fullPage: true`.
+
+## Known token defects
+
+Found by measuring the rendered homepage against the built CSS at the commit
+above. All three are **present in these baseline images** — they are part of the
+"before" state, not capture artifacts. None is fixed as of this commit.
+
+### `--container-prose` is never emitted
+
+[`src/styles/global.css`](../../src/styles/global.css) defines
+`--container-prose: 38rem` (608px), commented "~68–70 chars at 18px body". It
+does not reach the output. The built CSS compiles:
+
+```css
+.max-w-prose{max-width:65ch}
+```
+
+`max-w-prose` is a **static built-in Tailwind utility** and does not read the
+`--container-*` scale, so the token is dropped. Its siblings do work —
+`.max-w-text` and `.max-w-page` compile to `var(--container-text)` /
+`var(--container-page)` and measure 768px and 1152px exactly.
+
+Measured consequence at 1440px: prose-capped paragraphs render at **738px wide,
+84–88 characters per line**, against the documented 68–70 target. Every body
+measure on the homepage sits above the intended line length. Hero subhead is
+72 CPL (22px type in a 768px `max-w-text` measure).
+
+### `--spacing-section` is never emitted
+
+`global.css` defines both `--spacing-section: 6rem` (96px) and
+`--spacing-section-lg: 9rem` (144px). Only `section-lg` appears in the built
+CSS; no utility references the 6rem step.
+
+Measured consequence: **every section on the homepage uses 144px** padding-top
+(the hero excepted — 112px at 1440px, and 0 at 390px where `.hero-screen`
+flex-centres against `min-height: calc(100dvh - 6rem)`). The intended two-tier
+rhythm — 6rem between sections, 9rem between major movements — is currently one
+tier.
+
+### Page shell clears the nav by 1px too little
+
+`BaseLayout`'s shell applies `pt-24` (96px). The fixed nav measures **97px** tall
+at both 390px and 1440px (logo `h-14` + `py-5` + the 1px `border-b`), leaving a
+1px shortfall.
