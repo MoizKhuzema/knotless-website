@@ -137,7 +137,6 @@ update them means you accept the change.
 
 ## 14. Contact us
 
-**Knotless AI Pty Ltd**
-ABN **[ABN]**
-**[Registered address, City, State, Postcode, Australia]**
+**Knotless AI Pty Ltd**<br />
+ABN **[ABN]**<br />
 Email: **[CONTACT_EMAIL]**

@@ -239,11 +239,10 @@ mail to GPO Box 5288, Sydney NSW 2001.
 
 ## 13. Contact us
 
-**Knotless AI Pty Ltd**
+**Knotless AI Pty Ltd**<br />
 ABN **[ABN]**
-**[Registered address, City, State, Postcode, Australia]**
 
-Privacy contact: **Insiya** (primary), **Huzefa** (secondary)
+Privacy contact: **Insiya** (primary), **Huzefa** (secondary)<br />
 Email: **[PRIVACY_EMAIL]**
 
 ---

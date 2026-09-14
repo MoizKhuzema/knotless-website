@@ -22,7 +22,11 @@ export interface Founder {
   title: string;
   /** Direct contact number (shown in the footer). */
   phone: string;
-  /** Full LinkedIn profile URL. */
+  /**
+   * Full LinkedIn profile URL. Empty string = no confirmed profile: the Person
+   * node in the /about JSON-LD then omits `url` and `sameAs` entirely rather
+   * than publishing a dead link (see founderPersons() in src/lib/schema.ts).
+   */
   linkedinUrl: string;
 }
 
@@ -33,13 +37,19 @@ export interface SiteConfig {
   tagline: string;
   /** Australian Business Number. */
   abn: string;
-  /** Full registered business address. */
+  /**
+   * Full registered business address. Empty string = nothing to publish; the
+   * legal pages omit the line rather than rendering an empty one.
+   */
   registeredAddress: string;
   /** General contact email. */
   contactEmail: string;
   /** Email for privacy / data requests. */
   privacyEmail: string;
-  /** Company LinkedIn page (footer). */
+  /**
+   * Company LinkedIn page (footer). Empty string = unconfirmed: the footer icon
+   * is not rendered and the Organization node omits `sameAs`.
+   */
   companyLinkedinUrl: string;
   /** Primary domain WITHOUT protocol, e.g. "example.com". */
   primaryDomain: string;
@@ -62,8 +72,14 @@ export interface SiteConfig {
 export const SITE = {
   legalEntityName: 'Knotless AI Pty Ltd',
   tagline: 'AI Untangled.',
-  abn: 'XX XXX XXX XXX', // PLACEHOLDER — not in brief
-  registeredAddress: 'PLACEHOLDER address line, Adelaide SA 5000, Australia', // PLACEHOLDER (founders are Adelaide-based)
+  abn: '75 702 285 050',
+  // Intentionally empty until there's a real registered office to publish.
+  // NOTE: setting a value here alone will NOT render it anywhere. The legal
+  // pages substitute a `[Registered address, City, State, Postcode, Australia]`
+  // token, and that token line was deleted from src/legal/privacy-policy.md
+  // (§13) and src/legal/terms-of-use.md (§14). To bring the address back, add
+  // the value here AND restore the token line in both markdown files.
+  registeredAddress: '',
   contactEmail: 'hello@knotless.com.au',
   privacyEmail: 'privacy@knotless.com.au',
   companyLinkedinUrl: 'https://www.linkedin.com/company/knotless-ai', // TODO confirm
@@ -75,14 +91,14 @@ export const SITE = {
       name: 'Insiya',
       title: 'Co-Founder & CEO',
       phone: '+61 416 588 531',
-      linkedinUrl: 'https://www.linkedin.com/in/placeholder-insiya', // PLACEHOLDER
+      linkedinUrl: '', // no confirmed profile yet — omitted from JSON-LD
     },
     {
       // Surname 'Karbalai' hidden for now — restore to 'Huzefa Karbalai' when ready.
       name: 'Huzefa',
       title: 'Co-Founder & COO',
       phone: '+61 433 353 544',
-      linkedinUrl: 'https://www.linkedin.com/in/placeholder-huzefa', // PLACEHOLDER
+      linkedinUrl: '', // no confirmed profile yet — omitted from JSON-LD
     },
   ],
   privacyActWording: 'handled under',

@@ -35,7 +35,9 @@ export function organization(site: string) {
     slogan: SITE.tagline,
     address: { '@type': 'PostalAddress', addressCountry: 'AU' },
     areaServed: { '@type': 'Country', name: 'Australia' },
-    sameAs: [SITE.companyLinkedinUrl],
+    // Only claim a profile we've confirmed — an unresolvable sameAs is worse
+    // than none, since it's an explicit identity assertion to crawlers.
+    ...(SITE.companyLinkedinUrl ? { sameAs: [SITE.companyLinkedinUrl] } : {}),
     founder: SITE.founders.map((f) => ({ '@type': 'Person', name: f.name })),
   };
 }
@@ -71,7 +73,14 @@ export function webPage(
   };
 }
 
-/** Person node per founder (from SITE.founders), employed by the Organization. */
+/**
+ * Person node per founder (from SITE.founders), employed by the Organization.
+ *
+ * A founder with no confirmed profile (`linkedinUrl: ''`) emits NEITHER `url`
+ * nor `sameAs` — both were previously set from the same value, so omitting only
+ * one would still publish the dead link. What's left (name + jobTitle +
+ * worksFor) is a complete, valid Person node.
+ */
 export function founderPersons(site: string) {
   const root = trimSlash(site);
   return SITE.founders.map((f) => ({
@@ -79,8 +88,7 @@ export function founderPersons(site: string) {
     '@id': `${root}/#person-${slug(f.name)}`,
     name: f.name,
     jobTitle: f.title,
-    url: f.linkedinUrl,
-    sameAs: [f.linkedinUrl],
+    ...(f.linkedinUrl ? { url: f.linkedinUrl, sameAs: [f.linkedinUrl] } : {}),
     worksFor: { '@id': `${root}/#organization` },
   }));
 }
