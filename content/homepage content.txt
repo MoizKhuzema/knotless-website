@@ -1,0 +1,182 @@
+═══════════════════════════════════════════════════════════════
+KNOTLESS AI — HOMEPAGE CONTENT
+═══════════════════════════════════════════════════════════════
+Words only. No styling, no design decisions, no formatting choices.
+Final content draft. All copy is open to revision until launch.
+
+═══════════════════════════════════════════════════════════════
+GLOBAL PAGE ELEMENTS
+═══════════════════════════════════════════════════════════════
+
+WORDMARK
+knotless
+
+TAGLINE (used in hero only)
+AI Untangled.
+
+TOP NAVIGATION (5 items)
+Exploring AI
+Committing to AI
+Already Running AI
+What We Do
+About
+
+Note: the first three nav items are anchor links to homepage
+sections. The last two are real pages.
+
+═══════════════════════════════════════════════════════════════
+SECTION 1 OF 4 — HERO
+═══════════════════════════════════════════════════════════════
+
+EYEBROW
+AI Untangled.
+
+HEADLINE
+AI that's worth building.
+
+SUBHEAD
+We quantify what AI is worth in your business, then build only
+what pays back. For growing Australian businesses, 10 to 200 staff.
+
+VERTICAL FILTER LINE
+Accounting & bookkeeping  ·  Consulting  ·  Recruitment  ·
+Marketing & digital agencies  ·  Engineering  ·  Architecture
+& design  ·  Property management  ·  Strata
+
+PRIMARY CTA (button)
+Book a free Fit Call
+
+═══════════════════════════════════════════════════════════════
+SECTION 2 OF 4 — WHAT IS THE KNOTLESS ASSESSMENT
+═══════════════════════════════════════════════════════════════
+
+HEADING
+AI is complicated. Knotless isn't.
+
+INTRO PARAGRAPH
+That's why we built the Knotless Assessment. One entry point for
+every client, scoped to where you are right now. You don't need to
+know what kind of help you need. We work it out together on a free
+30-minute Fit Call. You pay only for what you need, and nothing else.
+
+───────────────────────────────────────────────────────────────
+
+STAGE BLOCKS (three blocks, same structure)
+
+  STAGE 01
+  Exploring AI
+  We identify where AI could pay back, what it's worth in dollars,
+  and what's blocking implementation. If the answer is "not yet,"
+  we say so.
+
+  STAGE 02
+  Committing to AI
+  We turn intent into an implementation plan. The right solution,
+  fixed costs, a clear timeline. If you accept, we build it.
+
+  STAGE 03
+  Already Running AI
+  We quantify the return, review what's exposed, and map the
+  compliance risks. A clear-eyed audit, not a sales pitch for
+  a replacement.
+
+LINK
+Read more →
+
+───────────────────────────────────────────────────────────────
+
+SUB-HEADING
+How to get started
+
+THREE STEPS
+
+  01 — Book a free Fit Call
+  Thirty minutes. No commitment. No contract.
+
+  02 — We scope your Assessment, together
+  No AI knowledge needed, no homework. On the call, we work out
+  what you need and what you don't. You walk away with a fixed
+  price, fixed scope, and a clear timeline.
+
+  03 — You decide what's next
+  You'll get a plain-English contract with everything we agreed.
+  Run the Assessment, change the scope, or walk away.
+
+═══════════════════════════════════════════════════════════════
+SECTION 3 OF 4 — WHO YOU'LL BE TALKING TO
+═══════════════════════════════════════════════════════════════
+
+HEADING
+Who you'll be talking to
+
+BODY
+Knotless is run by Insiya and Huzefa Karbalai, husband and wife,
+both based in Adelaide.
+
+Insiya spent over a decade in client success and account
+management, working with mid-market and SME firms across
+industries. She watched the same pattern repeat everywhere:
+capable people stuck doing repetitive work because there was
+no other option, and budgets stretched too thin to fix it.
+
+Huzefa spent fifteen years on the buyer's side of complex
+technology rollouts. He learned the hard part of any technology
+is never the technology. It's making it work inside a real
+business, with real budgets, real constraints, and people who
+just need it to work.
+
+Knotless is what happens when those two disciplines work on
+the same problem.
+
+Every Fit Call is taken by us. Every Assessment is run by us.
+No handovers. No account managers. Just the two people whose
+names are on the door.
+
+───────────────────────────────────────────────────────────────
+
+FOUNDER BLOCK 01                
+Insiya Karbalai
+Co-Founder & CEO
+
+FOUNDER BLOCK 02                
+Huzefa Karbalai
+Co-Founder & COO
+
+LINK (to /about/)
+Read more about us →
+
+═══════════════════════════════════════════════════════════════
+SECTION 4 OF 4 — FINAL CTA
+═══════════════════════════════════════════════════════════════
+
+HEADING
+Ready when you are.
+
+BODY
+If you've read this far, the next step is the call.
+
+CALL TO ACTION
+Book a free Fit Call →
+
+═══════════════════════════════════════════════════════════════
+FOOTER
+═══════════════════════════════════════════════════════════════
+
+TOP ROW
+Wordmark (left)
+LinkedIn icon (right) — links to Knotless AI company page
+
+LEGAL BLOCK
+Knotless AI Pty Ltd  ·  ABN xx xxx xxx xxx
+[Registered address line, City, Postcode, Australia]
+hello@knotless.ai
+
+LINK ROW
+Privacy  ·  Terms  ·  Contact
+
+COPYRIGHT
+© 2026 Knotless AI Pty Ltd. All rights reserved.
+
+═══════════════════════════════════════════════════════════════
+END OF HOMEPAGE CONTENT
+═══════════════════════════════════════════════════════════════

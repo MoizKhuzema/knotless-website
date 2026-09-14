@@ -1,0 +1,225 @@
+═══════════════════════════════════════════════════════════════
+/what-we-do/ — FULL PAGE CONTENT
+Knotless AI · Draft v1.0 · Sections 1–6 locked · Section 7 final CTA pending sign-off
+═══════════════════════════════════════════════════════════════
+
+
+───────────────────────────────────────────────────────────────
+SECTION 1 — PAGE INTRO                                  [LOCKED]
+───────────────────────────────────────────────────────────────
+
+HEADING (page H1)
+One product. The whole story.
+
+BODY
+Everything we sell is on this page: The Knotless Assessment,
+and the implementation that follows. No menu of services. No
+tiers to pick from. One product, one free call to scope it.
+
+
+───────────────────────────────────────────────────────────────
+SECTION 2 — THE QUESTIONS PEOPLE BRING US               [LOCKED]
+───────────────────────────────────────────────────────────────
+
+HEADING
+Sound familiar?
+
+LEAD
+Different industries, same knots.
+
+VIGNETTES (six blocks, same shape)
+
+"We know we should be doing something. We don't know what."
+An accounting practice. AI on every partner meeting agenda.
+Nobody owns the next step.
+
+"Every vendor promises we'll save hours. None of them will put
+a dollar on it."
+A property management principal who has stopped taking demos
+until someone shows working, not slides.
+
+"There's a new tool every week. Picking one feels like a
+coin toss."
+A marketing agency where the team trials everything and
+commits to nothing.
+
+"If the AI gets it wrong, it's still our name on the drawings."
+An engineering consultancy that wants the efficiency but won't
+gamble its professional standing to get it.
+
+"Half my staff are already using it. Should that worry me?"
+A consulting firm where client information is going into AI
+tools the firm hasn't reviewed yet.
+
+"We bought something last year. I honestly couldn't tell you
+what it's done for us."
+A recruitment agency paying for a tool nobody's quite sure
+how to evaluate.
+
+CLOSE
+Six questions, one honest answer each. That's the job of the
+Knotless Assessment.
+
+
+───────────────────────────────────────────────────────────────
+PROCESS STRIP (divider between sections 2 and 3)        [LOCKED]
+───────────────────────────────────────────────────────────────
+
+Fit Call → Assessment → Findings → Build, if the case is there
+
+
+───────────────────────────────────────────────────────────────
+SECTION 3 — WHAT YOU GET AT EACH STAGE                  [LOCKED]
+───────────────────────────────────────────────────────────────
+
+HEADING
+What you get at each stage
+
+LEAD
+We scope the Assessment to the stage you're in, so you only
+pay for what you need.
+
+· · ·
+
+STAGE 01 — Exploring AI
+
+You know AI matters. Not sure where to start.
+
+What we do:
+•  Map how your business actually runs, with the people who
+   run it
+•  Anchor everything to real, recent cases. No idealised
+   workflows
+•  Find where AI or automation could genuinely help, and
+   where it can't
+
+You walk away with:
+•  Every opportunity costed in dollars, calculation shown
+•  What each is worth to fix, and what's blocking it
+•  An honest verdict per opportunity: ready, ready with
+   preparation, or not yet
+•  Problems flagged "not a technology problem" before you
+   spend money on technology
+
+· · ·
+
+STAGE 02 — Committing to AI
+
+You've decided to move. The risk now is moving badly.
+
+What we do:
+•  Map the laws and professional obligations that apply to
+   each opportunity
+•  Name the risks and the controls that keep it safe
+•  Settle the question vendors answer in their own favour:
+   build, buy, or use what you already pay for
+
+You walk away with:
+•  An implementation plan you could hand to anyone: what, in
+   what order, at what cost
+•  A verdict per opportunity: proceed, re-scope, or stop
+•  We build it, if you accept the plan. The plan is yours
+   either way
+
+· · ·
+
+STAGE 03 — Already Running AI
+
+Something's live. Whether it's working is another question.
+
+What we do:
+•  Test what's running against what it promised
+•  Measure what it's actually returning, in dollars
+•  Re-check compliance, because obligations move even when
+   your tools don't
+
+You walk away with:
+•  A measured answer: what to fix, what to keep, what to
+   switch off
+•  Where you're exposed, and what closes the gap
+•  A verdict with nothing riding on it.
+
+
+───────────────────────────────────────────────────────────────
+SECTION 4 — IMPLEMENTATION                              [LOCKED]
+───────────────────────────────────────────────────────────────
+
+HEADING
+The case is there? We build it.
+
+WALK-AWAY (first paragraph)
+If it isn't, the Assessment stands on its own. You owe us
+nothing further, and that's a real outcome, not a courtesy.
+
+THE BUILD
+When it is, the build follows the findings:
+•  Only the opportunities the numbers backed
+•  In the order the plan set, inside the controls it defined
+•  Scope and price fixed before any work starts
+
+WHO DOES THE WORK
+•  The founders run every build, start to finish
+•  Technical delivery is handled by a small set of vetted
+   partner firms in Australia and Pakistan. You choose where your build is delivered: Australian delivery, or Pakistan delivery at a lower cost. Either way it's disclosed up front, with every data flow
+   handled under the Australian Privacy Act
+•  Nothing reaches you without passing through us first
+
+CLOSE
+No account manager. No handovers. The people who assessed the
+case are accountable for the build.
+
+
+───────────────────────────────────────────────────────────────
+SECTION 5 — FAQs                                        [LOCKED]
+───────────────────────────────────────────────────────────────
+
+HEADING
+FAQs.
+
+Q1 — Why isn't the price on this page?
+Because we'd have to pad it to cover every case. Your price
+depends on your stage, the size of your firm, and the scope we
+agree together. It's fixed, and quoted in full on the Fit Call,
+before you sign anything. No day rates, no surprises.
+
+Q2 — How much work is this for my team?
+A few hours, not a few weeks. The Assessment runs on a small
+number of sessions with the people who do the work; we do the
+heavy lifting between them. No pre-reading, no forms, no
+homework. The exact session count and hours are agreed on the
+Fit Call, and we hold to them.
+
+Q3 — Who do we actually deal with?
+The founders. We run the Fit Call, every Assessment session,
+and oversee every build start to finish. One point of contact
+from first call to final delivery; you'll never be re-introduced
+to your own project.
+
+Q4 — What happens to our information?
+It stays protected. Everything you share in an Assessment is
+handled under the Australian Privacy Act, used only to produce
+your findings, and never fed into AI tools we haven't vetted
+ourselves. If a build goes ahead, anything shared with our
+delivery partners is disclosed to you first and covered by the
+same obligations. We're the firm that checks AI for a living;
+we hold our own work to the standard we audit against.
+
+
+───────────────────────────────────────────────────────────────
+SECTION 6 — FINAL CTA                       
+───────────────────────────────────────────────────────────────
+
+HEADING
+That's everything.
+
+BODY
+One product, one call to scope it. The next thirty
+minutes of homework are ours, not yours.
+
+CTA
+Book a free Fit Call
+
+
+═══════════════════════════════════════════════════════════════
+END OF PAGE
+═══════════════════════════════════════════════════════════════
