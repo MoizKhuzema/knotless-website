@@ -16,11 +16,21 @@
  */
 
 export interface Founder {
-  /** Full name as it should appear on the site. */
+  /**
+   * Full name, surname included. DESIGN.md §09: "The founders section must show
+   * the founders. A section headed 'Who you'll be talking to' that shows two
+   * first names is the weakest moment on the page. Surnames at minimum."
+   *
+   * Note this is the FORMAL credit, used on the founder cards and in JSON-LD.
+   * /about's career rows deliberately use first names on their own
+   * (ABOUT_INTRO.careers) — a narrative register, not this one.
+   */
   name: string;
   /** Role / title, e.g. "Co-Founder & CEO". */
   title: string;
-  /** Direct contact number (shown in the footer). */
+  /** Direct email address (shown on the homepage founder cards). */
+  email: string;
+  /** Direct contact number (shown in the footer and on the founder cards). */
   phone: string;
   /**
    * Full LinkedIn profile URL. Empty string = no confirmed profile: the Person
@@ -87,16 +97,16 @@ export const SITE = {
   secondaryDomain: 'knotless.au',
   founders: [
     {
-      // Surname 'Karbalai' hidden for now — restore to 'Insiya Karbalai' when ready.
-      name: 'Insiya',
+      name: 'Insiya Karbalai',
       title: 'Co-Founder & CEO',
+      email: 'insiya.karbalai@knotless.com.au',
       phone: '+61 416 588 531',
       linkedinUrl: '', // no confirmed profile yet — omitted from JSON-LD
     },
     {
-      // Surname 'Karbalai' hidden for now — restore to 'Huzefa Karbalai' when ready.
-      name: 'Huzefa',
+      name: 'Huzefa Karbalai',
       title: 'Co-Founder & COO',
+      email: 'huzefa.karbalai@knotless.com.au',
       phone: '+61 433 353 544',
       linkedinUrl: '', // no confirmed profile yet — omitted from JSON-LD
     },
