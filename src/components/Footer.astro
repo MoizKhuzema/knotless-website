@@ -26,10 +26,17 @@ const LINKS = [
 
 <footer class="mt-section-lg border-t border-warm-grey py-12 text-sm text-ink">
   <!-- Top row -->
-  <div class="flex items-center justify-between gap-6">
-    <!-- Negative margin cancels the wordmark's baked-in left clear space so the
-         glyph aligns with the legal text below. -->
-    <img src={wordmark.src} alt={SITE.legalEntityName} width="381" height="165" class="-ml-[1.4rem] h-16 w-auto sm:h-[4.5rem]" />
+  <!-- The row carries the wordmark's clear space, so its height doesn't depend
+       on empty padding baked into the SVG. The asset is cropped to its ink, so
+       it now starts at the page gutter with no negative-margin correction. -->
+  <div class="flex h-16 items-center justify-between gap-6 sm:h-[4.5rem]">
+    <img
+      src={wordmark.src}
+      alt={SITE.legalEntityName}
+      width="268"
+      height="48"
+      class="h-[1.15rem] w-auto sm:h-[1.3rem]"
+    />
     {
       /* Rendered only when there's a confirmed page — an icon linking nowhere
          reads worse than no icon. */

@@ -31,9 +31,21 @@ const isActive = (path: string) => here.startsWith(href(path));
 <nav class="site-nav fixed inset-x-0 top-0 z-[70] mx-auto max-w-page bg-cream px-gutter">
   <div class="border-b border-warm-grey">
     <div class="flex items-center gap-x-8 py-5">
-      <a href={href('/')} aria-label={`${SITE.legalEntityName} — home`} class="shrink-0">
-        <!-- height drives size; width auto preserves the locked aspect ratio -->
-        <img src={wordmark.src} alt={SITE.legalEntityName} width="381" height="165" class="h-14 w-auto" />
+      <!-- The anchor carries the wordmark's clear space (h-14), so the bar's
+           height no longer depends on empty padding baked into the SVG. The
+           asset is cropped to its ink, so h-4 is the glyph's real height. -->
+      <a
+        href={href('/')}
+        aria-label={`${SITE.legalEntityName} — home`}
+        class="flex h-14 shrink-0 items-center"
+      >
+        <img
+          src={wordmark.src}
+          alt={SITE.legalEntityName}
+          width="268"
+          height="48"
+          class="h-4 w-auto"
+        />
       </a>
 
     <!-- md+ : inline links -->

@@ -166,6 +166,14 @@
     color: var(--color-cream);
   }
 
+  /* The skip-link target. <main> is focusable only so the skip link can move
+     focus into it; it's never a tab stop, so the UA ring — drawn around the
+     whole content area — would be noise rather than an affordance. The page
+     jump already signals the move. */
+  main[tabindex='-1']:focus {
+    outline: none;
+  }
+
   ::selection {
     background-color: var(--color-ink);
     color: var(--color-cream);

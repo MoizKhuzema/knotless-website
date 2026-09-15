@@ -95,7 +95,17 @@ const FORM_ACTION = withBase('/contact');
         {CONTACT.submitLabel}
       </button>
 
-      <p id="form-status" role="status" aria-live="polite" class="sr-only"></p>
+      <!-- Status line for validation + submit failures. Visible (not sr-only) so a
+           failed submit isn't silent for sighted users; `empty:sr-only` keeps the
+           live region registered and out of the layout until it has something to
+           say. Not `empty:hidden` — display:none drops it from the a11y tree, and
+           some screen readers then miss the announcement. -->
+      <p
+        id="form-status"
+        role="status"
+        aria-live="polite"
+        class="mt-6 border-l-2 border-terracotta pl-4 text-base font-medium text-ink empty:sr-only"
+      ></p>
     </form>
 
     <!-- Success state: hidden until a successful submit, then swapped in.

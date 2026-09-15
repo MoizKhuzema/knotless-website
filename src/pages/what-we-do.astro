@@ -466,7 +466,11 @@ const schema = graph([
       font-weight: 600;
     }
   }
+  /* The panel is a keyboard stop (tabindex="0" — it holds no focusable content),
+     so it needs a real focus indicator. Ink at 2px reads clearly on Cream and
+     stays inside the five-value palette. */
   .stage-panel:focus-visible {
-    outline: none;
+    outline: 2px solid var(--color-ink);
+    outline-offset: 4px;
   }
 </style>
