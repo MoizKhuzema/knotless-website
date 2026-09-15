@@ -79,7 +79,7 @@ const schema = graph([
               </h3>
               <p class="label mt-2 pl-5 text-warm-grey">{c.teaser}</p>
             </div>
-            <p class="mt-3 max-w-prose text-ink sm:col-span-8 sm:mt-0">{c.experience}</p>
+            <p class="mt-3 prose-measure text-ink sm:col-span-8 sm:mt-0">{c.experience}</p>
           </article>
         ))
       }
@@ -122,7 +122,7 @@ const schema = graph([
           <div data-reveal>
             <h3 class="text-lg font-semibold tracking-tight text-ink sm:text-xl">{founder.name}</h3>
             <p class="label mt-2 text-ink">{founder.title}</p>
-            <p class="mt-4 max-w-prose text-base text-ink">{ABOUT_FOUNDERS.bios[i]}</p>
+            <p class="mt-4 prose-measure text-base text-ink">{ABOUT_FOUNDERS.bios[i]}</p>
           </div>
         ))
       }

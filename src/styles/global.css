@@ -66,7 +66,11 @@
   /* --- Letter-spacing (tracking) -----------------------------------
    * The brand-specified wordmark/tagline values plus a few working ones.
    * Tight tracking on large display type; open tracking on small caps. */
-  --tracking-wordmark: -0.03em; /* −3%  — the logo wordmark           */
+  /* +1.9% — the logo wordmark. Measured from the shipping SVG, which is open,
+   * not tight. Brand Guidelines v2.1 says −3%; that is wrong in both magnitude
+   * and SIGN, and this token carried the wrong value until now. See DESIGN.md
+   * §04 "Wordmark metrics — corrected". */
+  --tracking-wordmark: 0.019em;
   --tracking-tagline: 0.15em; /* +15% — the "AI UNTANGLED" lockup   */
   --tracking-tight: -0.02em; /* large display headings            */
   --tracking-normal: 0em; /* body                              */
@@ -83,10 +87,30 @@
 
   /* --- Measure / containers ----------------------------------------
    * Body copy is capped near ~70 characters for readability; the page
-   * itself sits in a wider editorial column. Map to max-w-prose etc. */
-  --container-prose: 38rem; /* ~68–70 chars at 18px body          */
+   * itself sits in a wider editorial column. Map to prose-measure etc. */
+  /* 672px — the body measure. Reach it with the `prose-measure` utility
+   * defined below, NEVER with Tailwind's `max-w-prose`; see the warning there.
+   * Empirical: 68.9 chars/line with Lora at 18px, measured over 58 real
+   * paragraphs (15,630 chars) across all six pages at 1440px. */
+  --container-prose: 42rem;
   --container-text: 48rem; /* headings / standfirst column      */
   --container-page: 72rem; /* outer editorial width             */
+}
+
+/* ---------------------------------------------------------------------
+ * The body measure, as an EXPLICIT utility.
+ *
+ * ⚠ Do not use Tailwind's `max-w-prose`. Tailwind v4 ships its own static
+ * `max-w-prose` of `65ch`, and it wins over the `max-w-*` utility that
+ * `--container-prose` would otherwise generate. The token was therefore
+ * declared but never emitted: every `max-w-prose` on the site was silently
+ * resolving to 65ch — 738px, or 87 characters at 1440px, well past the
+ * 68–70 target.
+ *
+ * `prose-measure` is a name Tailwind does not own, so it cannot be shadowed.
+ * ------------------------------------------------------------------- */
+@utility prose-measure {
+  max-width: var(--container-prose);
 }
 
 /* ---------------------------------------------------------------------
