@@ -8,6 +8,12 @@
  * Responsive: from md up, three equal-weight text links sit inline (no button —
  * the page's own CTAs carry the primary action). Below md the links collapse
  * behind a hamburger that opens an accessible dropdown drawer.
+ *
+ * Brand reveal (opt-in, via the `brandReveal` prop): pages whose hero carries
+ * the wordmark start with the nav copy hidden and fade it in once the hero mark
+ * scrolls under the bar, so the mark is never shown twice at once. See the
+ * <script> and <style> at the foot of this file. Off by default — every other
+ * page renders exactly as before.
  */
 import { SITE } from '../config/site';
 import { href } from '../lib/href';
@@ -19,6 +25,13 @@ const NAV_LINKS = [
   { label: 'Contact us', href: '/contact' },
 ];
 
+interface Props {
+  /** See BaseLayout's `brandReveal` — armed here, triggered by the page's
+   *  [data-brand-sentinel]. */
+  brandReveal?: boolean;
+}
+const { brandReveal = false } = Astro.props;
+
 const here = Astro.url.pathname;
 const isActive = (path: string) => here.startsWith(href(path));
 ---
@@ -28,7 +41,10 @@ const isActive = (path: string) => here.startsWith(href(path));
      max-w-page via inset-x-0 + mx-auto (no transform, which can re-trigger the
      bug). z above the grain so it always occludes. BaseLayout offsets content
      by the bar height. -->
-<nav class="site-nav fixed inset-x-0 top-0 z-[70] mx-auto max-w-page bg-cream px-gutter">
+<nav
+  class="site-nav fixed inset-x-0 top-0 z-[70] mx-auto max-w-page bg-cream px-gutter"
+  data-brand-reveal={brandReveal ? '' : undefined}
+>
   <div class="border-b border-warm-grey">
     <div class="flex items-center gap-x-8 py-5">
       <!-- The anchor carries the wordmark's clear space (h-14), so the bar's
@@ -37,7 +53,7 @@ const isActive = (path: string) => here.startsWith(href(path));
       <a
         href={href('/')}
         aria-label={`${SITE.legalEntityName} — home`}
-        class="flex h-14 shrink-0 items-center"
+        class="nav-brand flex h-14 shrink-0 items-center"
       >
         <img
           src={wordmark.src}
@@ -140,3 +156,91 @@ const isActive = (path: string) => here.startsWith(href(path));
     });
   })();
 </script>
+
+<script is:inline>
+  // Brand reveal: show the nav wordmark once the page's own brand mark has
+  // scrolled up under the bar, and hide it again on the way back.
+  //
+  // The HIDDEN state is CSS, keyed on the server-rendered [data-brand-reveal]
+  // and wrapped in prefers-reduced-motion — not set by this script. That
+  // ordering matters: the sentinel lives in the hero, which the parser reaches
+  // AFTER this nav, so a script arming on the sentinel's presence would have to
+  // wait for DOMContentLoaded and would flash the wordmark in before hiding it.
+  // CSS is correct from the first paint, which leaves this script free to run
+  // late and only wire up the observer.
+  //
+  // IntersectionObserver, deliberately — not a scroll listener, not a
+  // scroll-linked transform, not a FLIP morph. The bar is fixed rather than
+  // sticky because iOS Safari ghosted page content over a sticky one, and
+  // nothing here touches its positioning: the only properties that change are
+  // opacity and visibility on a child.
+  (() => {
+    const nav = document.querySelector('.site-nav[data-brand-reveal]');
+    if (!nav) return; // page didn't opt in — wordmark stays visible
+
+    // Reduced motion: the CSS never hides it, so there is nothing to observe.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const init = () => {
+      const mark = document.querySelector('[data-brand-sentinel]');
+      // Armed with no sentinel (or no IO support) would hide the logo forever.
+      // Fail visible instead.
+      if (!mark || !('IntersectionObserver' in window)) {
+        nav.setAttribute('data-brand-shown', '');
+        return;
+      }
+
+      // Shrink the root's top edge by the bar's height so "out of view" means
+      // "under the bar", not "off the screen". Measured once, with the mobile
+      // drawer closed; a resize shifts this by a pixel or two, which is well
+      // inside the tolerance of a fade.
+      const io = new IntersectionObserver(
+        ([entry]) => {
+          // Two ways to not intersect: scrolled past (above) or not yet reached
+          // (below, e.g. a restored scroll position). Only the first should
+          // show the wordmark, hence the boundingClientRect check.
+          const past = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+          nav.toggleAttribute('data-brand-shown', past);
+        },
+        { rootMargin: `-${nav.offsetHeight}px 0px 0px 0px`, threshold: 0 },
+      );
+      io.observe(mark);
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+</script>
+
+<style>
+  /* Only inside no-preference: under reduced motion these rules never apply, so
+   * the wordmark is simply visible at all times, which is the specified
+   * behaviour. Opacity and visibility only — never a layout property (§11.10),
+   * and never the bar's own positioning. visibility (not display) keeps the
+   * anchor's h-14 box, so the bar's height never changes and nothing shifts;
+   * it also takes the link out of the tab order and the accessibility tree
+   * while hidden, which display:none would do but opacity:0 alone would not.
+   *
+   * Hiding delays the visibility flip until the fade finishes; showing flips it
+   * immediately so the fade is visible. 300ms, inside the 400ms cap in §07. */
+  @media (prefers-reduced-motion: no-preference) {
+    .site-nav[data-brand-reveal] .nav-brand {
+      visibility: hidden;
+      opacity: 0;
+      transition:
+        opacity 300ms cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0s linear 300ms;
+    }
+
+    .site-nav[data-brand-reveal][data-brand-shown] .nav-brand {
+      visibility: visible;
+      opacity: 1;
+      transition:
+        opacity 300ms cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0s;
+    }
+  }
+</style>

@@ -41,9 +41,26 @@ interface Props {
   schema?: unknown;
   /** Hide the shared Nav/Footer chrome (e.g. for the styleguide). */
   bare?: boolean;
+  /**
+   * Start with the nav wordmark hidden and reveal it once the page's own brand
+   * mark scrolls out from under the bar. For pages whose hero carries the
+   * wordmark, so the mark isn't shown twice at once.
+   *
+   * The page must also mark that hero element `data-brand-sentinel` — this prop
+   * arms the hidden state, the sentinel says when to lift it. Armed but with no
+   * sentinel, the nav fails visible rather than hiding the logo forever.
+   */
+  brandReveal?: boolean;
 }
 
-const { title, description = '', ogType = 'website', schema, bare = false } = Astro.props;
+const {
+  title,
+  description = '',
+  ogType = 'website',
+  schema,
+  bare = false,
+  brandReveal = false,
+} = Astro.props;
 // Tab/SEO title: short page name + the short brand ("Home - Knotless").
 const fullTitle = `${title} - Knotless`;
 const ogImageAlt = `${SITE.legalEntityName} — ${SITE.tagline}`;
@@ -123,7 +140,7 @@ const fontFace = [
               content isn't hidden under it. The hero adds its own top breathing
               room below that. */}
           <div class="mx-auto flex min-h-screen max-w-page flex-col px-gutter pt-24">
-            <Nav />
+            <Nav brandReveal={brandReveal} />
             {/* Sections own their vertical rhythm; no padding here so the hero
                 can fill the first viewport. */}
             <main id="main" tabindex="-1" class="flex-1 scroll-mt-24">
