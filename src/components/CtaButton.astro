@@ -2,13 +2,17 @@
 /**
  * The primary call-to-action.
  *
- * Renders as a real <a> link. Two variants, both within approved colour pairs:
+ * Renders as a real <a> link. Three variants, all within approved colour pairs:
  *   - primary:   solid Ink button, Cream label (Cream-on-Ink) — the one
  *                primary action per layout.
  *   - secondary: Ink outline on the Cream page (Ink-on-Cream) — quieter.
+ *   - inverse:   Cream fill, Ink label, for reversed (Ink) panels.
  *
  * Terracotta is deliberately NOT used as a button fill: it's reserved as a
  * single accent per composition (e.g. the accent rule), not a body/UI colour.
+ *
+ * Every variant is at least 44px tall, and no variant inverts its fill to the
+ * background it sits on — see the notes beside `base` and `variants`.
  *
  *   <CtaButton href="/contact">Speak with us</CtaButton>
  *   <CtaButton href="/about" variant="secondary">Read more</CtaButton>
@@ -23,18 +27,44 @@ interface Props {
 
 const { href, variant = 'primary' } = Astro.props;
 
+// min-h-11 (44px) with the label centred, rather than vertical padding: the
+// label token shrinks to 11px below 640px, so a padding-derived height drifts
+// with the type scale and lands under the minimum exactly where it matters
+// most. Measured before this change: 42.8px desktop, 41.4px at 390px — both
+// short of the 44px floor (DESIGN.md §06 "Touch targets", §11.9).
 const base =
-  'inline-block rounded-sm px-7 py-3 text-label font-medium uppercase tracking-label no-underline transition-colors';
+  'cta inline-flex min-h-11 items-center justify-center rounded-sm px-7 text-label font-medium uppercase tracking-label no-underline transition';
 
 const variants = {
-  // hover inverts to Ink-on-Cream — an approved pair, no terracotta on a button
-  primary: 'border border-ink bg-ink text-cream hover:bg-cream hover:text-ink',
+  // The two FILLED variants do not change fill on hover. DESIGN.md §06: "Hover
+  // increases prominence. It must not invert the fill to the page background."
+  // Both previously did exactly that — primary to Cream (the page), inverse to
+  // Ink (the panel behind it) — so hovering dissolved the button into its own
+  // background. With five colours and terracotta barred from button fills
+  // (§02), nothing in the palette is MORE prominent than a solid Ink fill, so
+  // the prominence increase is a 2px lift instead of a colour (see <style>).
+  primary: 'cta--lift border border-ink bg-ink text-cream',
+  // Outline → filled Ink genuinely increases prominence, so this one was
+  // already correct and is left alone.
   secondary: 'border border-ink text-ink hover:bg-ink hover:text-cream',
-  // for reversed (Ink) sections: Cream fill / Ink text, hover to Cream-on-Ink
-  inverse: 'border border-cream bg-cream text-ink hover:bg-ink hover:text-cream',
+  // For reversed (Ink) sections: Cream fill / Ink text.
+  inverse: 'cta--lift border border-cream bg-cream text-ink',
 } as const;
 ---
 
 <a href={withBase(href)} class:list={[base, variants[variant]]}>
   <slot />
 </a>
+
+<style>
+  /* Transform only, never a layout property (§11.10), and gated behind
+   * prefers-reduced-motion (§07). :focus-visible gets the same lift so the
+   * keyboard path matches the pointer one; the global focus outline still
+   * carries the focus state itself. */
+  @media (prefers-reduced-motion: no-preference) {
+    .cta--lift:hover,
+    .cta--lift:focus-visible {
+      transform: translateY(-2px);
+    }
+  }
+</style>
