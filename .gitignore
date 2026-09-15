@@ -29,3 +29,6 @@ yarn-error.log*
 .codex/
 .aider-desk/
 .augment/
+
+# local screenshot output
+tmp/
