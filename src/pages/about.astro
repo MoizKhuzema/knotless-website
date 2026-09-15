@@ -34,8 +34,8 @@ const schema = graph([
        On mobile it fills the first screen (content centred) so the next section
        sits below the fold and reveals on scroll; top-aligned from sm up. -->
   <section class="hero-screen sm:pt-28">
-    <p class="text-label uppercase tracking-tagline text-ink">{ABOUT_INTRO.eyebrow}</p>
-    <h1 class="mt-5 text-[2.4rem] font-semibold leading-[1.02] tracking-[-0.035em] text-ink min-[420px]:text-[2.9rem] sm:text-[3.75rem] md:text-[4.25rem] lg:text-[5.75rem] xl:text-[6.75rem]">
+    <p class="text-label uppercase tracking-tagline text-cream">{ABOUT_INTRO.eyebrow}</p>
+    <h1 class="mt-5 text-[2.4rem] leading-[1.02] tracking-[-0.035em] text-cream min-[420px]:text-[2.9rem] sm:text-[3.75rem] md:text-[4.25rem] lg:text-[5.75rem] xl:text-[6.75rem]">
       Two careers.<br /><span class="one-emph">One</span> <span class="emph-type" data-word="conclusion."
         ><span class="sr-only">conclusion.</span><span class="ew" aria-hidden="true"
           ><span class="ew-sizer">conclusion.</span><span class="ew-live"><span class="ew-typed">conclusion.</span><span class="ew-caret"></span></span></span
@@ -43,8 +43,8 @@ const schema = graph([
       ></span>
     </h1>
 
-    <p class="mt-8 max-w-text text-base text-ink sm:text-lg">
-      {ABOUT_INTRO.lead.pre}<strong class="font-semibold text-ink">{ABOUT_INTRO.lead.strong}</strong
+    <p class="mt-8 max-w-text text-base text-cream sm:text-lg">
+      {ABOUT_INTRO.lead.pre}<strong class="font-semibold text-cream">{ABOUT_INTRO.lead.strong}</strong
       >{ABOUT_INTRO.lead.post}
     </p>
 
@@ -57,7 +57,7 @@ const schema = graph([
   <section class="pt-section-lg">
     <div data-reveal>
       <span class="accent-rule"></span>
-      <h2 class="mt-6 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+      <h2 class="mt-6 text-2xl tracking-tight text-cream sm:text-3xl">
         {ABOUT_INTRO.careersHeading}
       </h2>
     </div>
@@ -65,21 +65,21 @@ const schema = graph([
     <!-- Each career: a terracotta marker + name + teaser in the left column, the
          full experience in the right column (stacked on mobile). The homepage
          stages pattern, so it reads as native and stays left-aligned. -->
-    <div class="mt-10 border-t border-warm-grey sm:mt-14">
+    <div class="mt-10 border-t border-line sm:mt-14">
       {
         ABOUT_INTRO.careers.map((c) => (
           <article
             data-reveal
-            class="border-b border-warm-grey py-6 sm:grid sm:grid-cols-12 sm:items-baseline sm:gap-8 sm:py-7"
+            class="border-b border-line py-6 sm:grid sm:grid-cols-12 sm:items-baseline sm:gap-8 sm:py-7"
           >
             <div class="sm:col-span-4">
-              <h3 class="flex items-center gap-3 text-lg font-semibold tracking-tight text-ink">
-                <span aria-hidden="true" class="h-2 w-2 shrink-0 rounded-full bg-terracotta" />
+              <h3 class="flex items-center gap-3 text-lg font-semibold tracking-tight text-cream">
+                <span aria-hidden="true" class="h-2 w-2 shrink-0 rounded-full bg-ember" />
                 {c.name}
               </h3>
-              <p class="label mt-2 pl-5 text-warm-grey">{c.teaser}</p>
+              <p class="label mt-2 pl-5 text-cream-dim">{c.teaser}</p>
             </div>
-            <p class="mt-3 prose-measure text-ink sm:col-span-8 sm:mt-0">{c.experience}</p>
+            <p class="mt-3 prose-measure text-cream sm:col-span-8 sm:mt-0">{c.experience}</p>
           </article>
         ))
       }
@@ -87,9 +87,9 @@ const schema = graph([
 
     <!-- One conclusion: the payoff, closing the same section the careers open. -->
     <div data-reveal class="mt-12 max-w-text sm:mt-14">
-      <p class="label text-warm-grey">{ABOUT_INTRO.conclusionHeading}</p>
-      <p class="mt-4 text-base text-ink sm:text-lg">
-        <strong class="font-semibold text-ink">{ABOUT_INTRO.conclusion.lead}</strong
+      <p class="label text-cream-dim">{ABOUT_INTRO.conclusionHeading}</p>
+      <p class="mt-4 text-base text-cream sm:text-lg">
+        <strong class="font-semibold text-cream">{ABOUT_INTRO.conclusion.lead}</strong
         >{ABOUT_INTRO.conclusion.body}
       </p>
     </div>
@@ -99,7 +99,7 @@ const schema = graph([
   <section class="pt-section-lg">
     <div data-reveal class="max-w-text">
       <span class="accent-rule"></span>
-      <h2 class="mt-6 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+      <h2 class="mt-6 text-2xl tracking-tight text-cream sm:text-3xl">
         {ABOUT_FOUNDERS.heading}
       </h2>
     </div>
@@ -109,9 +109,9 @@ const schema = graph([
          <img class="h-full w-full object-cover"> inside it.
     <div
       data-reveal
-      class="relative mt-10 flex aspect-[4/3] items-end overflow-hidden rounded-sm border border-warm-grey sm:mt-14 sm:aspect-[16/9]"
+      class="relative mt-10 flex aspect-[4/3] items-end overflow-hidden rounded-sm border border-line sm:mt-14 sm:aspect-[16/9]"
     >
-      <span class="label m-5 text-warm-grey">Insiya &amp; Huzefa</span>
+      <span class="label m-5 text-cream-dim">Insiya &amp; Huzefa</span>
     </div>
     -->
 
@@ -120,21 +120,21 @@ const schema = graph([
       {
         SITE.founders.map((founder, i) => (
           <div data-reveal>
-            <h3 class="text-lg font-semibold tracking-tight text-ink sm:text-xl">{founder.name}</h3>
-            <p class="label mt-2 text-ink">{founder.title}</p>
-            <p class="mt-4 prose-measure text-base text-ink">{ABOUT_FOUNDERS.bios[i]}</p>
+            <h3 class="text-lg font-semibold tracking-tight text-cream sm:text-xl">{founder.name}</h3>
+            <p class="label mt-2 text-cream">{founder.title}</p>
+            <p class="mt-4 prose-measure text-base text-cream">{ABOUT_FOUNDERS.bios[i]}</p>
           </div>
         ))
       }
     </div>
 
-    <p data-reveal class="label mt-8 text-warm-grey">{ABOUT_FOUNDERS.location}</p>
+    <p data-reveal class="label mt-8 text-cream-dim">{ABOUT_FOUNDERS.location}</p>
 
     <!-- How we deliver: a titled block (same content-block header as the rest). -->
     <div data-reveal class="mt-12 max-w-text sm:mt-16">
-      <p class="text-base font-semibold text-ink">{ABOUT_FOUNDERS.deliverHeading}</p>
+      <p class="text-base font-semibold text-cream">{ABOUT_FOUNDERS.deliverHeading}</p>
       <div class="mt-3 space-y-4">
-        {ABOUT_FOUNDERS.deliverBody.map((para) => <p class="text-base text-ink">{para}</p>)}
+        {ABOUT_FOUNDERS.deliverBody.map((para) => <p class="text-base text-cream">{para}</p>)}
       </div>
     </div>
   </section>
@@ -143,7 +143,7 @@ const schema = graph([
   <section class="pt-section-lg">
     <div data-reveal class="on-ink flex flex-col items-center rounded-sm px-6 py-20 text-center">
       <span class="accent-rule"></span>
-      <h2 class="mt-6 text-2xl font-semibold tracking-tight sm:text-3xl">{ABOUT_FINAL_CTA.heading}</h2>
+      <h2 class="mt-6 text-2xl tracking-tight sm:text-3xl">{ABOUT_FINAL_CTA.heading}</h2>
       <div class="mt-9">
         <CtaButton href={ABOUT_FINAL_CTA.cta.href} variant="inverse">
           {ABOUT_FINAL_CTA.cta.label}

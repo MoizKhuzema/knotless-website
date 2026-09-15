@@ -1,70 +1,191 @@
 ---
 /**
- * The primary call-to-action.
+ * The primary call to action.
  *
- * Renders as a real <a> link. Three variants, all within approved colour pairs:
- *   - primary:   solid Ink button, Cream label (Cream-on-Ink) — the one
- *                primary action per layout.
- *   - secondary: Ink outline on the Cream page (Ink-on-Cream) — quieter.
- *   - inverse:   Cream fill, Ink label, for reversed (Ink) panels.
+ * A pill with the label doubled: the second copy sits below the first and
+ * slides up on hover while the first slides out, so the button reads as a
+ * mechanism rather than a rectangle that changes colour. The ember fill wipes
+ * in from the left behind it, following the same left-to-right gesture as the
+ * logo's strike and the hero's threads.
  *
- * Terracotta is deliberately NOT used as a button fill: it's reserved as a
- * single accent per composition (e.g. the accent rule), not a body/UI colour.
+ * Variants:
+ *   primary  — ember fill on the dark page
+ *   ghost    — hairline outline on dark
+ *   inverse  — for the light close panel
  *
- * Every variant is at least 44px tall, and no variant inverts its fill to the
- * background it sits on — see the notes beside `base` and `variants`.
- *
- *   <CtaButton href="/contact">Speak with us</CtaButton>
- *   <CtaButton href="/about" variant="secondary">Read more</CtaButton>
- *   <CtaButton href="/contact" variant="inverse">…</CtaButton>  // on Ink sections
+ * Minimum 48px tall in every variant. Under prefers-reduced-motion the label
+ * swap and wipe are dropped and hover simply brightens.
  */
 import { href as withBase } from '../lib/href';
 
 interface Props {
   href: string;
-  variant?: 'primary' | 'secondary' | 'inverse';
+  variant?: 'primary' | 'ghost' | 'inverse';
 }
-
 const { href, variant = 'primary' } = Astro.props;
-
-// min-h-11 (44px) with the label centred, rather than vertical padding: the
-// label token shrinks to 11px below 640px, so a padding-derived height drifts
-// with the type scale and lands under the minimum exactly where it matters
-// most. Measured before this change: 42.8px desktop, 41.4px at 390px — both
-// short of the 44px floor (DESIGN.md §06 "Touch targets", §11.9).
-const base =
-  'cta inline-flex min-h-11 items-center justify-center rounded-sm px-7 text-label font-medium uppercase tracking-label no-underline transition';
-
-const variants = {
-  // The two FILLED variants do not change fill on hover. DESIGN.md §06: "Hover
-  // increases prominence. It must not invert the fill to the page background."
-  // Both previously did exactly that — primary to Cream (the page), inverse to
-  // Ink (the panel behind it) — so hovering dissolved the button into its own
-  // background. With five colours and terracotta barred from button fills
-  // (§02), nothing in the palette is MORE prominent than a solid Ink fill, so
-  // the prominence increase is a 2px lift instead of a colour (see <style>).
-  primary: 'cta--lift border border-ink bg-ink text-cream',
-  // Outline → filled Ink genuinely increases prominence, so this one was
-  // already correct and is left alone.
-  secondary: 'border border-ink text-ink hover:bg-ink hover:text-cream',
-  // For reversed (Ink) sections: Cream fill / Ink text.
-  inverse: 'cta--lift border border-cream bg-cream text-ink',
-} as const;
 ---
 
-<a href={withBase(href)} class:list={[base, variants[variant]]}>
-  <slot />
+<a href={withBase(href)} class:list={['btn', `btn--${variant}`]}>
+  <span class="btn__label" aria-hidden="true">
+    <span class="btn__a"><slot /></span>
+    <span class="btn__b"><slot /></span>
+  </span>
+  <span class="sr-only"><slot /></span>
+  <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M2 8h11M9 4l4 4-4 4" />
+  </svg>
 </a>
 
 <style>
-  /* Transform only, never a layout property (§11.10), and gated behind
-   * prefers-reduced-motion (§07). :focus-visible gets the same lift so the
-   * keyboard path matches the pointer one; the global focus outline still
-   * carries the focus state itself. */
-  @media (prefers-reduced-motion: no-preference) {
-    .cta--lift:hover,
-    .cta--lift:focus-visible {
-      transform: translateY(-2px);
+  .btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 3rem;
+    padding: 0 1.6rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-family: var(--font-sans);
+    font-size: var(--text-meta);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-meta);
+    text-decoration: none;
+    overflow: hidden;
+    isolation: isolate;
+    transition:
+      border-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out);
+  }
+
+  /* The label track: two stacked copies, one visible at a time. */
+  .btn__label {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    height: 1.4em;
+  }
+  .btn__a,
+  .btn__b {
+    display: block;
+    line-height: 1.4em;
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .btn__b {
+    position: absolute;
+    inset: 0;
+    transform: translateY(100%);
+  }
+  .btn:hover .btn__a,
+  .btn:focus-visible .btn__a {
+    transform: translateY(-100%);
+  }
+  .btn:hover .btn__b,
+  .btn:focus-visible .btn__b {
+    transform: translateY(0);
+  }
+
+  .btn__arrow {
+    width: 1rem;
+    height: 1rem;
+    flex: none;
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .btn:hover .btn__arrow,
+  .btn:focus-visible .btn__arrow {
+    transform: translateX(3px);
+  }
+
+  /* --- primary: ember fill, deepening on hover ------------------------ */
+  .btn--primary {
+    background-color: var(--color-ember);
+    color: #140f0c;
+  }
+  .btn--primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: var(--color-cream);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .btn--primary:hover::before,
+  .btn--primary:focus-visible::before {
+    transform: scaleX(1);
+  }
+
+  /* --- ghost: hairline on dark ---------------------------------------- */
+  .btn--ghost {
+    border-color: var(--color-line);
+    color: var(--color-cream);
+  }
+  .btn--ghost:hover,
+  .btn--ghost:focus-visible {
+    border-color: var(--color-ember);
+    color: var(--color-ember);
+  }
+
+  /* --- inverse: for the light close panel ----------------------------- */
+  .btn--inverse {
+    background-color: #16150f;
+    color: var(--color-cream);
+  }
+  .btn--inverse::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: #b4491f;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .btn--inverse:hover::before,
+  .btn--inverse:focus-visible::before {
+    transform: scaleX(1);
+  }
+
+  /* Reduced motion: no label swap, no wipe, no arrow nudge — hover still
+     reads, via colour alone. */
+  @media (prefers-reduced-motion: reduce) {
+    .btn__a,
+    .btn__b,
+    .btn__arrow,
+    .btn::before {
+      transition: none !important;
     }
+    .btn:hover .btn__a,
+    .btn:focus-visible .btn__a {
+      transform: none;
+    }
+    .btn:hover .btn__b,
+    .btn:focus-visible .btn__b {
+      transform: translateY(100%);
+    }
+    .btn--primary:hover,
+    .btn--primary:focus-visible {
+      background-color: var(--color-cream);
+      color: #140f0c;
+    }
+    .btn--inverse:hover,
+    .btn--inverse:focus-visible {
+      background-color: #b4491f;
+    }
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 </style>

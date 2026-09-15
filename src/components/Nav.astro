@@ -1,23 +1,19 @@
 ---
 /**
- * Site navigation — sticky, with a hairline separating it from the page.
+ * Site navigation.
  *
- * Brand: the wordmark_secondary "original" lockup for the light Cream
- * background — height-driven so it's never recoloured or stretched.
+ * Fixed, transparent over the hero, then a blurred ink bar once the page
+ * moves — so the hero reads full-bleed and the nav still stays legible over
+ * content later. Fixed rather than sticky: sticky ghosted page content over
+ * the bar on iOS Safari.
  *
- * Responsive: from md up, three equal-weight text links sit inline (no button —
- * the page's own CTAs carry the primary action). Below md the links collapse
- * behind a hamburger that opens an accessible dropdown drawer.
- *
- * Brand reveal (opt-in, via the `brandReveal` prop): pages whose hero carries
- * the wordmark start with the nav copy hidden and fade it in once the hero mark
- * scrolls under the bar, so the mark is never shown twice at once. See the
- * <script> and <style> at the foot of this file. Off by default — every other
- * page renders exactly as before.
+ * Brand reveal (opt-in via `brandReveal`): pages whose hero carries the
+ * wordmark start with the nav copy hidden and fade it in once the hero mark
+ * scrolls under the bar. Off by default.
  */
 import { SITE } from '../config/site';
 import { href } from '../lib/href';
-import wordmark from '../assets/logo/wordmark_secondary/Wordmark_Secondary.svg';
+import wordmark from '../assets/logo/wordmark_secondary/Reverse_Wordmark_Secondary.svg';
 
 const NAV_LINKS = [
   { label: 'About us', href: '/about' },
@@ -26,8 +22,6 @@ const NAV_LINKS = [
 ];
 
 interface Props {
-  /** See BaseLayout's `brandReveal` — armed here, triggered by the page's
-   *  [data-brand-sentinel]. */
   brandReveal?: boolean;
 }
 const { brandReveal = false } = Astro.props;
@@ -36,46 +30,20 @@ const here = Astro.url.pathname;
 const isActive = (path: string) => here.startsWith(href(path));
 ---
 
-<!-- Fixed (not sticky): iOS Safari composites fixed elements reliably, whereas
-     sticky here left page content ghosting above the bar on scroll. Centred to
-     max-w-page via inset-x-0 + mx-auto (no transform, which can re-trigger the
-     bug). z above the grain so it always occludes. BaseLayout offsets content
-     by the bar height. -->
-<nav
-  class="site-nav fixed inset-x-0 top-0 z-[70] mx-auto max-w-page bg-cream px-gutter"
-  data-brand-reveal={brandReveal ? '' : undefined}
->
-  <div class="border-b border-warm-grey">
-    <div class="flex items-center gap-x-8 py-5">
-      <!-- The anchor carries the wordmark's clear space (h-14), so the bar's
-           height no longer depends on empty padding baked into the SVG. The
-           asset is cropped to its ink, so h-4 is the glyph's real height. -->
-      <a
-        href={href('/')}
-        aria-label={`${SITE.legalEntityName} — home`}
-        class="nav-brand flex h-14 shrink-0 items-center"
-      >
-        <img
-          src={wordmark.src}
-          alt={SITE.legalEntityName}
-          width="268"
-          height="48"
-          class="h-4 w-auto"
-        />
-      </a>
+<nav class="nav" data-brand-reveal={brandReveal ? '' : undefined}>
+  <div class="shell nav__bar">
+    <a href={href('/')} aria-label={`${SITE.legalEntityName} — home`} class="nav__brand">
+      <img src={wordmark.src} alt={SITE.legalEntityName} width="266" height="48" />
+    </a>
 
-    <!-- md+ : inline links -->
-    <ul class="ml-auto hidden items-center gap-x-8 md:flex">
+    <ul class="nav__links">
       {
         NAV_LINKS.map((link) => (
           <li>
             <a
               href={href(link.href)}
               aria-current={isActive(link.href) ? 'page' : undefined}
-              class:list={[
-                'label text-ink no-underline underline-offset-4 hover:underline',
-                isActive(link.href) ? 'underline' : '',
-              ]}
+              class:list={['nav__link', isActive(link.href) && 'is-active']}
             >
               {link.label}
             </a>
@@ -84,41 +52,24 @@ const isActive = (path: string) => here.startsWith(href(path));
       }
     </ul>
 
-    <!-- below md : hamburger toggle (≥44px tap target: 24px icon + p-2.5) -->
     <button
       type="button"
-      class="nav-toggle -mr-2.5 ml-auto p-2.5 text-ink md:hidden"
+      class="nav__toggle"
       aria-label="Open menu"
       aria-expanded="false"
       aria-controls="nav-menu"
     >
-      <svg class="nav-icon-menu" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
-        <line x1="3" y1="7" x2="21" y2="7" />
-        <line x1="3" y1="12" x2="21" y2="12" />
-        <line x1="3" y1="17" x2="21" y2="17" />
-      </svg>
-      <svg class="nav-icon-close hidden" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
-        <line x1="5" y1="5" x2="19" y2="19" />
-        <line x1="19" y1="5" x2="5" y2="19" />
-      </svg>
-      </button>
-    </div>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
   </div>
 
-  <!-- below md : dropdown drawer (the bar's border-b above is the divider) -->
-  <div id="nav-menu" class="nav-menu hidden md:hidden">
-    <ul class="flex flex-col pb-8 pt-2">
+  <div id="nav-menu" class="nav__menu" hidden>
+    <ul class="shell">
       {
-        NAV_LINKS.map((link) => (
-          <li>
-            <a
-              href={href(link.href)}
-              aria-current={isActive(link.href) ? 'page' : undefined}
-              class:list={[
-                'label block py-3.5 text-ink no-underline underline-offset-4',
-                isActive(link.href) ? 'underline' : '',
-              ]}
-            >
+        NAV_LINKS.map((link, i) => (
+          <li style={`--i: ${i}`}>
+            <a href={href(link.href)} class="nav__menu-link display">
               {link.label}
             </a>
           </li>
@@ -128,119 +79,241 @@ const isActive = (path: string) => here.startsWith(href(path));
   </div>
 </nav>
 
-<script is:inline>
+<style>
+  .nav {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 70;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      backdrop-filter var(--dur-fast) var(--ease-out);
+    border-bottom: 1px solid transparent;
+  }
+  .nav[data-stuck] {
+    background-color: rgba(13, 12, 10, 0.72);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border-bottom-color: var(--color-line);
+  }
+
+  .nav__bar {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    height: 5rem;
+  }
+
+  .nav__brand {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    flex: none;
+  }
+  .nav__brand img {
+    display: block;
+    height: 1.05rem;
+    width: auto;
+  }
+
+  /* Hidden state for the reveal. Inside no-preference only, so under reduced
+     motion the wordmark is simply always visible. visibility (not display)
+     keeps the box, so the bar never changes height, and takes the link out of
+     the tab order while it is invisible. */
+  @media (prefers-reduced-motion: no-preference) {
+    .nav[data-brand-reveal] .nav__brand {
+      visibility: hidden;
+      opacity: 0;
+      transition:
+        opacity var(--dur-fast) var(--ease-out),
+        visibility 0s linear var(--dur-fast);
+    }
+    .nav[data-brand-reveal][data-brand-shown] .nav__brand {
+      visibility: visible;
+      opacity: 1;
+      transition:
+        opacity var(--dur-fast) var(--ease-out),
+        visibility 0s;
+    }
+  }
+
+  .nav__links {
+    display: none;
+    list-style: none;
+    margin: 0 0 0 auto;
+    padding: 0;
+    gap: 2.25rem;
+  }
+  @media (min-width: 48rem) {
+    .nav__links {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  .nav__link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    color: var(--color-cream-dim);
+    text-decoration: none;
+    font-size: var(--text-meta);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-meta);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+  .nav__link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.6rem;
+    height: 1px;
+    background-color: var(--color-ember);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .nav__link:hover,
+  .nav__link:focus-visible,
+  .nav__link.is-active {
+    color: var(--color-cream);
+  }
+  .nav__link:hover::after,
+  .nav__link:focus-visible::after,
+  .nav__link.is-active::after {
+    transform: scaleX(1);
+  }
+
+  /* --- mobile toggle + full-screen menu -------------------------------- */
+
+  .nav__toggle {
+    margin-left: auto;
+    width: 2.75rem;
+    height: 2.75rem;
+    display: grid;
+    place-content: center;
+    gap: 6px;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    padding: 0;
+  }
+  @media (min-width: 48rem) {
+    .nav__toggle {
+      display: none;
+    }
+  }
+  .nav__toggle span {
+    display: block;
+    width: 22px;
+    height: 1.5px;
+    background-color: var(--color-cream);
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .nav__toggle[aria-expanded='true'] span:first-child {
+    transform: translateY(3.75px) rotate(45deg);
+  }
+  .nav__toggle[aria-expanded='true'] span:last-child {
+    transform: translateY(-3.75px) rotate(-45deg);
+  }
+
+  .nav__menu {
+    position: fixed;
+    inset: 5rem 0 0 0;
+    background-color: var(--color-ink);
+    border-top: 1px solid var(--color-line);
+  }
+  .nav__menu[hidden] {
+    display: none;
+  }
+  .nav__menu ul {
+    list-style: none;
+    margin: 0;
+    padding-block: 3rem;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .nav__menu-link {
+    display: block;
+    padding: 0.4rem 0;
+    font-size: clamp(2.25rem, 11vw, 3.5rem);
+    color: var(--color-cream);
+    text-decoration: none;
+  }
+  .nav__menu-link:hover {
+    color: var(--color-ember);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .nav__menu:not([hidden]) li {
+      animation: menu-in var(--dur-mid) var(--ease-out) backwards;
+      animation-delay: calc(var(--i) * 70ms);
+    }
+  }
+  @keyframes menu-in {
+    from {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+  }
+</style>
+
+<script>
   (() => {
-    const nav = document.querySelector('.site-nav');
+    const nav = document.querySelector<HTMLElement>('.nav');
     if (!nav) return;
-    const btn = nav.querySelector('.nav-toggle');
-    const menu = nav.querySelector('#nav-menu');
-    const iconMenu = nav.querySelector('.nav-icon-menu');
-    const iconClose = nav.querySelector('.nav-icon-close');
-    if (!btn || !menu) return;
 
-    const setOpen = (open) => {
-      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-      menu.classList.toggle('hidden', !open);
-      iconMenu.classList.toggle('hidden', open);
-      iconClose.classList.toggle('hidden', !open);
-    };
+    /* --- stuck state ------------------------------------------------- */
+    const sentinelTop = () => window.scrollY > 24;
+    const sync = () => nav.toggleAttribute('data-stuck', sentinelTop());
+    sync();
+    window.addEventListener('scroll', sync, { passive: true });
 
-    btn.addEventListener('click', () => setOpen(btn.getAttribute('aria-expanded') !== 'true'));
-    // Close on Escape and on taps outside the nav.
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') setOpen(false);
-    });
-    document.addEventListener('click', (e) => {
-      if (!nav.contains(e.target)) setOpen(false);
-    });
-  })();
-</script>
+    /* --- mobile menu -------------------------------------------------- */
+    const btn = nav.querySelector<HTMLButtonElement>('.nav__toggle');
+    const menu = nav.querySelector<HTMLElement>('#nav-menu');
+    if (btn && menu) {
+      const setOpen = (open: boolean) => {
+        btn.setAttribute('aria-expanded', String(open));
+        btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        menu.hidden = !open;
+        document.documentElement.style.overflow = open ? 'hidden' : '';
+      };
+      btn.addEventListener('click', () => setOpen(btn.getAttribute('aria-expanded') !== 'true'));
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') setOpen(false);
+      });
+      menu.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).closest('a')) setOpen(false);
+      });
+    }
 
-<script is:inline>
-  // Brand reveal: show the nav wordmark once the page's own brand mark has
-  // scrolled up under the bar, and hide it again on the way back.
-  //
-  // The HIDDEN state is CSS, keyed on the server-rendered [data-brand-reveal]
-  // and wrapped in prefers-reduced-motion — not set by this script. That
-  // ordering matters: the sentinel lives in the hero, which the parser reaches
-  // AFTER this nav, so a script arming on the sentinel's presence would have to
-  // wait for DOMContentLoaded and would flash the wordmark in before hiding it.
-  // CSS is correct from the first paint, which leaves this script free to run
-  // late and only wire up the observer.
-  //
-  // IntersectionObserver, deliberately — not a scroll listener, not a
-  // scroll-linked transform, not a FLIP morph. The bar is fixed rather than
-  // sticky because iOS Safari ghosted page content over a sticky one, and
-  // nothing here touches its positioning: the only properties that change are
-  // opacity and visibility on a child.
-  (() => {
-    const nav = document.querySelector('.site-nav[data-brand-reveal]');
-    if (!nav) return; // page didn't opt in — wordmark stays visible
-
-    // Reduced motion: the CSS never hides it, so there is nothing to observe.
+    /* --- brand reveal -------------------------------------------------
+     * The hidden state is CSS keyed on the server-rendered attribute, so it
+     * is correct at first paint. The sentinel lives in the hero, which the
+     * parser reaches after this nav, so the observer is wired on DOM ready.
+     * Reduced motion: the CSS never hides it, so there is nothing to do. */
+    if (!nav.hasAttribute('data-brand-reveal')) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const init = () => {
       const mark = document.querySelector('[data-brand-sentinel]');
-      // Armed with no sentinel (or no IO support) would hide the logo forever.
-      // Fail visible instead.
       if (!mark || !('IntersectionObserver' in window)) {
-        nav.setAttribute('data-brand-shown', '');
+        nav.setAttribute('data-brand-shown', ''); // fail visible
         return;
       }
-
-      // Shrink the root's top edge by the bar's height so "out of view" means
-      // "under the bar", not "off the screen". Measured once, with the mobile
-      // drawer closed; a resize shifts this by a pixel or two, which is well
-      // inside the tolerance of a fade.
-      const io = new IntersectionObserver(
+      new IntersectionObserver(
         ([entry]) => {
-          // Two ways to not intersect: scrolled past (above) or not yet reached
-          // (below, e.g. a restored scroll position). Only the first should
-          // show the wordmark, hence the boundingClientRect check.
           const past = !entry.isIntersecting && entry.boundingClientRect.top < 0;
           nav.toggleAttribute('data-brand-shown', past);
         },
         { rootMargin: `-${nav.offsetHeight}px 0px 0px 0px`, threshold: 0 },
-      );
-      io.observe(mark);
+      ).observe(mark);
     };
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
   })();
 </script>
-
-<style>
-  /* Only inside no-preference: under reduced motion these rules never apply, so
-   * the wordmark is simply visible at all times, which is the specified
-   * behaviour. Opacity and visibility only — never a layout property (§11.10),
-   * and never the bar's own positioning. visibility (not display) keeps the
-   * anchor's h-14 box, so the bar's height never changes and nothing shifts;
-   * it also takes the link out of the tab order and the accessibility tree
-   * while hidden, which display:none would do but opacity:0 alone would not.
-   *
-   * Hiding delays the visibility flip until the fade finishes; showing flips it
-   * immediately so the fade is visible. 300ms, inside the 400ms cap in §07. */
-  @media (prefers-reduced-motion: no-preference) {
-    .site-nav[data-brand-reveal] .nav-brand {
-      visibility: hidden;
-      opacity: 0;
-      transition:
-        opacity 300ms cubic-bezier(0.22, 1, 0.36, 1),
-        visibility 0s linear 300ms;
-    }
-
-    .site-nav[data-brand-reveal][data-brand-shown] .nav-brand {
-      visibility: visible;
-      opacity: 1;
-      transition:
-        opacity 300ms cubic-bezier(0.22, 1, 0.36, 1),
-        visibility 0s;
-    }
-  }
-</style>

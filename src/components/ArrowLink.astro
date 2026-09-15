@@ -1,116 +1,112 @@
 ---
 /**
- * A quiet text link whose trailing glyph is a knot that untangles into a
- * rightward arrow on hover / keyboard focus.
+ * A quiet text link. The trailing arrow slides out of the right edge while a
+ * second slides in behind it, and an ember rule draws under the label — the
+ * same left-to-right gesture the rest of the site uses.
  *
- * The link stays Ink (or Cream on reversed sections) in every state. It used to
- * shift to Terracotta on hover, which §02 bars — terracotta is a mark, and "a
- * hover state" is on its Never list. Hover now underlines the text instead.
- *
- * Motion: the path's `d` morphs between two states that share an identical
- * command structure (M C C C L M L L), so the knot visually pulls straight into
- * the arrow. ~360ms on the house easing. (stroke-dashoffset can only draw a
- * fixed shape, not reshape it, so a `d` morph is the correct tool here.)
- *
- * Accessibility / robustness:
- *  - SVG is aria-hidden; the link text carries the meaning.
- *  - prefers-reduced-motion: the clean arrow is shown statically, no animation.
- *  - :focus-visible triggers the same resolve as hover.
- *  - The resting knot already has an arrowhead, so it's clear and directional on
- *    touch / no-hover devices and in browsers without CSS `d` support.
- *
- *   <ArrowLink href="/about">Read more about us</ArrowLink>
+ * Row is 44px+, so it is a real tap target. Reduced motion keeps the rule and
+ * drops the slide.
  */
 import { href as withBase } from '../lib/href';
 
 interface Props {
   href: string;
-  /** Use on Ink/reversed sections (Cream text instead of Ink). */
-  onInk?: boolean;
+  /** Use on the light close panel. */
+  onPaper?: boolean;
 }
-const { href, onInk = false } = Astro.props;
-
-// Resting (knot, option 5) and resolved (clean arrow). Same command structure.
-const REST = 'M3 12 C8 12 6 7 10 8 C13 9 11 13 8 12 C5 11 14 11 17 12 L21 12 M17 9 L21 12 L17 15';
-const ARROW = 'M3 12 C7 12 9 12 11 12 C13 12 15 12 16 12 C18 12 20 12 21 12 L21 12 M15 7 L21 12 L15 17';
+const { href, onPaper = false } = Astro.props;
 ---
 
-<!-- -my-2.5 / py-2.5 is the footer's idiom: the padding lifts the hit area over
-     44px (§11.9 — this link measured 22px, exactly half the minimum) while the
-     matching negative margin keeps the surrounding vertical rhythm intact.
-     inline-block, not inline-flex, so the SVG's `vertical-align: middle`
-     centring below still applies. -->
-<a
-  href={withBase(href)}
-  class:list={[
-    'arrow-link -my-2.5 inline-block min-h-11 py-2.5 font-medium no-underline',
-    onInk ? 'text-cream' : 'text-ink',
-  ]}
->
-  <span class="arrow-link__txt"><slot /></span><svg
-    class="arrow-link__knot"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    aria-hidden="true"
-  >
-    <path d={REST} />
-  </svg>
+<a href={withBase(href)} class:list={['alink', onPaper && 'alink--paper']}>
+  <span class="alink__txt"><slot /></span>
+  <span class="alink__arrows" aria-hidden="true">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 8h11M9 4l4 4-4 4" />
+    </svg>
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 8h11M9 4l4 4-4 4" />
+    </svg>
+  </span>
 </a>
 
-<style define:vars={{ rest: `path("${REST}")`, arrow: `path("${ARROW}")` }}>
-  /* Hover/focus underlines the TEXT only — the knot is 1.45em wide and an
-     underline running beneath it reads as a stray rule. Same underline idiom
-     as the nav and footer links.
-
-     This replaces an Ink → Terracotta hover, which §02 forbids outright
-     ("Never: … a hover state" under terracotta discipline). The knot morph is
-     the richer affordance, but it is static under prefers-reduced-motion and
-     resolves on scroll rather than hover on touch devices, so the underline is
-     what guarantees every visitor some hover feedback. */
-  .arrow-link:hover .arrow-link__txt,
-  .arrow-link:focus-visible .arrow-link__txt {
-    text-decoration: underline;
-    text-underline-offset: 4px;
+<style>
+  .alink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 2.75rem;
+    color: var(--color-cream);
+    text-decoration: none;
+    font-size: var(--text-meta);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-meta);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+  .alink--paper {
+    color: #16150f;
   }
 
-  .arrow-link__knot {
-    display: inline-block;
-    width: 1.45em;
-    height: 1em;
-    margin-left: 0.4em;
-    /* centre the glyph on the text's optical middle, not the line box */
-    vertical-align: middle;
-    overflow: visible;
+  .alink__txt {
+    position: relative;
+  }
+  /* The rule under the label: the strike again, at link scale. */
+  .alink__txt::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.45em;
+    height: 1px;
+    background-color: var(--color-ember);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .alink:hover .alink__txt::after,
+  .alink:focus-visible .alink__txt::after {
+    transform: scaleX(1);
   }
 
-  .arrow-link__knot path {
-    d: var(--rest);
-    transition: d 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  /* Two arrows on a track: the first leaves right, the second arrives from
+     the left, so the glyph reads as continuing rather than jiggling. */
+  .alink__arrows {
+    position: relative;
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    overflow: hidden;
+    color: var(--color-ember);
+  }
+  .alink__arrows svg {
+    position: absolute;
+    inset: 0;
+    width: 1rem;
+    height: 1rem;
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .alink__arrows svg:last-child {
+    transform: translateX(-120%);
+  }
+  .alink:hover .alink__arrows svg:first-child,
+  .alink:focus-visible .alink__arrows svg:first-child {
+    transform: translateX(120%);
+  }
+  .alink:hover .alink__arrows svg:last-child,
+  .alink:focus-visible .alink__arrows svg:last-child {
+    transform: translateX(0);
   }
 
-  .arrow-link:hover .arrow-link__knot path,
-  .arrow-link:focus-visible .arrow-link__knot path {
-    d: var(--arrow);
-  }
-
-  /* Touch devices can't hover, so the knot would never resolve. Instead, resolve
-     it to the arrow when the link's section scrolls into view (reusing the
-     global [data-reveal] reveal). The d-transition still animates the morph. */
-  @media (hover: none) {
-    :global([data-reveal].is-visible) .arrow-link__knot path {
-      d: var(--arrow);
-    }
-  }
-
-  /* Reduced motion: show the resolved arrow, no morph. */
   @media (prefers-reduced-motion: reduce) {
-    .arrow-link__knot path {
-      d: var(--arrow);
+    .alink__arrows svg {
       transition: none;
+    }
+    .alink__arrows svg:last-child {
+      display: none;
+    }
+    .alink:hover .alink__arrows svg:first-child,
+    .alink:focus-visible .alink__arrows svg:first-child {
+      transform: none;
     }
   }
 </style>

@@ -1,113 +1,199 @@
 ---
 /**
- * Section 3 — who you'll be talking to.
+ * Section 02 — Who you'll be talking to.
  *
- * Heading and lead line on the .sidehead grid, then the two founders break out
- * to the full page width. That width change is deliberate: the founder blocks
- * are not prose, so the measure doesn't govern them, and §09 calls the current
- * treatment "the weakest moment on the page". This is where the people are the
- * subject, so it gets the room.
+ * Two founder panels, raised off the page ground. With no photographs and no
+ * case studies, the founders ARE the proof, so this section gets real
+ * presence: large names in the display serif, and contact details as
+ * first-class rows rather than footnotes.
  *
- * NO BOXES. "Card" here means block, not a bordered container: a box would
- * want a hover to feel like one, and §06 forbids hover treatments on
- * non-interactive elements. Hover lives only on the two links inside each
- * block, which genuinely are interactive.
- *
- * Contact details are labelled links with visible text — a warm-grey glyph
- * followed by the readable address or number, never a bare icon. The visible
- * text IS the accessible name (no aria-label, which would risk breaking WCAG
- * 2.5.3 Label in Name); context comes from the <h3> above, which is how
- * heading navigation is meant to work.
- *
- * Names, titles, emails and phone numbers come from site.ts, not from page
- * content. No terracotta in this composition.
+ * Details are labelled links with visible text — a glyph plus the readable
+ * address, 44px rows, correct mailto:/tel:. Names, titles, emails and phones
+ * come from site.ts.
  */
 import { FOUNDERS_SECTION } from '../../data/homepage';
 import { SITE } from '../../config/site';
 import ArrowLink from '../ArrowLink.astro';
 
-/** tel: needs the bare number; the visible text keeps its spacing. */
 const dial = (phone: string) => phone.replace(/\s+/g, '');
 ---
 
-<section class="pt-section">
-  <div class="sidehead">
+<section class="founders">
+  <div class="shell">
     <div data-reveal>
-      <h2 class="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-        {FOUNDERS_SECTION.heading}
-      </h2>
+      <p class="index meta r" style="--i: 0"><span>02</span></p>
+      <div class="founders__head">
+        <h2 class="h-section r" style="--i: 1">{FOUNDERS_SECTION.heading}</h2>
+        <p class="lead founders__lead r" style="--i: 2">{FOUNDERS_SECTION.lead}</p>
+      </div>
     </div>
-    <p data-reveal class="standfirst mt-6 text-ink lg:mt-0">{FOUNDERS_SECTION.lead}</p>
-  </div>
 
-  <div class="mt-14 grid gap-10 sm:grid-cols-2 sm:gap-12">
-    {
-      SITE.founders.map((founder) => (
-        <div data-reveal class="border-t border-warm-grey pt-6">
-          <h3 class="text-lg font-semibold tracking-tight text-ink">{founder.name}</h3>
-          <p class="label mt-2 text-ink">{founder.title}</p>
+    <div class="founders__grid" data-reveal>
+      {
+        SITE.founders.map((f, i) => (
+          <article class="fcard panel r" style={`--i: ${i + 1}`}>
+            <div class="fcard__head">
+              <h3 class="fcard__name display">{f.name}</h3>
+              <p class="meta fcard__role">{f.title}</p>
+            </div>
 
-          {/* min-h-11 + the matching negative margin on the list keeps every
-              row a 44px target (§11.9) without inflating the block. */}
-          <ul class="mt-4 -mb-2 text-sm">
-            <li>
-              <a
-                href={`mailto:${founder.email}`}
-                class="founder-link inline-flex min-h-11 items-center gap-2.5 text-ink no-underline underline-offset-4 hover:underline"
-              >
-                <svg
-                  class="founder-glyph"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  aria-hidden="true"
-                >
-                  <rect x="3" y="5" width="18" height="14" rx="2" />
-                  <path d="M3.5 6.5 12 13l8.5-6.5" />
-                </svg>
-                {founder.email}
-              </a>
-            </li>
-            <li>
-              <a
-                href={`tel:${dial(founder.phone)}`}
-                class="founder-link inline-flex min-h-11 items-center gap-2.5 text-ink no-underline underline-offset-4 hover:underline"
-              >
-                <svg
-                  class="founder-glyph"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M7.5 3.5h-3a1.5 1.5 0 0 0-1.5 1.5C3 13 11 21 19 21a1.5 1.5 0 0 0 1.5-1.5v-3l-4-1.5-2 2.5a14 14 0 0 1-5.5-5.5L11.5 10z" />
-                </svg>
-                {founder.phone}
-              </a>
-            </li>
-          </ul>
-        </div>
-      ))
-    }
-  </div>
+            <ul class="fcard__links">
+              <li>
+                <a class="flink" href={`mailto:${f.email}`}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <path d="M3.5 6.5 12 13l8.5-6.5" />
+                  </svg>
+                  <span>{f.email}</span>
+                </a>
+              </li>
+              <li>
+                <a class="flink" href={`tel:${dial(f.phone)}`}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M7.5 3.5h-3a1.5 1.5 0 0 0-1.5 1.5C3 13 11 21 19 21a1.5 1.5 0 0 0 1.5-1.5v-3l-4-1.5-2 2.5a14 14 0 0 1-5.5-5.5L11.5 10z" />
+                  </svg>
+                  <span>{f.phone}</span>
+                </a>
+              </li>
+            </ul>
+          </article>
+        ))
+      }
+    </div>
 
-  <div data-reveal class="mt-14">
-    <ArrowLink href={FOUNDERS_SECTION.readMore.href}>{FOUNDERS_SECTION.readMore.label}</ArrowLink>
+    <div class="founders__more" data-reveal>
+      <div class="r">
+        <ArrowLink href={FOUNDERS_SECTION.readMore.href}>{FOUNDERS_SECTION.readMore.label}</ArrowLink>
+      </div>
+    </div>
   </div>
 </section>
 
 <style>
-  /* Warm grey on the glyph only — the address stays Ink, so the readable part
-     keeps full contrast and the icon sits back as the metadata it is. The
-     underline on hover comes from the utility; the glyph is not underlined
-     because it is not text. */
-  .founder-glyph {
-    width: 1.15rem;
-    height: 1.15rem;
+  .founders {
+    padding-top: var(--spacing-section-lg);
+  }
+
+  .founders__head {
+    display: grid;
+    gap: 1.5rem;
+    margin-top: 1.25rem;
+  }
+
+  .founders__lead {
+    color: var(--color-cream-dim);
+    max-width: 38ch;
+  }
+
+  @media (min-width: 64rem) {
+    .founders__head {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 30rem);
+      align-items: end;
+      gap: 4rem;
+    }
+    .founders__lead {
+      padding-bottom: 0.5rem;
+    }
+  }
+
+  .founders__grid {
+    display: grid;
+    gap: 1.25rem;
+    margin-top: clamp(3rem, 6vw, 5rem);
+  }
+  @media (min-width: 48rem) {
+    .founders__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+  }
+
+  /* --- Card ----------------------------------------------------------- */
+
+  .fcard {
+    padding: clamp(1.75rem, 3vw, 2.5rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color var(--dur-fast) var(--ease-out);
+  }
+
+  /* A thread of ember along the top edge, drawn in on reveal. The card's
+     own strike. */
+  .fcard::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    background: linear-gradient(to right, var(--color-ember), transparent 70%);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .fcard::before {
+      transition: transform var(--dur-slow) var(--ease-out);
+      transition-delay: calc(var(--i) * 90ms + 200ms);
+    }
+  }
+  :global([data-reveal].is-visible) .fcard::before {
+    transform: scaleX(1);
+  }
+
+  .fcard__name {
+    font-size: clamp(1.875rem, 1.2rem + 2vw, 2.75rem);
+    margin: 0;
+    color: var(--color-cream);
+  }
+
+  .fcard__role {
+    margin: 0.75rem 0 0;
+    color: var(--color-ember);
+  }
+
+  .fcard__links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--color-line);
+  }
+  .fcard__links li + li {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .flink {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    min-height: 3.25rem; /* comfortably over the 44px floor */
+    color: var(--color-cream-dim);
+    text-decoration: none;
+    font-size: var(--text-sm);
+    transition: color var(--dur-fast) var(--ease-out);
+    word-break: break-word;
+  }
+  .flink svg {
+    width: 1.05rem;
+    height: 1.05rem;
     flex: none;
-    color: var(--color-warm-grey);
+    color: var(--color-ember);
+    opacity: 0.7;
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+  .flink:hover,
+  .flink:focus-visible {
+    color: var(--color-cream);
+  }
+  .flink:hover svg {
+    opacity: 1;
+  }
+  .flink:hover span {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .founders__more {
+    margin-top: clamp(2.5rem, 4vw, 3.5rem);
   }
 </style>

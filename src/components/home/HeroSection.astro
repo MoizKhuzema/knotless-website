@@ -1,74 +1,155 @@
 ---
 /**
- * Section 1 — hero.
+ * Hero.
  *
- * Type-led and left-aligned (§05). The wordmark sits where a headline usually
- * would, the h1 reads as the line beneath the mark, and the whitespace is the
- * composition — no decorative visual.
+ * Full viewport, dark, with the thread field behind it. The headline is set
+ * enormous in the display serif and broken across two lines so "Untangled"
+ * lands alone — the word the whole business turns on gets the strike through
+ * it, the same cut the logo makes through its `o`.
  *
- * The mark is DECORATIVE: alt="" + aria-hidden, because the accessible name
- * "Knotless AI Pty Ltd" is already carried by the nav's home link, and the h1
- * below is the page's real heading. It doubles as [data-brand-sentinel], the
- * trigger for the nav wordmark reveal (see Nav.astro) — the nav copy stays
- * hidden until this one scrolls under the bar, so the mark is never shown
- * twice at once.
- *
- * TERRACOTTA: the wordmark's own strike is this composition's single accent
- * (§11.3), which is why there is no accent rule here. The page's one accent
- * rule lives on the next section's heading.
- *
- * No [data-reveal]: the hero is above the fold, fading it in on load would be
- * decorative (§07), and the mark must be painted for the nav observer to
- * measure against.
+ * The wordmark sits above as a masthead and doubles as the nav reveal's
+ * sentinel, so the mark is never on screen twice at once.
  */
 import { HERO } from '../../data/homepage';
+import ThreadField from '../ThreadField.astro';
 import CtaButton from '../CtaButton.astro';
-import wordmark from '../../assets/logo/wordmark_secondary/Wordmark_Secondary.svg';
+import wordmark from '../../assets/logo/wordmark_secondary/Reverse_Wordmark_Secondary.svg';
+
+// "AI Untangled." — the last word carries the strike.
+const [first, ...rest] = HERO.headline.split(' ');
+const last = rest.join(' ').replace(/\.$/, '');
 ---
 
-<!-- On phones the hero fills the first screen so the next section starts below
-     the fold; top-aligned from sm up. -->
-<section class="hero-screen sm:pt-28">
-  <!-- The wrapper's font-size IS the glyph height, so the 1em bottom padding
-       below resolves to exactly one mark-height of clear space (§04). -->
-  <div class="brand-mark">
-    <img
-      src={wordmark.src}
-      alt=""
-      aria-hidden="true"
-      width="266"
-      height="48"
-      data-brand-sentinel
-    />
+<section class="hero" data-reveal>
+  <ThreadField count={20} />
+
+  <!-- Soft ember bloom behind the type: keeps the headline legible over the
+       threads without putting a box around it. -->
+  <div class="hero__bloom" aria-hidden="true"></div>
+
+  <div class="shell hero__inner">
+    <div class="hero__mark r" style="--i: 0">
+      <img src={wordmark.src} alt="" aria-hidden="true" width="266" height="48" data-brand-sentinel />
+    </div>
+
+    <h1 class="hero__title display">
+      <span class="r" style="--i: 1">{first}</span>
+      <span class="r" style="--i: 2"><em class="strike">{last}</em>.</span>
+    </h1>
+
+    <p class="hero__lead lead r" style="--i: 3">{HERO.standfirst}</p>
+
+    <div class="hero__cta r" style="--i: 4">
+      <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
+    </div>
   </div>
 
-  <h1 class="text-hero font-semibold tracking-[-0.035em] text-ink">
-    {HERO.headline}
-  </h1>
-
-  <p class="standfirst mt-6 prose-measure text-ink">{HERO.standfirst}</p>
-
-  <div class="mt-9">
-    <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
+  <div class="hero__scroll meta r" style="--i: 5" aria-hidden="true">
+    <span>Scroll</span>
+    <span class="hero__scroll-line"></span>
   </div>
 </section>
 
 <style>
-  .brand-mark {
-    font-size: var(--size-brand-hero);
-    /* §04: clear space equals the cap height of the lowercase k. The asset is
-       cropped to its ink, so that is the mark's full height — 1em here.
-       Horizontally the page gutter carries it, the same reading the nav and
-       footer already apply. */
-    padding-bottom: 1em;
+  .hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 100svh;
+    padding-block: 9rem 6rem;
+    isolation: isolate;
   }
 
-  .brand-mark img {
+  .hero__bloom {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(58% 50% at 28% 48%, rgba(13, 12, 10, 0.97) 34%, rgba(13, 12, 10, 0.55) 62%, transparent 84%),
+      radial-gradient(40% 36% at 20% 36%, rgba(207, 91, 48, 0.11), transparent 72%);
+  }
+
+  .hero__inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero__mark {
+    margin-bottom: clamp(2rem, 4vw, 3.25rem);
+  }
+  .hero__mark img {
     display: block;
-    height: 1em;
+    height: clamp(1.5rem, 2.1vw, 2rem);
     width: auto;
-    /* Never wider than the column on a narrow phone; the ratio is preserved so
-       the mark shrinks rather than distorting (§04 forbids stretching). */
-    max-width: 100%;
+  }
+
+  .hero__title {
+    font-size: var(--text-display);
+    margin: 0;
+    max-width: 18ch;
+  }
+  .hero__title span {
+    display: block;
+  }
+  /* The serif italic is the strongest thing this face does — worth spending
+     on the one word that matters. */
+  .hero__title em {
+    font-style: italic;
+  }
+
+  .hero__lead {
+    margin-top: clamp(1.75rem, 3vw, 2.5rem);
+    max-width: 44ch;
+    color: var(--color-cream-dim);
+  }
+
+  .hero__cta {
+    margin-top: clamp(2.25rem, 3.5vw, 3rem);
+  }
+
+  .hero__scroll {
+    position: absolute;
+    left: 50%;
+    bottom: 2.25rem;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--color-cream-dim);
+  }
+  .hero__scroll-line {
+    width: 1px;
+    height: 3rem;
+    background: linear-gradient(to bottom, var(--color-ember), transparent);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__scroll-line {
+      animation: scroll-hint 2.6s var(--ease-out) infinite;
+      transform-origin: top;
+    }
+  }
+  @keyframes scroll-hint {
+    0%,
+    100% {
+      transform: scaleY(0.4);
+      opacity: 0.4;
+    }
+    45% {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .hero {
+      padding-block: 7rem 5rem;
+    }
+    .hero__scroll {
+      display: none;
+    }
+    .hero__lead {
+      max-width: none;
+    }
   }
 </style>

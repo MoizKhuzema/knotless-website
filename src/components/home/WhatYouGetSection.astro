@@ -1,60 +1,177 @@
 ---
 /**
- * Section 2 — what you get.
+ * Section 01 — What you get.
  *
- * Laid out on the .sidehead grid (see global.css): the h2 moves into a left
- * rail so the prose can sit at its measure without stranding 480px of cream
- * beside it (§05). The verticals below reuse the same two tracks rather than
- * introducing a second layout — vertical names in the rail, members in the
- * prose column.
- *
- * TERRACOTTA: this section carries the page's ONE accent rule (§06 "once per
- * composition"), above the first section heading — its canonical position. The
- * hero's only accent is the wordmark's own strike, and sections 3 and 4 have
- * none.
- *
- * The verticals are running text under two named headings, not a caps grid.
- * §09: eight equal tiles read as "we'll take anyone"; two named verticals with
- * their members set as a phrase read as focused depth.
+ * A sticky heading rail beside scrolling prose: the h2 holds while the
+ * argument moves past it, which is what gives a long read its spine. The
+ * verticals below are an interactive index — hovering a row lights it and
+ * dims its neighbours, so two named markets read as depth rather than a menu
+ * of everything.
  */
 import { WHAT_YOU_GET } from '../../data/homepage';
 ---
 
-<section class="pt-section-lg">
-  <div class="sidehead">
-    <div data-reveal>
-      <span class="accent-rule"></span>
-      <h2 class="mt-6 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-        {WHAT_YOU_GET.heading}
-      </h2>
+<section class="wyg" id="what-you-get">
+  <div class="shell">
+    <div class="wyg__top" data-reveal>
+      <div class="wyg__rail">
+        <p class="index meta r" style="--i: 0"><span>01</span></p>
+        <h2 class="h-section wyg__h r" style="--i: 1">{WHAT_YOU_GET.heading}</h2>
+      </div>
+
+      {/* The first paragraph sets larger than the second. The copy is one long
+          block of argument; without a step down it reads as an undifferentiated
+          wall, and a size change is the one bit of hierarchy available when the
+          words themselves are fixed. */}
+      <div class="wyg__prose">
+        {
+          WHAT_YOU_GET.body.map((para, i) => (
+            <p class:list={['r', i === 0 ? 'wyg__p1' : 'body-copy']} style={`--i: ${i + 2}`}>
+              {para}
+            </p>
+          ))
+        }
+      </div>
     </div>
 
-    <div data-reveal class="mt-8 space-y-6 lg:mt-0">
-      {WHAT_YOU_GET.body.map((para) => <p class="body-copy text-ink">{para}</p>)}
-    </div>
-  </div>
+    <div class="wyg__verticals" data-reveal>
+      <p class="meta wyg__vlead r" style="--i: 0">{WHAT_YOU_GET.verticalsLead}</p>
 
-  <!-- Verticals. A sub-section break inside this movement, so it takes a value
-       from the fine scale — NOT --spacing-section, which is the section tier.
-       If 96px started doing sub-section duty the two tiers would collapse back
-       into one. -->
-  <div class="mt-16">
-    <div class="sidehead">
-      <div aria-hidden="true"></div>
-      <p data-reveal class="body-copy text-ink">{WHAT_YOU_GET.verticalsLead}</p>
+      <ul class="vlist">
+        {
+          WHAT_YOU_GET.verticals.map((v, i) => (
+            <li class="vlist__row r" style={`--i: ${i + 1}`}>
+              <span class="vlist__n meta">{String(i + 1).padStart(2, '0')}</span>
+              <h3 class="vlist__name display">{v.name}</h3>
+              <p class="vlist__members">
+                {v.members.map((m, j) => (
+                  <>
+                    {j > 0 && <span class="vlist__sep" aria-hidden="true" />}
+                    <span>{m}</span>
+                  </>
+                ))}
+              </p>
+            </li>
+          ))
+        }
+      </ul>
     </div>
-
-    <dl class="mt-8">
-      {
-        WHAT_YOU_GET.verticals.map((v) => (
-          <div data-reveal class="sidehead border-t border-warm-grey py-6">
-            <dt class="text-base font-semibold text-ink">{v.name}</dt>
-            {/* Warm grey is the metadata colour (§02), which also sets the
-                members a step below the vertical they belong to. */}
-            <dd class="mt-2 text-sm text-warm-grey lg:mt-0">{v.members.join(', ')}</dd>
-          </div>
-        ))
-      }
-    </dl>
   </div>
 </section>
+
+<style>
+  .wyg {
+    padding-top: var(--spacing-section-lg);
+  }
+
+  .wyg__top {
+    display: grid;
+    gap: 3rem;
+  }
+
+  .wyg__h {
+    margin: 1.25rem 0 0;
+  }
+
+  .wyg__p1 {
+    font-size: var(--text-lead);
+    line-height: 1.5;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-cream);
+    margin: 0;
+  }
+
+  .wyg__prose > p + p {
+    color: #b9b2a8;
+    margin-top: 2rem;
+    /* A short ember tick above the second paragraph — the thread again,
+       marking the turn from "what we find" to "what we build". */
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-line);
+  }
+
+  @media (min-width: 64rem) {
+    .wyg__top {
+      grid-template-columns: minmax(0, 26rem) minmax(0, 36rem);
+      gap: 0 5rem;
+      justify-content: space-between;
+    }
+    .wyg__rail {
+      position: sticky;
+      top: 8rem;
+      align-self: start;
+    }
+  }
+
+  /* --- Verticals ----------------------------------------------------- */
+
+  .wyg__verticals {
+    margin-top: clamp(4rem, 8vw, 7rem);
+  }
+
+  .wyg__vlead {
+    color: var(--color-cream-dim);
+    margin: 0 0 2rem;
+  }
+
+  .vlist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .vlist__row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.5rem 1.5rem;
+    padding: clamp(1.75rem, 3vw, 2.75rem) 0;
+    border-bottom: 1px solid var(--color-line);
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+
+  .vlist__n {
+    color: var(--color-ember);
+    padding-top: 0.75em;
+  }
+
+  .vlist__name {
+    font-size: clamp(1.75rem, 1rem + 2.6vw, 3.25rem);
+    margin: 0;
+    color: var(--color-cream);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .vlist__members {
+    grid-column: 2;
+    margin: 0.5rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.9rem;
+    font-size: 0.9375rem;
+    color: var(--color-cream-dim);
+  }
+
+  /* A hairline between members instead of commas — quieter, and it echoes the
+     rules running through the rest of the page. */
+  .vlist__sep {
+    width: 1.25rem;
+    height: 1px;
+    background-color: var(--color-line);
+  }
+
+  /* Hovering one row dims the others. Pointer-fine only: on touch there is no
+     hover, and a permanently dimmed row would just look broken. */
+  @media (hover: hover) and (pointer: fine) {
+    .vlist:hover .vlist__row {
+      opacity: 0.4;
+    }
+    .vlist:hover .vlist__row:hover {
+      opacity: 1;
+    }
+    .vlist__row:hover .vlist__name {
+      color: var(--color-ember);
+    }
+  }
+</style>

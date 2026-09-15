@@ -1,54 +1,38 @@
 ---
 /**
- * The base layout every page should use.
+ * The base layout every page uses.
  *
- * Responsibilities:
- *  - shared <head>: title, description, canonical, favicons, social/OG tags
- *  - font preload (Inter) to avoid layout shift
- *  - the shared Nav and Footer (both read from src/config/site.ts)
- *  - the Cream page shell with a consistent editorial max-width
- *
- * Usage from a page:
- *
- *   ---
- *   import BaseLayout from '../layouts/BaseLayout.astro';
- *   ---
- *   <BaseLayout title="About" description="Who we are">
- *     <h1>About us</h1>
- *   </BaseLayout>
+ * Owns: the shared <head>, the self-hosted faces, the nav and footer chrome,
+ * the scroll-progress thread, and the one IntersectionObserver that drives
+ * every [data-reveal] block on the site.
  */
 import { SITE } from '../config/site';
 import { href } from '../lib/href';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import '../styles/global.css';
-// Imported through Vite so the URL is hashed and base-aware (works under the
-// GitHub Pages sub-path). Used for both the @font-face and the preload below.
+// Imported through Vite so the URLs are hashed and base-aware (needed for the
+// GitHub Pages sub-path deploy).
 import interFont from '../assets/fonts/inter-variable.woff2';
-// Lora (latin subset, upright only — §03 reserves italics for pull quotes, and
-// nothing uses them yet). Declared here for the same base-aware reason.
-import loraFont from '../assets/fonts/lora-variable.woff2';
+import displayFont from '../assets/fonts/instrument-serif.woff2';
+import displayItalic from '../assets/fonts/instrument-serif-italic.woff2';
 
 interface Props {
-  /** Page <title>. The legal entity name is appended automatically. */
   title: string;
-  /** Meta description for SEO / link previews. */
   description?: string;
-  /** OpenGraph type (e.g. "website", "article"). */
   ogType?: string;
-  /** JSON-LD structured data for this page (an object or array). Serialised
-   *  into a <script type="application/ld+json"> tag. */
   schema?: unknown;
-  /** Hide the shared Nav/Footer chrome (e.g. for the styleguide). */
   bare?: boolean;
   /**
+   * Let the page manage its own horizontal container and top spacing. The
+   * homepage does, because its hero is full-bleed; every other page wants the
+   * shell and clearance under the fixed nav.
+   */
+  bleed?: boolean;
+  /**
    * Start with the nav wordmark hidden and reveal it once the page's own brand
-   * mark scrolls out from under the bar. For pages whose hero carries the
-   * wordmark, so the mark isn't shown twice at once.
-   *
-   * The page must also mark that hero element `data-brand-sentinel` — this prop
-   * arms the hidden state, the sentinel says when to lift it. Armed but with no
-   * sentinel, the nav fails visible rather than hiding the logo forever.
+   * mark scrolls out from under the bar. The page must also mark that hero
+   * element `data-brand-sentinel`.
    */
   brandReveal?: boolean;
 }
@@ -59,24 +43,20 @@ const {
   ogType = 'website',
   schema,
   bare = false,
+  bleed = false,
   brandReveal = false,
 } = Astro.props;
-// Tab/SEO title: short page name + the short brand ("Home - Knotless").
+
 const fullTitle = `${title} - Knotless`;
 const ogImageAlt = `${SITE.legalEntityName} — ${SITE.tagline}`;
-
-// Absolute URLs for canonical + OG. Astro.url.pathname already includes the
-// base; og path is base-prefixed via href() before being made absolute.
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL(href('/og-default.png'), Astro.site);
 
-// @font-face injected here (not in CSS) so the font URLs carry the base.
-// Both faces are preloaded: Inter sets the headings and Lora the standfirst,
-// and on the homepage both are above the fold, so waiting on a lazy @font-face
-// would show the metric-matched fallback first.
+// @font-face here, not in CSS, so the URLs carry Astro's `base`.
 const fontFace = [
   `@font-face{font-family:'Inter Variable';font-style:normal;font-display:swap;font-weight:100 900;src:url('${interFont}') format('woff2-variations');}`,
-  `@font-face{font-family:'Lora Variable';font-style:normal;font-display:swap;font-weight:400 700;src:url('${loraFont}') format('woff2-variations');}`,
+  `@font-face{font-family:'Instrument Serif';font-style:normal;font-display:swap;font-weight:400;src:url('${displayFont}') format('woff2');}`,
+  `@font-face{font-family:'Instrument Serif';font-style:italic;font-display:swap;font-weight:400;src:url('${displayItalic}') format('woff2');}`,
 ].join('');
 ---
 
@@ -85,24 +65,21 @@ const fontFace = [
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0d0c0a" />
 
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
 
-    <!-- @font-face for both faces (base-aware URLs) + preloads so they're ready
-         before paint. Self-hosted: no third-party font request (§11.18). -->
     <style set:html={fontFace}></style>
     <link rel="preload" href={interFont} as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href={loraFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
 
-    <!-- Favicons (generated from the mark on a Cream square). -->
     <link rel="icon" href={href('/favicon.ico')} sizes="any" />
     <link rel="icon" type="image/png" sizes="32x32" href={href('/favicon-32.png')} />
     <link rel="icon" type="image/png" sizes="16x16" href={href('/favicon-16.png')} />
     <link rel="apple-touch-icon" sizes="180x180" href={href('/apple-touch-icon.png')} />
 
-    <!-- Open Graph / social -->
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={SITE.legalEntityName} />
     <meta property="og:locale" content="en_AU" />
@@ -114,15 +91,13 @@ const fontFace = [
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={ogImageAlt} />
 
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
     <meta name="twitter:image:alt" content={ogImageAlt} />
 
-    <!-- JSON-LD structured data (per page). -->
-    {schema && <script type="application/ld+json" set:html={JSON.stringify(schema)} />}
+    {schema && <script type="application/ld+json" is:inline set:html={JSON.stringify(schema)} />}
   </head>
   <body>
     {
@@ -130,61 +105,57 @@ const fontFace = [
         <slot />
       ) : (
         <>
-          {/* First thing in the tab order, so keyboard users can jump the nav.
-              z above the nav's z-[70] so the focused link is never covered. */}
-          <a
-            href="#main"
-            class="sr-only focus:not-sr-only focus:fixed focus:left-6 focus:top-4 focus:z-[80] focus:rounded-sm focus:border focus:border-ink focus:bg-cream focus:px-5 focus:py-3 focus:text-label focus:font-medium focus:uppercase focus:tracking-label focus:text-ink"
-          >
+          <a href="#main" class="skip">
             Skip to content
           </a>
-          {/* pt-24 clears the fixed Nav (logo anchor h-14 + py-5 ≈ 96px) so
-              content isn't hidden under it. The hero adds its own top breathing
-              room below that. */}
-          <div class="mx-auto flex min-h-screen max-w-page flex-col px-gutter pt-24">
-            <Nav brandReveal={brandReveal} />
-            {/* Sections own their vertical rhythm; no padding here so the hero
-                can fill the first viewport. */}
-            <main id="main" tabindex="-1" class="flex-1 scroll-mt-24">
-              <slot />
-            </main>
-            <Footer />
+
+          {/* Scroll progress, drawn as a thread down the left edge of the
+              viewport — the hero's bundle, resolved into a single line. */}
+          <div class="progress" aria-hidden="true">
+            <span></span>
           </div>
+
+          <Nav brandReveal={brandReveal} />
+          <main id="main" tabindex="-1" class={bleed ? undefined : 'main--contained'}>
+            {bleed ? <slot /> : <div class="shell"><slot /></div>}
+          </main>
+          <Footer />
         </>
       )
     }
 
     <script is:inline>
-      // Scroll-reveal: reveal [data-reveal] elements as they enter the viewport.
-      // Respects reduced motion and degrades gracefully without IO support.
+      // Reveal. One observer for the whole page; each block staggers its own
+      // children via --i. Reduced motion or no IO: everything shown up front.
       (() => {
         const els = document.querySelectorAll('[data-reveal]');
         if (!els.length) return;
-        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (reduce || !('IntersectionObserver' in window)) {
+        if (
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+          !('IntersectionObserver' in window)
+        ) {
           els.forEach((el) => el.classList.add('is-visible'));
           return;
         }
         const io = new IntersectionObserver(
           (entries) => {
-            entries.forEach((entry) => {
-              if (entry.isIntersecting) {
-                entry.target.classList.add('is-visible');
-                io.unobserve(entry.target);
-              }
+            entries.forEach((e) => {
+              if (!e.isIntersecting) return;
+              e.target.classList.add('is-visible');
+              io.unobserve(e.target);
             });
           },
-          { rootMargin: '0px 0px -10% 0px', threshold: 0.1 },
+          { rootMargin: '0px 0px -12% 0px', threshold: 0.08 },
         );
         els.forEach((el) => io.observe(el));
       })();
     </script>
 
     <script is:inline>
-      // Typewriter for <EmphType> words (.emph-type): type the word in, draw the
-      // terracotta strike, blink the caret twice, then remove it. Kept here (not
-      // in the component) so the inline script never sits in the word's text
-      // flow. Reduced motion / no-JS: the word + strike are shown statically.
+      // Typewriter words (.emph-type) on /about, /what-we-do and /contact: type
+      // the word in, then blink the caret twice and drop it. Lives here, not in
+      // the component, so the script never sits inside the word's text flow.
+      // Reduced motion / no JS: the word is simply shown, already typed.
       (() => {
         const emphs = document.querySelectorAll('.emph-type');
         if (!emphs.length) return;
@@ -194,38 +165,116 @@ const fontFace = [
           const typed = emph.querySelector('.ew-typed');
           const caret = emph.querySelector('.ew-caret');
           if (!typed || !caret || !word) return;
-
-          // Arm immediately so the word doesn't flash before it types.
           typed.textContent = '';
-          emph.classList.add('is-typing');
           caret.classList.add('is-on');
-
           const start = () => {
             let i = 0;
             const tick = () => {
               i += 1;
               typed.textContent = word.slice(0, i);
-              if (i < word.length) {
-                setTimeout(tick, 78);
-              } else {
-                emph.classList.remove('is-typing'); // strike draws (CSS transition)
-                setTimeout(() => {
-                  caret.classList.add('is-blink'); // blink twice
-                  caret.addEventListener(
-                    'animationend',
-                    () => caret.classList.remove('is-on', 'is-blink'),
-                    { once: true },
-                  );
-                }, 600);
-              }
+              if (i < word.length) return setTimeout(tick, 74);
+              setTimeout(() => {
+                caret.classList.add('is-blink');
+                caret.addEventListener(
+                  'animationend',
+                  () => caret.classList.remove('is-on', 'is-blink'),
+                  { once: true },
+                );
+              }, 420);
             };
-            setTimeout(tick, 320); // brief beat before typing
+            setTimeout(tick, 300);
           };
-
           if (document.fonts && document.fonts.ready) document.fonts.ready.then(start);
           else start();
         });
       })();
     </script>
+
+    <script is:inline>
+      // Scroll progress thread.
+      (() => {
+        const bar = document.querySelector('.progress span');
+        if (!bar) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        let queued = false;
+        const update = () => {
+          queued = false;
+          const max = document.documentElement.scrollHeight - window.innerHeight;
+          bar.style.transform = `scaleY(${max > 0 ? window.scrollY / max : 0})`;
+        };
+        addEventListener(
+          'scroll',
+          () => {
+            if (queued) return;
+            queued = true;
+            requestAnimationFrame(update);
+          },
+          { passive: true },
+        );
+        update();
+      })();
+    </script>
+
+    <style>
+      .skip {
+        position: absolute;
+        left: -9999px;
+      }
+      .skip:focus {
+        left: 1.5rem;
+        top: 1.5rem;
+        z-index: 90;
+        background-color: var(--color-ember);
+        color: #140f0c;
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.75rem;
+        padding: 0 1.25rem;
+        border-radius: 999px;
+        font-size: var(--text-meta);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-meta);
+        text-decoration: none;
+      }
+
+      /* Clears the 5rem fixed bar for pages that don't open with a hero. */
+      .main--contained {
+        padding-top: 9rem;
+      }
+      @media (max-width: 639px) {
+        .main--contained {
+          padding-top: 7rem;
+        }
+      }
+
+      .progress {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        z-index: 65;
+        pointer-events: none;
+        background-color: var(--color-line);
+      }
+      .progress span {
+        display: block;
+        height: 100%;
+        background: linear-gradient(to bottom, var(--color-ember), #8f3a1d);
+        transform: scaleY(0);
+        transform-origin: top;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .progress {
+          display: none;
+        }
+      }
+      @media (max-width: 639px) {
+        .progress {
+          width: 1px;
+        }
+      }
+    </style>
   </body>
 </html>

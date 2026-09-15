@@ -1,37 +1,141 @@
 ---
 /**
- * Section 4 — how to get started. The page's ONE reversed Ink panel (§05,
- * §11.11), at the close, with no wordmark on it.
+ * Section 03 — How to get started. The close.
  *
- * Two statements, not a numbered stepper: the copy describes one call and what
- * you leave with. Numbering two things implies a process that doesn't exist,
- * and the old three-circle stepper on a connecting hairline was drawing a
- * pipeline where there is a conversation.
+ * The one light panel on a dark site. After several screens of ink, paper
+ * arrives as an event — the same trick as a reversed panel on a light site,
+ * run the other way round, and it lands harder because nothing else on the
+ * page is light.
  *
- * LEFT-ALIGNED. The panel this replaces was centred, which §11.19 forbids
- * without a recorded reason — there wasn't one, and every other section on the
- * page is left-aligned.
- *
- * No terracotta: the page's single accent rule is on section 2. The panel is
- * already the loudest moment on the page and doesn't need help.
+ * Two statements, not a stepper. Numbering two things implies a process that
+ * doesn't exist.
  */
 import { GET_STARTED } from '../../data/homepage';
 import CtaButton from '../CtaButton.astro';
 ---
 
-<section class="pt-section-lg">
-  <div data-reveal class="on-ink rounded-sm px-8 py-16 sm:px-14 sm:py-20">
-    <h2 class="text-2xl font-semibold tracking-tight sm:text-3xl">{GET_STARTED.heading}</h2>
+<section class="close">
+  <div class="shell">
+    <div class="close__panel" data-reveal>
+      <div class="close__inner">
+        <p class="index meta close__index r" style="--i: 0"><span>03</span></p>
 
-    {/* The measure still applies inside the panel. The slack to its right is
-        filled by the panel's own ink, so nothing is stranded the way §05
-        warns about on an open cream page. */}
-    <div class="mt-6 space-y-5 prose-measure">
-      {GET_STARTED.steps.map((step) => <p class="body-copy text-cream">{step}</p>)}
-    </div>
+        <h2 class="h-section close__h r" style="--i: 1">{GET_STARTED.heading}</h2>
 
-    <div class="mt-10">
-      <CtaButton href={GET_STARTED.cta.href} variant="inverse">{GET_STARTED.cta.label}</CtaButton>
+        <ol class="close__steps">
+          {
+            GET_STARTED.steps.map((step, i) => (
+              <li class="close__step r" style={`--i: ${i + 2}`}>
+                <span class="close__bullet" aria-hidden="true" />
+                <p>{step}</p>
+              </li>
+            ))
+          }
+        </ol>
+
+        <div class="close__cta r" style="--i: 4">
+          <CtaButton href={GET_STARTED.cta.href} variant="inverse">{GET_STARTED.cta.label}</CtaButton>
+        </div>
+      </div>
     </div>
   </div>
 </section>
+
+<style>
+  .close {
+    padding-top: var(--spacing-section-lg);
+  }
+
+  .close__panel {
+    background-color: var(--color-paper);
+    color: #16150f;
+    border-radius: 6px;
+    padding: clamp(1.75rem, 5vw, 6rem);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Faint threads embossed into the paper, mirroring the hero — the same
+     bundle, now fully resolved. Drawn in CSS so it costs nothing. */
+  .close__panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgba(22, 21, 15, 0.055) 0 1px,
+      transparent 1px 14px
+    );
+    mask-image: linear-gradient(to left, #000, transparent 55%);
+    -webkit-mask-image: linear-gradient(to left, #000, transparent 55%);
+  }
+
+  .close__inner {
+    position: relative;
+    max-width: 44rem;
+  }
+
+  /* The index rule has to flip to ink on the light panel. */
+  .close__index {
+    color: #b4491f;
+  }
+  .close__index::after {
+    background: linear-gradient(to right, rgba(22, 21, 15, 0.2), transparent);
+  }
+
+  .close__h {
+    color: #16150f;
+    margin: 1.25rem 0 0;
+  }
+
+  .close__steps {
+    list-style: none;
+    margin: clamp(2rem, 4vw, 3rem) 0 0;
+    padding: 0;
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .close__step {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.25rem;
+    align-items: start;
+  }
+  .close__step p {
+    margin: 0;
+    font-size: var(--text-lead);
+    line-height: 1.5;
+    letter-spacing: var(--tracking-tight);
+    color: #2c2a22;
+  }
+
+  /* A short ember dash, not a number — the thread, one segment per statement. */
+  .close__bullet {
+    width: 1.75rem;
+    height: 2px;
+    background-color: #b4491f;
+    margin-top: 0.85em;
+  }
+
+  .close__cta {
+    margin-top: clamp(2.5rem, 4vw, 3.25rem);
+  }
+
+  @media (max-width: 639px) {
+    .close__step {
+      gap: 0.85rem;
+    }
+    .close__bullet {
+      width: 1rem;
+      margin-top: 0.7em;
+    }
+    /* At phone width the lead size leaves ~18 characters a line inside the
+       panel. Step it down to body so each statement reads as a sentence. */
+    .close__step p {
+      font-size: var(--text-base);
+      line-height: 1.6;
+    }
+  }
+</style>

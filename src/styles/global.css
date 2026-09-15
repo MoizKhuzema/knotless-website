@@ -1,177 +1,110 @@
 /* =====================================================================
- * Knotless — design tokens & global base
+ * Knotless — design system
  * ---------------------------------------------------------------------
- * This is the single styling source of truth, the visual sibling of
- * src/config/site.ts. Everything below is a TOKEN: change it here and it
- * changes everywhere.
+ * Direction: "Untangled". A dark, warm, editorial surface with one living
+ * idea running through it — the thread. The logo is a lowercase geometric
+ * wordmark whose `o` is cut by a terracotta strike: a knot, severed. That
+ * strike is the seed of everything here. It becomes the hero's thread field
+ * (chaos on the left, parallel order on the right), the scroll progress line,
+ * the rules between sections, and the single accent colour.
  *
- * It's written for Tailwind v4. The @theme block is special — every value in
- * it becomes BOTH a CSS custom property (e.g. var(--color-ink)) AND a utility
- * class (e.g. bg-ink, text-2xl, tracking-wordmark). So you can reach a token
- * from plain CSS or from markup, and there's only one definition.
- *
- * BRAND ANCHORS encoded here (do not widen without a brand decision):
- *   - Palette is EXACTLY five values. No tints/shades/gradients/alpha.
- *   - Cream is the default page background; Ink is default text.
- *   - Terracotta is a single accent value, used once per composition.
- *   - Inter only; hierarchy via weight + size.
+ * Type is a deliberate two-face pairing: a high-contrast display serif against
+ * the geometric sans of the mark. The tension between them is the point —
+ * editorial authority over technical precision.
  * ===================================================================== */
 
 @import 'tailwindcss';
-/* @font-face for Inter is injected in BaseLayout.astro so the font URL respects
- * Astro's `base` (needed for GitHub Pages sub-path deploys). */
+/* @font-face lives in BaseLayout.astro so the font URLs respect Astro's
+ * `base` (needed for GitHub Pages sub-path deploys). */
 
 @theme {
-  /* --- Palette (the only five colours) ------------------------------- */
-  /* Turn OFF Tailwind's default palette FIRST so no off-brand colour
-   * (blue-500, gray-200, …) can sneak in. This wildcard clears the whole
-   * --color-* namespace, so it MUST come before our own definitions —
-   * otherwise it would wipe them too. */
+  /* --- Surface ------------------------------------------------------
+   * Warm near-blacks, never neutral grey. Each step is a real surface, not
+   * an opacity of the one below, so text contrast stays predictable. */
   --color-*: initial;
 
-  --color-ink: #1f1f1d; /* default text, dark surfaces            */
-  --color-terracotta: #a04a2c; /* single accent — one per composition    */
-  --color-cream: #efe9dd; /* default page background                 */
-  --color-white: #ffffff; /* UI surfaces only (cards on cream)       */
-  --color-warm-grey: #8a8580; /* muted text, hairlines, secondary icons  */
+  --color-ink: #0d0c0a; /* page                                    */
+  --color-ink-raised: #131210; /* raised bands                     */
+  --color-ink-panel: #1a1815; /* cards, insets                     */
+  --color-cream: #efe9dd; /* primary text                          */
+  --color-cream-dim: #a29b91; /* secondary text, metadata          */
+  --color-ember: #cf5b30; /* the strike, lifted for dark ground    */
+  --color-paper: #efe9dd; /* the one light panel                   */
+  --color-line: #262320; /* hairlines                              */
 
-  /* --- Type families ------------------------------------------------
-   * Two faces, per DESIGN.md §03. Inter carries the wordmark, headings, nav,
-   * buttons and labels; Lora carries running prose. Reach Lora through the
-   * .body-copy / .standfirst classes below, not the bare `font-serif` utility.
-   *
-   * --font-serif MUST be declared. Tailwind v4 ships its own default
-   * (`ui-serif, Georgia, …`) and the @theme block above only wipes the
-   * --color-* namespace, so leaving this out doesn't disable the utility — it
-   * silently ships GEORGIA as a third typeface (§11.4). */
+  /* --- Type families -------------------------------------------------
+   * Instrument Serif carries display only — hero, section headings, pull
+   * moments. Inter carries everything a reader actually reads, plus all UI,
+   * which keeps it adjacent to the wordmark it matches. */
+  --font-display: 'Instrument Serif', 'Instrument Fallback', Georgia, serif;
   --font-sans: 'Inter Variable', 'Inter Fallback', system-ui, -apple-system,
     'Segoe UI', Roboto, sans-serif;
-  --font-serif: 'Lora Variable', 'Lora Fallback', Georgia, 'Times New Roman',
-    serif;
 
-  /* --- Type scale ---------------------------------------------------
-   * Editorial scale, rem-based (root = 16px). Body is a generous 18px,
-   * the register of a printed document. Each size pairs with a sensible
-   * line-height. Names map to utilities: text-label, text-base, text-3xl…
-   * Headings get their weight from markup/utilities, not from the scale. */
-  --text-label: 0.75rem; /* 12px — all-caps labels, nav, metadata   */
+  /* --- Type scale ----------------------------------------------------
+   * Deliberately wide dynamic range. The display sizes are fluid and go far
+   * larger than an ordinary page would dare; the reading sizes stay quiet. */
+  --text-meta: 0.6875rem; /* 11px — eyebrows, indices, labels      */
+  --text-meta--line-height: 1.4;
+  --text-sm: 0.8125rem; /* 13px — captions, fine print             */
+  --text-sm--line-height: 1.6;
+  --text-base: 1.125rem; /* 18px — body                            */
+  --text-base--line-height: 1.7;
+  --text-lead: clamp(1.25rem, 1.15rem + 0.55vw, 1.625rem); /* standfirst */
+  --text-lead--line-height: 1.5;
+  --text-h3: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+  --text-h3--line-height: 1.3;
+  /* Fixed steps, still used by the pages not yet rebuilt around the fluid
+   * display sizes below. */
+  --text-label: 0.6875rem;
   --text-label--line-height: 1.4;
-  --text-sm: 0.875rem; /* 14px — small print, captions            */
-  --text-sm--line-height: 1.5;
-  --text-base: 1.125rem; /* 18px — body                             */
-  --text-base--line-height: 1.6;
-  --text-lg: 1.375rem; /* 22px — lead paragraph / standfirst      */
-  --text-lg--line-height: 1.5;
-  --text-xl: 1.75rem; /* 28px — h3                               */
-  --text-xl--line-height: 1.3;
-  --text-2xl: 2.25rem; /* 36px — h2                               */
-  --text-2xl--line-height: 1.2;
-  --text-3xl: 3.25rem; /* 52px — h1                               */
-  --text-3xl--line-height: 1.1;
-  --text-4xl: 4.5rem; /* 72px — hero display                     */
-  --text-4xl--line-height: 1.05;
-  --text-5xl: 6rem; /* 96px — oversized hero moments           */
-  --text-5xl--line-height: 1;
+  --text-lg: 1.3125rem;
+  --text-lg--line-height: 1.55;
+  --text-xl: 1.625rem;
+  --text-xl--line-height: 1.35;
+  --text-2xl: 2.125rem;
+  --text-2xl--line-height: 1.15;
+  --text-3xl: 3rem;
+  --text-3xl--line-height: 1.08;
 
-  /* Hero h1. Fluid rather than a fixed step, per §03 ("fluid to 108px"), so it
-   * is one token instead of the six-breakpoint arbitrary-value chain it
-   * replaces. The floor is the §03 mobile value, 38px, and the clamp handles
-   * the mobile breakpoint itself — no override needed below.
-   *
-   * It goes all the way to the 108px ceiling, and that is load-bearing. Tried
-   * at 56px against a larger mark: the h1 then sits 4px from the 52px section
-   * h2, so the page's primary heading reads as just another section heading.
-   * At 108 against 52 the hierarchy is an unmistakable 2:1. */
-  --text-hero: clamp(2.375rem, 8vw, 6.75rem);
-  --text-hero--line-height: 1.02;
+  --text-h2: clamp(2.75rem, 1.6rem + 4.8vw, 5.5rem); /* section display   */
+  --text-h2--line-height: 0.98;
+  --text-display: clamp(3.25rem, 1rem + 11vw, 10rem); /* hero             */
+  --text-display--line-height: 0.9;
 
-  /* Glyph height of the decorative hero wordmark. The asset is cropped to its
-   * ink at 266.5 x 47.7, so this is the real height of the mark and the width
-   * follows from the ratio. §04 sets clear space at the cap height of the
-   * lowercase k, which on a cropped asset IS this height — so the hero applies
-   * it as 1em on a wrapper sized from this token, and it scales with the mark.
-   *
-   * Sized as a masthead above the headline, not as the headline. §05 wants
-   * heroes type-led; making the mark the largest element on the page inverts
-   * that, and at 390px a mark this size ran 335px of a 342px column. */
-  --size-brand-hero: clamp(2.25rem, 3.4vw, 3rem);
-
-  /* --- Letter-spacing (tracking) -----------------------------------
-   * The brand-specified wordmark/tagline values plus a few working ones.
-   * Tight tracking on large display type; open tracking on small caps. */
-  /* +1.9% — the logo wordmark. Measured from the shipping SVG, which is open,
-   * not tight. Brand Guidelines v2.1 says −3%; that is wrong in both magnitude
-   * and SIGN, and this token carried the wrong value until now. See DESIGN.md
-   * §04 "Wordmark metrics — corrected". */
+  /* --- Tracking -------------------------------------------------------
+   * Display type sets tight; small caps set open. The wordmark value is
+   * measured from the shipping SVG (+1.9%, open — not the -3% the old brand
+   * guidelines claimed). */
   --tracking-wordmark: 0.019em;
-  --tracking-tagline: 0.15em; /* +15% — the "AI UNTANGLED" lockup   */
-  --tracking-tight: -0.02em; /* large display headings            */
-  --tracking-normal: 0em; /* body                              */
-  --tracking-label: 0.08em; /* all-caps labels / nav / metadata  */
+  --tracking-display: -0.03em;
+  --tracking-tight: -0.015em;
+  --tracking-normal: 0em;
+  --tracking-meta: 0.16em;
+  --tracking-label: 0.16em; /* alias used by the not-yet-rebuilt pages */
+  --tracking-tagline: 0.2em;
 
-  /* --- Spacing rhythm ----------------------------------------------
-   * Tailwind's default 4px-based numeric scale (p-4, gap-8, …) still
-   * applies for fine control. These named tokens add the large, editorial
-   * rhythm used between sections, so vertical whitespace stays consistent:
-   *   py-section, my-section-lg, gap-gutter, …                         */
-  --spacing-gutter: 1.5rem; /* base horizontal gutter            */
-  --spacing-section: 6rem; /* vertical space between sections    */
-  --spacing-section-lg: 9rem; /* between major movements           */
+  /* --- Rhythm --------------------------------------------------------- */
+  --spacing-gutter: 1.5rem;
+  --spacing-section: 6rem;
+  --spacing-section-lg: 9.5rem;
 
-  /* --- Measure / containers ----------------------------------------
-   * Body copy is capped near ~70 characters for readability; the page
-   * itself sits in a wider editorial column. Map to prose-measure etc. */
-  /* 624px — the body measure. Reach it with the `prose-measure` utility
-   * defined below, NEVER with Tailwind's `max-w-prose`; see the warning there.
-   *
-   * MEASURED, at 1440px, with Lora actually rendering — which it never did
-   * before now. This token previously read 42rem, annotated "68.9 chars/line
-   * with Lora at 18px"; that cannot have described the shipping page, because
-   * --font-serif was undeclared and every paragraph was set in Inter. Re-run
-   * against real Lora, 42rem measures 76.7 characters, well past target.
-   *
-   * Swept across the homepage's rendered lines, counting characters per full
-   * line and discarding each ragged last line:
-   *
-   *   38rem / 608px -> 67.3    40rem / 640px -> 71.3
-   *   39rem / 624px -> 69.6    41rem / 656px -> 75.9
-   *                            42rem / 672px -> 76.7
-   *
-   * 39rem it is: mean 69.6 over 13 full lines, range 61-76. Each candidate was
-   * measured on its own page load — sweeping them with stacked style tags in
-   * one session shifts the wrap and reports a different winner.
-   *
-   * This also lands near §03's suggested 40rem starting point, but from the
-   * other side: §03 expected the Inter-derived 38rem to UNDERSHOOT because
-   * "Lora is wider than Inter". At 18px, 40rem already overshoots at 71.3. */
-  --container-prose: 39rem;
-  --container-text: 48rem; /* headings / standfirst column      */
-  --container-page: 72rem; /* outer editorial width             */
+  /* --- Containers ------------------------------------------------------ */
+  --container-prose: 36rem; /* reading measure, ~68ch at Inter 18px  */
+  --container-text: 46rem;
+  --container-page: 80rem; /* wider shell — the design needs the air  */
+
+  /* --- Motion ---------------------------------------------------------
+   * One easing curve for everything, so the whole site moves with a single
+   * hand. Durations are named rather than sprinkled. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 260ms;
+  --dur-mid: 620ms;
+  --dur-slow: 1100ms;
 }
 
 /* ---------------------------------------------------------------------
- * The body measure, as an EXPLICIT utility.
- *
- * ⚠ Do not use Tailwind's `max-w-prose`. Tailwind v4 ships its own static
- * `max-w-prose` of `65ch`, and it wins over the `max-w-*` utility that
- * `--container-prose` would otherwise generate. The token was therefore
- * declared but never emitted: every `max-w-prose` on the site was silently
- * resolving to 65ch — 738px, or 87 characters at 1440px, well past the
- * 68–70 target.
- *
- * `prose-measure` is a name Tailwind does not own, so it cannot be shadowed.
- * ------------------------------------------------------------------- */
-@utility prose-measure {
-  max-width: var(--container-prose);
-}
-
-/* ---------------------------------------------------------------------
- * Metric-matched fallback for Inter (zero-download, local fonts only).
- * Shown for the brief moment before the preloaded Inter woff2 swaps in; the
- * overrides make a local Arial/Helvetica render at Inter's metrics so there's
- * no reflow on swap (CLS ≈ 0). On platforms without these locals it simply
- * falls through to system-ui (no harm). Inter is always the final rendered face.
- * Override values are the standard Inter→Arial set.
+ * Metric-matched fallbacks (zero-download, local fonts only) so the first
+ * paint doesn't reflow when the real faces swap in.
  * ------------------------------------------------------------------- */
 @font-face {
   font-family: 'Inter Fallback';
@@ -182,401 +115,339 @@
   size-adjust: 107.4%;
 }
 
-/* ---------------------------------------------------------------------
- * The same trick for Lora, but the numbers here were MEASURED, not taken from
- * a table: 513 characters of the real homepage copy rendered at 100px in Lora
- * (23,807px) and in Georgia (22,607px) gives size-adjust = 105.32%. The
- * ascent/descent overrides are Lora's own metrics, read from the shipping
- * woff2 (unitsPerEm 1000, ascent 1006, descent −274, lineGap 0), divided by
- * that size-adjust so they land at the same absolute pixel height.
- *
- * Georgia ONLY — unlike the Arial/Helvetica set above, the serif candidates
- * are not metrically interchangeable (Times New Roman measured 115.21%, a
- * 10-point miss). Where Georgia is absent this face fails to resolve and the
- * stack falls through to the unadjusted serifs, which is honest; applying
- * Georgia's overrides to Times would not be.
- * ------------------------------------------------------------------- */
 @font-face {
-  font-family: 'Lora Fallback';
-  src: local('Georgia');
-  ascent-override: 95.52%;
-  descent-override: 26.02%;
+  font-family: 'Instrument Fallback';
+  src: local('Georgia'), local('Times New Roman');
+  ascent-override: 84%;
+  descent-override: 22%;
   line-gap-override: 0%;
-  size-adjust: 105.32%;
+  size-adjust: 116%;
 }
 
 /* ---------------------------------------------------------------------
- * Mobile type scale — the editorial scale above is tuned for larger screens;
- * on phones every size steps down so the page doesn't read oversized.
- * Overriding the TOKENS (not individual utilities) keeps this in one place, so
- * every text-* utility and component shrinks consistently below sm (640px).
- * The two hero H1s use bespoke sizes (not tokens), so they stay full size here.
+ * Mobile scale. Overriding TOKENS rather than adding variants at call sites
+ * keeps the whole step-down in one place. The display sizes are already
+ * fluid via clamp(), so only the fixed steps and the rhythm need help.
  * ------------------------------------------------------------------- */
 @media (max-width: 639px) {
   :root {
-    --text-label: 0.6875rem; /* 11px labels/nav/buttons   (was 12) */
-    --text-sm: 0.8125rem; /* 13px small print/captions (was 14) */
-    /* 16px, NOT 14px. A serif needs more room than a sans, and 14px is below
-     * comfortable reading size on a phone. DESIGN.md §03 marks this "not
-     * negotiable downward"; §11.6 forbids mobile body type below 16px. */
-    --text-base: 1rem; /* 16px body                 (was 18) */
-    --text-lg: 1rem; /* 16px sub-heading/standfirst (was 18) */
-    --text-xl: 1.25rem; /* 20px                      (was 24) */
-    --text-2xl: 1.5rem; /* 24px h2                   (was 28) */
-    --text-3xl: 2.125rem; /* 34px                      (was 40) */
-    --text-4xl: 2.5rem; /* 40px                      (was 48) */
-    --text-5xl: 3.25rem; /* 52px                      (was 60) */
-
-    /* Section rhythm, stepped down on the same principle as the type above.
-     * DESIGN.md §05 states 144/96 as flat values with no mobile column, so this
-     * is a recorded deviation rather than an oversight. At 390px the desktop
-     * 144px eats about a sixth of the viewport before a word is read, which
-     * reads as a broken page rather than a considered one. What matters is the
-     * two-tier RELATIONSHIP, and that is preserved: a major movement stays half
-     * again the minor break. Overridden as tokens, so no call site changes. */
-    --spacing-section: 4rem; /* 64px  minor break     (was 96) */
-    --spacing-section-lg: 6rem; /* 96px  major movement  (was 144) */
+    --text-base: 1rem; /* 16px — never lower on a phone          */
+    --text-sm: 0.8125rem;
+    --text-meta: 0.625rem;
+    --spacing-section: 4rem;
+    --spacing-section-lg: 6rem;
   }
 }
 
-/* ---------------------------------------------------------------------
- * Base layer — sensible defaults so the page is on-brand before a single
- * utility class is added.
- * ------------------------------------------------------------------- */
 @layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
   html {
     font-family: var(--font-sans);
-    /* Opt into Inter's typographic niceties (proper quotes, kerning). */
     font-feature-settings: 'cv11', 'ss01';
-    /* Use the optical-size axis when the font has one (display-tuned letterforms
-     * at large sizes). The currently-bundled Inter is weight-only, so this is a
-     * no-op today but applies automatically if the font is upgraded to one with
-     * an `opsz` axis. Large headings get tighter display tracking explicitly. */
     font-optical-sizing: auto;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+    background-color: var(--color-ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
 
   body {
-    /* Paper grain is baked into the page BACKGROUND (not a separate overlay):
-     * a faint, desaturated fractalNoise tiled over the Cream paper. As a
-     * background it creates no compositing layer, which avoids the iOS Safari
-     * repaint artifact that ghosted content over the nav. Alpha is baked low
-     * via feComponentTransfer; it shows on the Cream areas only. */
-    background-color: var(--color-cream);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-size: 180px 180px;
-    color: var(--color-ink);
+    background-color: var(--color-ink);
+    color: var(--color-cream);
     font-size: var(--text-base);
-    line-height: 1.6;
+    line-height: 1.75;
+    overflow-x: hidden;
   }
 
-  /* Reversed (Ink) sections use Cream text — an approved pair. Wrap a dark
-   * block in .on-ink and its default text colour flips automatically. */
-  .on-ink {
-    background-color: var(--color-ink);
+  /* Film grain over the whole page. Fixed, so it reads as a property of the
+     surface rather than something that scrolls with the content. Pointer
+     events off; sits under the nav but over the sections. */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.32;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.14'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    mix-blend-mode: overlay;
+  }
+
+  ::selection {
+    background-color: var(--color-ember);
     color: var(--color-cream);
   }
 
-  /* The skip-link target. <main> is focusable only so the skip link can move
-     focus into it; it's never a tab stop, so the UA ring — drawn around the
-     whole content area — would be noise rather than an affordance. The page
-     jump already signals the move. */
+  :focus-visible {
+    outline: 2px solid var(--color-ember);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
   main[tabindex='-1']:focus {
     outline: none;
   }
 
-  ::selection {
-    background-color: var(--color-ink);
-    color: var(--color-cream);
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  /* The display face on every heading, so the pages not yet rebuilt around the
+     new system still read as the same brand. Homepage components set this
+     explicitly via .display / .h-section; this is the default for the rest.
+     font-synthesis is off because Instrument Serif ships 400 only — a
+     synthesised bold would be visibly wrong next to the real thing. */
+  h1,
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: var(--tracking-display);
+    font-synthesis-weight: none;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 }
 
-/* ---------------------------------------------------------------------
- * Component layer — small, reusable brand primitives.
- * ------------------------------------------------------------------- */
 @layer components {
-  /* The terracotta strike from the logo, echoed as a short accent rule.
-   * Use sparingly — once per composition — above a heading or as a divider. */
+  /* --- Type roles ---------------------------------------------------- */
+
+  .display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: var(--tracking-display);
+    line-height: 0.9;
+  }
+
+  /* The section heading. Serif, huge, tight — the counterweight to all the
+     small sans metadata around it. */
+  .h-section {
+    font-family: var(--font-display);
+    font-size: var(--text-h2);
+    font-weight: 400;
+    line-height: 0.98;
+    letter-spacing: var(--tracking-display);
+    color: var(--color-cream);
+  }
+
+  .lead {
+    font-size: var(--text-lead);
+    line-height: 1.5;
+    color: var(--color-cream);
+    letter-spacing: var(--tracking-tight);
+  }
+
+  .body-copy {
+    font-size: var(--text-base);
+    line-height: 1.75;
+    color: var(--color-cream-dim);
+  }
+
+  /* Eyebrow / index / label. Open tracking, small, always uppercase. */
+  .meta {
+    font-family: var(--font-sans);
+    font-size: var(--text-meta);
+    font-weight: 500;
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-meta);
+  }
+
+  /* A section's index marker: 01 / 02 / 03, ember, with a hairline running
+     off to the right. The rule is the thread, continued. */
+  .index {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--color-ember);
+  }
+  .index::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--color-line), transparent);
+  }
+
+  /* --- Emphasis ------------------------------------------------------
+   * The logo's line, applied to a word — but UNDER it, not through it. The
+   * mark strikes the `o` of "knotless" to cancel the knot; running the same
+   * line through "Untangled" would cancel the promise instead. Underneath, it
+   * reads as emphasis, which is what it is for. Draws left to right on reveal.
+   */
+  .strike {
+    position: relative;
+    font-style: italic;
+    white-space: nowrap;
+  }
+  .strike::after {
+    content: '';
+    position: absolute;
+    left: 0.02em;
+    right: 0.06em;
+    bottom: 0.04em;
+    height: 0.035em;
+    background-color: var(--color-ember);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  /* --- Legacy roles ---------------------------------------------------
+   * Still used by /about, /what-we-do, /contact and the legal pages, which
+   * have not been rebuilt around the new system. Re-expressed for the dark
+   * ground so those pages stay coherent rather than losing their structure.
+   * Retire these as each page is rebuilt. */
   .accent-rule {
     display: block;
     width: 3.5rem;
-    height: 0.25rem;
-    border-radius: 0.125rem;
-    background-color: var(--color-terracotta);
+    height: 2px;
+    background-color: var(--color-ember);
   }
 
-  /* The confirmation "pressed in": the heading's words wipe on left-to-right
-   * behind a single terracotta edge — the logo's mark as an impression stamped
-   * across the line, rather than a strike (which reads as deletion). Fully
-   * shown by default (no-JS / reduced motion); the [data-reveal] rules below
-   * animate the wipe + the travelling edge. Same single-accent device as
-   * .accent-rule — the edge is terracotta, never a second colour. */
-  .press-word {
-    position: relative;
-    display: inline-block;
-    overflow: hidden;
-  }
-  .press-word__txt {
-    display: inline-block;
-  }
-  .press-word__edge {
-    content: '';
-    position: absolute;
-    top: 0.12em;
-    bottom: 0.12em;
-    left: 0;
-    width: 0.4em;
-    background-color: var(--color-terracotta);
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  /* The two Lora roles from the §03 scale. Prose reaches the serif through
-   * these, never through a bare `font-serif` at the call site — the utility
-   * exists and would work just as well in the nav, and §11.5 forbids Lora
-   * there. A named class makes the intent (and the violation) legible in a
-   * diff. Sizes come from the tokens, so both step down on mobile.
-   *
-   * Body: 18px desktop / 16px mobile, line-height 1.6.
-   * Standfirst / lead: 22px desktop / 16px mobile, line-height 1.5. */
-  .body-copy {
-    font-family: var(--font-serif);
-    font-size: var(--text-base);
-    font-weight: 400;
-    line-height: 1.6;
-  }
-  .standfirst {
-    font-family: var(--font-serif);
-    font-size: var(--text-lg);
-    font-weight: 400;
-    line-height: 1.5;
-  }
-
-  /* The editorial sidehead: a heading rail beside a prose column.
-   *
-   * 27rem + 3rem gap + 39rem = 69rem = 1104px, which is exactly
-   * --container-page minus both gutters. The prose track matches
-   * --container-prose exactly, so the grid IS the measure here and the rail
-   * takes the remainder. So the prose sits at its measure with
-   * nothing left stranded beside it — §05: "Do not leave a 738px text column
-   * stranded in the left half of a 1152px page … either widen the container,
-   * or give the right side something that earns the space." Here the heading
-   * moves out of the flow and earns the left side instead.
-   *
-   * Two columns only from lg up. At 768px the tracks shrink to roughly 244/428
-   * and a 52px h2 wraps to four lines, so below lg it simply stacks. This is a
-   * LAYOUT breakpoint, distinct from the 639px token breakpoint that drives the
-   * type scale. */
-  .sidehead {
-    display: block;
-  }
-  @media (min-width: 64rem) {
-    .sidehead {
-      display: grid;
-      grid-template-columns: minmax(0, 27rem) minmax(0, 39rem);
-      column-gap: 3rem;
-      align-items: start;
-    }
-  }
-
-  /* All-caps label / eyebrow / metadata styling. */
   .label {
+    font-family: var(--font-sans);
     font-size: var(--text-label);
     font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: var(--tracking-label);
+    letter-spacing: var(--tracking-meta);
   }
 
-  /* Typewriter word (the "product" treatment): types in with a blinking caret.
-   * Markup is inlined in the heading; the initialiser lives in BaseLayout.
-   * The word reserves its width via a hidden sizer so typing never reflows. */
-  .emph-type {
-    position: relative;
-    white-space: nowrap;
-  }
-  .emph-type .ew {
-    position: relative;
-    display: inline-block;
-  }
-  .emph-type .ew-sizer {
-    visibility: hidden;
-  }
-  .emph-type .ew-live {
-    position: absolute;
-    left: 0;
-    top: 0;
-    white-space: nowrap;
-  }
-  .emph-type .ew-caret {
-    display: none;
-    width: 0.06em;
-    height: 0.9em;
-    margin-left: 0.06em;
-    background-color: currentColor;
-    vertical-align: -0.04em;
-  }
-  .emph-type .ew-caret.is-on {
-    display: inline-block;
-  }
-  /* Blink exactly twice, then the initialiser removes the caret on animationend. */
-  .emph-type .ew-caret.is-blink {
-    animation: ew-caret-blink 1.06s steps(1, end) 2;
-  }
-  @keyframes ew-caret-blink {
-    0% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0;
-    }
+  /* Was a reversed panel on a light page; on a dark page the equivalent
+     emphasis is a raised, outlined surface. */
+  .on-ink {
+    background-color: var(--color-ink-panel);
+    border: 1px solid var(--color-line);
+    border-radius: 4px;
+    color: var(--color-cream);
   }
 
-  /* Long-form legal/policy prose (rendered from markdown via set:html). Sized
-   * from the type tokens so it matches the rest of the site; generous leading
-   * for sustained reading. Section headings get scroll-margin so in-page jump
-   * links don't land under the fixed nav. */
-  .legal-prose > * + * {
-    margin-top: 1rem;
-  }
+  .legal-prose > * + * { margin-top: 1rem; }
   .legal-prose > h2 {
     margin-top: 3.5rem;
     scroll-margin-top: 7rem;
+    font-family: var(--font-display);
     font-size: var(--text-xl);
-    line-height: 1.3;
-    font-weight: 600;
+    font-weight: 400;
     letter-spacing: var(--tracking-tight);
+    color: var(--color-cream);
   }
-  .legal-prose > h2:first-child {
-    margin-top: 0;
-  }
+  .legal-prose > h2:first-child { margin-top: 0; }
   .legal-prose p,
-  .legal-prose li {
-    font-size: var(--text-base);
-    line-height: 1.75;
-  }
-  .legal-prose strong {
-    font-weight: 600;
-  }
-  .legal-prose em {
-    font-style: italic;
-  }
+  .legal-prose li { color: var(--color-cream-dim); }
+  .legal-prose strong { font-weight: 600; color: var(--color-cream); }
+  .legal-prose em { font-style: italic; }
   .legal-prose a {
+    color: var(--color-cream);
     text-decoration: underline;
-    text-decoration-color: var(--color-warm-grey);
+    text-decoration-color: var(--color-ember);
     text-underline-offset: 3px;
-    transition: text-decoration-color 0.2s;
   }
-  .legal-prose a:hover {
-    text-decoration-color: var(--color-ink);
-  }
-  .legal-prose ul,
-  .legal-prose ol {
-    margin-top: 1rem;
-    padding-left: 1.5rem;
-  }
-  .legal-prose ul {
-    list-style: disc;
-  }
-  .legal-prose ol {
-    list-style: decimal;
-  }
-  .legal-prose li {
-    margin-top: 0.5rem;
-    padding-left: 0.25rem;
-  }
-  .legal-prose li::marker {
-    color: var(--color-warm-grey);
-  }
-  /* The markdown uses --- between sections; the heading rhythm carries the
-   * separation, so the rules themselves are hidden. */
-  .legal-prose hr {
+  .legal-prose a:hover { color: var(--color-ember); }
+  .legal-prose ul, .legal-prose ol { margin-top: 1rem; padding-left: 1.5rem; }
+  .legal-prose ul { list-style: disc; }
+  .legal-prose ol { list-style: decimal; }
+  .legal-prose li { margin-top: 0.5rem; padding-left: 0.25rem; }
+  .legal-prose li::marker { color: var(--color-ember); }
+  .legal-prose hr { display: none; }
+
+  /* Typewriter word, used by /about, /what-we-do and /contact. The sizer
+     reserves the final width so typing never reflows the line — and if these
+     rules go missing the word renders TWICE, since the sizer is a real copy. */
+  .emph-type { position: relative; white-space: nowrap; }
+  .emph-type .ew { position: relative; display: inline-block; }
+  .emph-type .ew-sizer { visibility: hidden; }
+  .emph-type .ew-live { position: absolute; left: 0; top: 0; white-space: nowrap; }
+  .emph-type .ew-caret {
     display: none;
+    width: 0.055em;
+    height: 0.82em;
+    margin-left: 0.06em;
+    background-color: var(--color-ember);
+    vertical-align: -0.04em;
+  }
+  .emph-type .ew-caret.is-on { display: inline-block; }
+  .emph-type .ew-caret.is-blink { animation: ew-blink 1.06s steps(1, end) 2; }
+  @keyframes ew-blink { 0% { opacity: 1; } 50% { opacity: 0; } }
+
+  /* --- Surfaces ------------------------------------------------------- */
+
+  .panel {
+    background-color: var(--color-ink-panel);
+    border: 1px solid var(--color-line);
+    border-radius: 4px;
   }
 
-  /* Scroll-reveal: elements marked [data-reveal] start hidden and fade up when
-   * the IntersectionObserver in BaseLayout adds .is-visible. Under reduced
-   * motion they're shown immediately (the script adds .is-visible up front). */
+  .rule {
+    height: 1px;
+    background-color: var(--color-line);
+    border: 0;
+  }
+
+  /* --- Reveal --------------------------------------------------------
+   * One reveal primitive. Children of a [data-reveal] block stagger via a
+   * --i index set in markup, so a whole section moves as one gesture rather
+   * than a dozen unrelated fades. Opacity and transform only. */
   @media (prefers-reduced-motion: no-preference) {
-    [data-reveal] {
+    [data-reveal] .r {
       opacity: 0;
-      transform: translateY(16px);
+      transform: translateY(1.25rem);
       transition:
-        opacity 0.7s ease,
-        transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+        opacity var(--dur-mid) var(--ease-out),
+        transform var(--dur-mid) var(--ease-out);
+      transition-delay: calc(var(--i, 0) * 90ms);
     }
-    [data-reveal].is-visible {
+    [data-reveal].is-visible .r {
       opacity: 1;
       transform: none;
     }
 
-    /* The terracotta accent rule draws itself in left-to-right when its section
-     * reveals — the same gesture as the hero "strike". Slight delay so it lands
-     * after the block has risen into place. Reduced motion: shown full-width
-     * (this whole block is inside the no-preference query). */
-    [data-reveal] .accent-rule {
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
+    [data-reveal] .strike::after {
+      transition: transform var(--dur-slow) var(--ease-out);
+      transition-delay: calc(var(--i, 0) * 90ms + 320ms);
     }
-    [data-reveal].is-visible .accent-rule {
+  }
+  [data-reveal].is-visible .strike::after {
+    transform: scaleX(1);
+  }
+  /* Reduced motion / no-JS: the strike is simply drawn. */
+  @media (prefers-reduced-motion: reduce) {
+    .strike::after {
       transform: scaleX(1);
-    }
-
-    /* Success moment: the heading is "pressed in" ~200ms after the accent
-     * rule — its words wipe on left-to-right (clip-path) while a single
-     * terracotta edge travels across the line ahead of the reveal, same
-     * easing. Base rules above leave the text shown and the edge hidden, so
-     * under reduced motion (this whole block is skipped) it shows resolved. */
-    [data-reveal] .press-word__txt {
-      clip-path: inset(0 100% 0 0);
-      transition: clip-path 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.35s;
-    }
-    [data-reveal].is-visible .press-word__txt {
-      clip-path: inset(0 0 0 0);
-    }
-    [data-reveal].is-visible .press-word__edge {
-      animation: press-sweep 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
-    }
-    @keyframes press-sweep {
-      0% {
-        left: 0;
-        transform: translateX(-100%);
-        opacity: 1;
-      }
-      80% {
-        opacity: 1;
-      }
-      100% {
-        left: 100%;
-        transform: translateX(0);
-        opacity: 0;
-      }
-    }
-
-    /* Body copy fades in last, after the press. */
-    [data-reveal].contact-success > p {
-      opacity: 0;
-      transition: opacity 0.5s ease 0.6s;
-    }
-    [data-reveal].contact-success.is-visible > p {
-      opacity: 1;
     }
   }
 }
 
 /* ---------------------------------------------------------------------
- * Hero fills the first screen on phones (content centred) so the section that
- * follows starts below the fold and reveals on scroll, instead of peeking into
- * the first viewport and revealing at load. Desktop keeps the normal
- * top-aligned rhythm (sm:pt-28 on the section). Unlayered on purpose so it wins
- * over the Tailwind utility layer. 6rem ≈ the fixed nav offset (pt-24).
+ * The page shell.
  * ------------------------------------------------------------------- */
-@media (max-width: 639px) {
-  .hero-screen {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: calc(100dvh - 6rem);
+@utility shell {
+  width: 100%;
+  max-width: var(--container-page);
+  margin-inline: auto;
+  padding-inline: var(--spacing-gutter);
+}
+
+@media (min-width: 48rem) {
+  .shell {
+    padding-inline: 2.5rem;
   }
+}
+
+@utility prose-measure {
+  max-width: var(--container-prose);
 }

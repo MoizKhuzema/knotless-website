@@ -31,8 +31,8 @@ const FORM_ACTION = withBase('/contact');
 
 <BaseLayout title="Contact Us" description={CONTACT.metaDescription}>
   <section class="pt-20 sm:pt-28">
-    <p class="text-label uppercase tracking-tagline text-ink">{CONTACT.eyebrow}</p>
-    <h1 class="mt-5 text-[2.4rem] font-semibold leading-[1.02] tracking-[-0.035em] text-ink min-[420px]:text-[2.9rem] sm:text-[3.75rem] md:text-[4.25rem] lg:text-[5.75rem] xl:text-[6.75rem]">
+    <p class="text-label uppercase tracking-tagline text-cream">{CONTACT.eyebrow}</p>
+    <h1 class="mt-5 text-[2.4rem] leading-[1.02] tracking-[-0.035em] text-cream min-[420px]:text-[2.9rem] sm:text-[3.75rem] md:text-[4.25rem] lg:text-[5.75rem] xl:text-[6.75rem]">
       Book your Fit <span class="emph-type" data-word="Call."
         ><span class="sr-only">Call.</span><span class="ew" aria-hidden="true"
           ><span class="ew-sizer">Call.</span><span class="ew-live"><span class="ew-typed">Call.</span><span class="ew-caret"></span></span></span
@@ -40,7 +40,7 @@ const FORM_ACTION = withBase('/contact');
       ></span>
     </h1>
 
-    <p class="mt-8 max-w-text text-base text-ink sm:text-lg">{CONTACT.body}</p>
+    <p class="mt-8 max-w-text text-base text-cream sm:text-lg">{CONTACT.body}</p>
 
     <!-- Fit Call enquiry form, handled by Netlify Forms. `name` + the hidden
          `form-name` must match; `netlify-honeypot` names the anti-spam field.
@@ -70,9 +70,9 @@ const FORM_ACTION = withBase('/contact');
         {
           CONTACT.fields.map((field) => (
             <div class:list={[field.id === 'name' || field.id === 'company' ? '' : 'sm:col-span-2']}>
-              <label for={field.id} class="label block text-ink">
+              <label for={field.id} class="label block text-cream">
                 {field.label}
-                {field.optional && <span class="ml-1.5 lowercase tracking-normal text-warm-grey">(optional)</span>}
+                {field.optional && <span class="ml-1.5 lowercase tracking-normal text-cream-dim">(optional)</span>}
               </label>
               <input
                 id={field.id}
@@ -80,7 +80,7 @@ const FORM_ACTION = withBase('/contact');
                 type={field.type}
                 autocomplete={field.autocomplete}
                 required={field.required}
-                class="mt-2 w-full rounded-sm border border-warm-grey bg-white px-4 py-3 text-[1rem] text-ink transition-colors placeholder:text-warm-grey focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink sm:text-base"
+                class="mt-2 w-full rounded-sm border border-line bg-ink-panel px-4 py-3 text-[1rem] text-cream transition-colors placeholder:text-cream-dim focus:border-line focus:outline-none focus:ring-1 focus:ring-ink sm:text-base"
               />
             </div>
           ))
@@ -90,7 +90,7 @@ const FORM_ACTION = withBase('/contact');
       <!-- Submit: the primary-button treatment, as a real <button> for the form. -->
       <button
         type="submit"
-        class="contact-submit mt-10 inline-block rounded-sm border border-ink bg-ink px-7 py-3 text-label font-medium uppercase tracking-label text-cream no-underline transition-colors hover:bg-cream hover:text-ink disabled:cursor-not-allowed disabled:opacity-60"
+        class="contact-submit mt-10 inline-flex min-h-12 items-center justify-center rounded-full bg-ember px-7 text-meta font-medium uppercase tracking-meta text-[#140f0c] transition-colors hover:bg-cream disabled:cursor-not-allowed"
       >
         {CONTACT.submitLabel}
       </button>
@@ -104,7 +104,7 @@ const FORM_ACTION = withBase('/contact');
         id="form-status"
         role="status"
         aria-live="polite"
-        class="mt-6 border-l-2 border-terracotta pl-4 text-base font-medium text-ink empty:sr-only"
+        class="mt-6 border-l-2 border-ember pl-4 text-base font-medium text-cream empty:sr-only"
       ></p>
     </form>
 
@@ -120,20 +120,20 @@ const FORM_ACTION = withBase('/contact');
       tabindex="-1"
     >
       <span class="accent-rule"></span>
-      <h2 class="mt-6 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+      <h2 class="mt-6 text-2xl tracking-tight text-cream sm:text-3xl">
         <span class="press-word"
           ><span class="press-word__txt">{CONTACT.success.headingWord}{CONTACT.success.headingRest}</span
           ><span class="press-word__edge" aria-hidden="true"></span
         ></span>
       </h2>
-      <p class="mt-6 text-base text-ink sm:text-lg">{CONTACT.success.body}</p>
+      <p class="mt-6 text-base text-cream sm:text-lg">{CONTACT.success.body}</p>
     </div>
 
-    <p class="mt-8 text-base text-ink">
+    <p class="mt-8 text-base text-cream">
       {CONTACT.altLabel}{' '}
       <a
         href={`mailto:${SITE.contactEmail}`}
-        class="font-semibold text-ink underline decoration-warm-grey underline-offset-4 transition-colors hover:decoration-ink"
+        class="font-semibold text-cream underline decoration-warm-grey underline-offset-4 transition-colors hover:decoration-ink"
         >{SITE.contactEmail}</a
       >
     </p>
