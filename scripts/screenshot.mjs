@@ -46,6 +46,12 @@ for (const route of routes.length ? routes : ROUTES) {
     const page = await browser.newPage({
       viewport: { width, height: 900 },
       deviceScaleFactor: 2,
+      // Reveals are IntersectionObserver-driven and unobserve after firing, so
+      // scrolling a full-page capture into position is unreliable — a single
+      // jump can skip the middle of a long page and photograph it blank.
+      // Under reduced motion BaseLayout marks every [data-reveal] visible up
+      // front, which is both deterministic and a state the site must support.
+      reducedMotion: 'reduce',
     });
     const url = new URL(normalise(route), BASE).href;
     const res = await page.goto(url, { waitUntil: 'networkidle' });
@@ -55,14 +61,15 @@ for (const route of routes.length ? routes : ROUTES) {
     // fallback's metrics, which is exactly the thing being checked.
     await page.evaluate(() => document.fonts.ready);
 
-    // Reveal animations are IntersectionObserver-driven; without this the
-    // capture is full of elements still at opacity 0.
-    await page.evaluate(async () => {
-      window.scrollTo(0, document.body.scrollHeight);
-      await new Promise((r) => setTimeout(r, 400));
-      window.scrollTo(0, 0);
-      await new Promise((r) => setTimeout(r, 200));
-    });
+    // The dev-server toolbar floats over the page and would otherwise appear
+    // in the middle of every capture.
+    await page.addStyleTag({ content: 'astro-dev-toolbar{display:none!important}' });
+
+    // Belt and braces: if reduced motion ever stops being honoured, this still
+    // resolves the reveals rather than silently photographing a blank page.
+    await page.evaluate(() =>
+      document.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('is-visible')),
+    );
 
     const file = path.join(outDir, `${slug(route)}-${width}.png`);
     await page.screenshot({ path: file, fullPage: true });
