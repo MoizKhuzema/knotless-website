@@ -35,9 +35,19 @@
   --color-white: #ffffff; /* UI surfaces only (cards on cream)       */
   --color-warm-grey: #8a8580; /* muted text, hairlines, secondary icons  */
 
-  /* --- Type family -------------------------------------------------- */
+  /* --- Type families ------------------------------------------------
+   * Two faces, per DESIGN.md §03. Inter carries the wordmark, headings, nav,
+   * buttons and labels; Lora carries running prose. Reach Lora through the
+   * .body-copy / .standfirst classes below, not the bare `font-serif` utility.
+   *
+   * --font-serif MUST be declared. Tailwind v4 ships its own default
+   * (`ui-serif, Georgia, …`) and the @theme block above only wipes the
+   * --color-* namespace, so leaving this out doesn't disable the utility — it
+   * silently ships GEORGIA as a third typeface (§11.4). */
   --font-sans: 'Inter Variable', 'Inter Fallback', system-ui, -apple-system,
     'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Lora Variable', 'Lora Fallback', Georgia, 'Times New Roman',
+    serif;
 
   /* --- Type scale ---------------------------------------------------
    * Editorial scale, rem-based (root = 16px). Body is a generous 18px,
@@ -128,6 +138,29 @@
   descent-override: 22.48%;
   line-gap-override: 0%;
   size-adjust: 107.4%;
+}
+
+/* ---------------------------------------------------------------------
+ * The same trick for Lora, but the numbers here were MEASURED, not taken from
+ * a table: 513 characters of the real homepage copy rendered at 100px in Lora
+ * (23,807px) and in Georgia (22,607px) gives size-adjust = 105.32%. The
+ * ascent/descent overrides are Lora's own metrics, read from the shipping
+ * woff2 (unitsPerEm 1000, ascent 1006, descent −274, lineGap 0), divided by
+ * that size-adjust so they land at the same absolute pixel height.
+ *
+ * Georgia ONLY — unlike the Arial/Helvetica set above, the serif candidates
+ * are not metrically interchangeable (Times New Roman measured 115.21%, a
+ * 10-point miss). Where Georgia is absent this face fails to resolve and the
+ * stack falls through to the unadjusted serifs, which is honest; applying
+ * Georgia's overrides to Times would not be.
+ * ------------------------------------------------------------------- */
+@font-face {
+  font-family: 'Lora Fallback';
+  src: local('Georgia');
+  ascent-override: 95.52%;
+  descent-override: 26.02%;
+  line-gap-override: 0%;
+  size-adjust: 105.32%;
 }
 
 /* ---------------------------------------------------------------------
@@ -245,6 +278,27 @@
     background-color: var(--color-terracotta);
     opacity: 0;
     pointer-events: none;
+  }
+
+  /* The two Lora roles from the §03 scale. Prose reaches the serif through
+   * these, never through a bare `font-serif` at the call site — the utility
+   * exists and would work just as well in the nav, and §11.5 forbids Lora
+   * there. A named class makes the intent (and the violation) legible in a
+   * diff. Sizes come from the tokens, so both step down on mobile.
+   *
+   * Body: 18px desktop / 16px mobile, line-height 1.6.
+   * Standfirst / lead: 22px desktop / 16px mobile, line-height 1.5. */
+  .body-copy {
+    font-family: var(--font-serif);
+    font-size: var(--text-base);
+    font-weight: 400;
+    line-height: 1.6;
+  }
+  .standfirst {
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
+    font-weight: 400;
+    line-height: 1.5;
   }
 
   /* All-caps label / eyebrow / metadata styling. */
