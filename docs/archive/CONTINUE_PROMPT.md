@@ -1,3 +1,5 @@
+> **Historical snapshot — superseded by `DESIGN.md` and `CLAUDE.md`.** A point-in-time session handoff; its instructions are not current. Do not follow it as a live brief.
+
 # Knotless AI marketing site — session handoff prompt
 
 Continue work on the Knotless AI marketing site. Read this whole brief before doing anything.

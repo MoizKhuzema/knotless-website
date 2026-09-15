@@ -1,3 +1,5 @@
+> **Historical snapshot — superseded by `DESIGN.md`.** Kept for the reasoning behind the redesign; where this file and DESIGN.md disagree, DESIGN.md governs.
+
 # Knotless AI — Final-stage critical audit
 
 **Date:** 26 June 2026

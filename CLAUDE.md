@@ -28,8 +28,9 @@ npm run check      # astro check — must be 0 errors before any commit
 
 ```
 DESIGN.md              governing design system — read before any visual work
-AUDIT.md               pre-redesign defect list
 docs/baseline/         pre-redesign screenshots, 1440 + 390, per page
+docs/archive/          superseded snapshots — historical context, not live briefs
+scripts/screenshot.mjs `npm run shot` — visual verification, rule 2
 content/               source copy as delivered by the client
 src/
   config/site.ts       site-WIDE values: legal entity, founders, contacts, domains
