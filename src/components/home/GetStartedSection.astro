@@ -1,0 +1,37 @@
+---
+/**
+ * Section 4 — how to get started. The page's ONE reversed Ink panel (§05,
+ * §11.11), at the close, with no wordmark on it.
+ *
+ * Two statements, not a numbered stepper: the copy describes one call and what
+ * you leave with. Numbering two things implies a process that doesn't exist,
+ * and the old three-circle stepper on a connecting hairline was drawing a
+ * pipeline where there is a conversation.
+ *
+ * LEFT-ALIGNED. The panel this replaces was centred, which §11.19 forbids
+ * without a recorded reason — there wasn't one, and every other section on the
+ * page is left-aligned.
+ *
+ * No terracotta: the page's single accent rule is on section 2. The panel is
+ * already the loudest moment on the page and doesn't need help.
+ */
+import { GET_STARTED } from '../../data/homepage';
+import CtaButton from '../CtaButton.astro';
+---
+
+<section class="pt-section-lg">
+  <div data-reveal class="on-ink rounded-sm px-8 py-16 sm:px-14 sm:py-20">
+    <h2 class="text-2xl font-semibold tracking-tight sm:text-3xl">{GET_STARTED.heading}</h2>
+
+    {/* The measure still applies inside the panel. The slack to its right is
+        filled by the panel's own ink, so nothing is stranded the way §05
+        warns about on an open cream page. */}
+    <div class="mt-6 space-y-5 prose-measure">
+      {GET_STARTED.steps.map((step) => <p class="body-copy text-cream">{step}</p>)}
+    </div>
+
+    <div class="mt-10">
+      <CtaButton href={GET_STARTED.cta.href} variant="inverse">{GET_STARTED.cta.label}</CtaButton>
+    </div>
+  </div>
+</section>

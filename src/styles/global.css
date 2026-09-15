@@ -73,6 +73,29 @@
   --text-5xl: 6rem; /* 96px — oversized hero moments           */
   --text-5xl--line-height: 1;
 
+  /* Hero h1. Fluid rather than a fixed step, per §03 ("fluid to 108px"), so it
+   * is one token instead of the six-breakpoint arbitrary-value chain it
+   * replaces. The floor is the §03 mobile value, 38px, and the clamp handles
+   * the mobile breakpoint itself — no override needed below.
+   *
+   * It goes all the way to the 108px ceiling, and that is load-bearing. Tried
+   * at 56px against a larger mark: the h1 then sits 4px from the 52px section
+   * h2, so the page's primary heading reads as just another section heading.
+   * At 108 against 52 the hierarchy is an unmistakable 2:1. */
+  --text-hero: clamp(2.375rem, 8vw, 6.75rem);
+  --text-hero--line-height: 1.02;
+
+  /* Glyph height of the decorative hero wordmark. The asset is cropped to its
+   * ink at 266.5 x 47.7, so this is the real height of the mark and the width
+   * follows from the ratio. §04 sets clear space at the cap height of the
+   * lowercase k, which on a cropped asset IS this height — so the hero applies
+   * it as 1em on a wrapper sized from this token, and it scales with the mark.
+   *
+   * Sized as a masthead above the headline, not as the headline. §05 wants
+   * heroes type-led; making the mark the largest element on the page inverts
+   * that, and at 390px a mark this size ran 335px of a 342px column. */
+  --size-brand-hero: clamp(2.25rem, 3.4vw, 3rem);
+
   /* --- Letter-spacing (tracking) -----------------------------------
    * The brand-specified wordmark/tagline values plus a few working ones.
    * Tight tracking on large display type; open tracking on small caps. */
@@ -98,11 +121,30 @@
   /* --- Measure / containers ----------------------------------------
    * Body copy is capped near ~70 characters for readability; the page
    * itself sits in a wider editorial column. Map to prose-measure etc. */
-  /* 672px — the body measure. Reach it with the `prose-measure` utility
+  /* 624px — the body measure. Reach it with the `prose-measure` utility
    * defined below, NEVER with Tailwind's `max-w-prose`; see the warning there.
-   * Empirical: 68.9 chars/line with Lora at 18px, measured over 58 real
-   * paragraphs (15,630 chars) across all six pages at 1440px. */
-  --container-prose: 42rem;
+   *
+   * MEASURED, at 1440px, with Lora actually rendering — which it never did
+   * before now. This token previously read 42rem, annotated "68.9 chars/line
+   * with Lora at 18px"; that cannot have described the shipping page, because
+   * --font-serif was undeclared and every paragraph was set in Inter. Re-run
+   * against real Lora, 42rem measures 76.7 characters, well past target.
+   *
+   * Swept across the homepage's rendered lines, counting characters per full
+   * line and discarding each ragged last line:
+   *
+   *   38rem / 608px -> 67.3    40rem / 640px -> 71.3
+   *   39rem / 624px -> 69.6    41rem / 656px -> 75.9
+   *                            42rem / 672px -> 76.7
+   *
+   * 39rem it is: mean 69.6 over 13 full lines, range 61-76. Each candidate was
+   * measured on its own page load — sweeping them with stacked style tags in
+   * one session shifts the wrap and reports a different winner.
+   *
+   * This also lands near §03's suggested 40rem starting point, but from the
+   * other side: §03 expected the Inter-derived 38rem to UNDERSHOOT because
+   * "Lora is wider than Inter". At 18px, 40rem already overshoots at 71.3. */
+  --container-prose: 39rem;
   --container-text: 48rem; /* headings / standfirst column      */
   --container-page: 72rem; /* outer editorial width             */
 }
@@ -309,6 +351,33 @@
     font-size: var(--text-lg);
     font-weight: 400;
     line-height: 1.5;
+  }
+
+  /* The editorial sidehead: a heading rail beside a prose column.
+   *
+   * 27rem + 3rem gap + 39rem = 69rem = 1104px, which is exactly
+   * --container-page minus both gutters. The prose track matches
+   * --container-prose exactly, so the grid IS the measure here and the rail
+   * takes the remainder. So the prose sits at its measure with
+   * nothing left stranded beside it — §05: "Do not leave a 738px text column
+   * stranded in the left half of a 1152px page … either widen the container,
+   * or give the right side something that earns the space." Here the heading
+   * moves out of the flow and earns the left side instead.
+   *
+   * Two columns only from lg up. At 768px the tracks shrink to roughly 244/428
+   * and a 52px h2 wraps to four lines, so below lg it simply stacks. This is a
+   * LAYOUT breakpoint, distinct from the 639px token breakpoint that drives the
+   * type scale. */
+  .sidehead {
+    display: block;
+  }
+  @media (min-width: 64rem) {
+    .sidehead {
+      display: grid;
+      grid-template-columns: minmax(0, 27rem) minmax(0, 39rem);
+      column-gap: 3rem;
+      align-items: start;
+    }
   }
 
   /* All-caps label / eyebrow / metadata styling. */

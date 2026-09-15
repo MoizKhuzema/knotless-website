@@ -1,0 +1,74 @@
+---
+/**
+ * Section 1 — hero.
+ *
+ * Type-led and left-aligned (§05). The wordmark sits where a headline usually
+ * would, the h1 reads as the line beneath the mark, and the whitespace is the
+ * composition — no decorative visual.
+ *
+ * The mark is DECORATIVE: alt="" + aria-hidden, because the accessible name
+ * "Knotless AI Pty Ltd" is already carried by the nav's home link, and the h1
+ * below is the page's real heading. It doubles as [data-brand-sentinel], the
+ * trigger for the nav wordmark reveal (see Nav.astro) — the nav copy stays
+ * hidden until this one scrolls under the bar, so the mark is never shown
+ * twice at once.
+ *
+ * TERRACOTTA: the wordmark's own strike is this composition's single accent
+ * (§11.3), which is why there is no accent rule here. The page's one accent
+ * rule lives on the next section's heading.
+ *
+ * No [data-reveal]: the hero is above the fold, fading it in on load would be
+ * decorative (§07), and the mark must be painted for the nav observer to
+ * measure against.
+ */
+import { HERO } from '../../data/homepage';
+import CtaButton from '../CtaButton.astro';
+import wordmark from '../../assets/logo/wordmark_secondary/Wordmark_Secondary.svg';
+---
+
+<!-- On phones the hero fills the first screen so the next section starts below
+     the fold; top-aligned from sm up. -->
+<section class="hero-screen sm:pt-28">
+  <!-- The wrapper's font-size IS the glyph height, so the 1em bottom padding
+       below resolves to exactly one mark-height of clear space (§04). -->
+  <div class="brand-mark">
+    <img
+      src={wordmark.src}
+      alt=""
+      aria-hidden="true"
+      width="266"
+      height="48"
+      data-brand-sentinel
+    />
+  </div>
+
+  <h1 class="text-hero font-semibold tracking-[-0.035em] text-ink">
+    {HERO.headline}
+  </h1>
+
+  <p class="standfirst mt-6 prose-measure text-ink">{HERO.standfirst}</p>
+
+  <div class="mt-9">
+    <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
+  </div>
+</section>
+
+<style>
+  .brand-mark {
+    font-size: var(--size-brand-hero);
+    /* §04: clear space equals the cap height of the lowercase k. The asset is
+       cropped to its ink, so that is the mark's full height — 1em here.
+       Horizontally the page gutter carries it, the same reading the nav and
+       footer already apply. */
+    padding-bottom: 1em;
+  }
+
+  .brand-mark img {
+    display: block;
+    height: 1em;
+    width: auto;
+    /* Never wider than the column on a narrow phone; the ratio is preserved so
+       the mark shrinks rather than distorting (§04 forbids stretching). */
+    max-width: 100%;
+  }
+</style>

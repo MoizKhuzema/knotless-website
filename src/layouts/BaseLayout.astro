@@ -71,9 +71,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL(href('/og-default.png'), Astro.site);
 
 // @font-face injected here (not in CSS) so the font URLs carry the base.
-// Lora is declared but NOT preloaded: no page uses it yet, and preloading a
-// font nothing renders just buys a console warning. The preload lands with the
-// first call site. Until then @font-face is lazy, so this downloads nothing.
+// Both faces are preloaded: Inter sets the headings and Lora the standfirst,
+// and on the homepage both are above the fold, so waiting on a lazy @font-face
+// would show the metric-matched fallback first.
 const fontFace = [
   `@font-face{font-family:'Inter Variable';font-style:normal;font-display:swap;font-weight:100 900;src:url('${interFont}') format('woff2-variations');}`,
   `@font-face{font-family:'Lora Variable';font-style:normal;font-display:swap;font-weight:400 700;src:url('${loraFont}') format('woff2-variations');}`,
@@ -90,9 +90,11 @@ const fontFace = [
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
 
-    <!-- Inter @font-face (base-aware URL) + preload so it's ready before paint. -->
+    <!-- @font-face for both faces (base-aware URLs) + preloads so they're ready
+         before paint. Self-hosted: no third-party font request (§11.18). -->
     <style set:html={fontFace}></style>
     <link rel="preload" href={interFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={loraFont} as="font" type="font/woff2" crossorigin />
 
     <!-- Favicons (generated from the mark on a Cream square). -->
     <link rel="icon" href={href('/favicon.ico')} sizes="any" />

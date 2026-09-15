@@ -1,23 +1,47 @@
 ---
 /**
- * Homepage. Hero (Treatment B — "Strike") + the three content sections, all in
- * the same editorial register. Copy lives in src/data/homepage.ts; founder
- * names and site-wide values in src/config/site.ts.
+ * Homepage — four sections: hero, what you get, who you'll be talking to, how
+ * to get started. Copy lives in src/data/homepage.ts; founder names, titles,
+ * emails and phones in src/config/site.ts.
+ *
+ * SECTION RHYTHM (§05, the two-tier rule). Three breaks, two tiers:
+ *
+ *   hero            -> what you get        144px   major: the mark and the
+ *                                                  promise end, the argument
+ *                                                  begins
+ *   what you get    -> who you'll be       96px    minor: one movement. §3 is
+ *                      talking to                  the warranty on §2 — "every
+ *                                                  Assessment is run by us"
+ *                                                  only means something as the
+ *                                                  answer to "who does the
+ *                                                  thing you just described"
+ *   who you'll be   -> how to get started  144px   major: the substance ends,
+ *                      talking to                  the close begins
+ *
+ * Each section owns its own top break, so the rhythm reads down this file.
+ * --spacing-section finally gets emitted; §05 notes it was "defined but never
+ * emitted — when everything is a major movement, nothing is".
+ *
+ * The pricing calculator §09 reserves a slot for drops in between What you get
+ * and Who you'll be talking to, on the same .sidehead grid: one file here and
+ * one line below, with the rhythm becoming 144/96/96/144.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import HeroVisual from '../components/hero/HeroVisual.astro';
-import AssessmentSection from '../components/home/AssessmentSection.astro';
+import HeroSection from '../components/home/HeroSection.astro';
+import WhatYouGetSection from '../components/home/WhatYouGetSection.astro';
 import FoundersSection from '../components/home/FoundersSection.astro';
-import FinalCtaSection from '../components/home/FinalCtaSection.astro';
-import { HERO } from '../data/homepage';
+import GetStartedSection from '../components/home/GetStartedSection.astro';
+import { META } from '../data/homepage';
 import { graph, organization, website, webPage } from '../lib/schema';
 
 const title = 'Home';
-const description = HERO.subhead;
+const description = META.description;
 const origin = Astro.site!.origin;
 const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
 
 // Connected @graph: the canonical Organization + WebSite, plus this WebPage.
+// Founder Person nodes stay on /about — the @ids are origin-anchored, so
+// duplicating them here would add nothing.
 const schema = graph([
   organization(origin),
   website(origin),
@@ -25,9 +49,11 @@ const schema = graph([
 ]);
 ---
 
-<BaseLayout title={title} description={description} schema={schema}>
-  <HeroVisual />
-  <AssessmentSection />
+<!-- brandReveal: the hero carries the wordmark, so the nav copy stays hidden
+     until the hero mark scrolls under the bar. See Nav.astro. -->
+<BaseLayout title={title} description={description} schema={schema} brandReveal>
+  <HeroSection />
+  <WhatYouGetSection />
   <FoundersSection />
-  <FinalCtaSection />
+  <GetStartedSection />
 </BaseLayout>

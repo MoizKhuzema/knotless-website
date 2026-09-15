@@ -1,0 +1,60 @@
+---
+/**
+ * Section 2 — what you get.
+ *
+ * Laid out on the .sidehead grid (see global.css): the h2 moves into a left
+ * rail so the prose can sit at its measure without stranding 480px of cream
+ * beside it (§05). The verticals below reuse the same two tracks rather than
+ * introducing a second layout — vertical names in the rail, members in the
+ * prose column.
+ *
+ * TERRACOTTA: this section carries the page's ONE accent rule (§06 "once per
+ * composition"), above the first section heading — its canonical position. The
+ * hero's only accent is the wordmark's own strike, and sections 3 and 4 have
+ * none.
+ *
+ * The verticals are running text under two named headings, not a caps grid.
+ * §09: eight equal tiles read as "we'll take anyone"; two named verticals with
+ * their members set as a phrase read as focused depth.
+ */
+import { WHAT_YOU_GET } from '../../data/homepage';
+---
+
+<section class="pt-section-lg">
+  <div class="sidehead">
+    <div data-reveal>
+      <span class="accent-rule"></span>
+      <h2 class="mt-6 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+        {WHAT_YOU_GET.heading}
+      </h2>
+    </div>
+
+    <div data-reveal class="mt-8 space-y-6 lg:mt-0">
+      {WHAT_YOU_GET.body.map((para) => <p class="body-copy text-ink">{para}</p>)}
+    </div>
+  </div>
+
+  <!-- Verticals. A sub-section break inside this movement, so it takes a value
+       from the fine scale — NOT --spacing-section, which is the section tier.
+       If 96px started doing sub-section duty the two tiers would collapse back
+       into one. -->
+  <div class="mt-16">
+    <div class="sidehead">
+      <div aria-hidden="true"></div>
+      <p data-reveal class="body-copy text-ink">{WHAT_YOU_GET.verticalsLead}</p>
+    </div>
+
+    <dl class="mt-8">
+      {
+        WHAT_YOU_GET.verticals.map((v) => (
+          <div data-reveal class="sidehead border-t border-warm-grey py-6">
+            <dt class="text-base font-semibold text-ink">{v.name}</dt>
+            {/* Warm grey is the metadata colour (§02), which also sets the
+                members a step below the vertical they belong to. */}
+            <dd class="mt-2 text-sm text-warm-grey lg:mt-0">{v.members.join(', ')}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>
