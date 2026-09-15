@@ -14,8 +14,7 @@ import '../styles/global.css';
 // Imported through Vite so the URLs are hashed and base-aware (needed for the
 // GitHub Pages sub-path deploy).
 import interFont from '../assets/fonts/inter-variable.woff2';
-import displayFont from '../assets/fonts/instrument-serif.woff2';
-import displayItalic from '../assets/fonts/instrument-serif-italic.woff2';
+import monoFont from '../assets/fonts/mono-variable.woff2';
 
 interface Props {
   title: string;
@@ -55,8 +54,7 @@ const ogImage = new URL(href('/og-default.png'), Astro.site);
 // @font-face here, not in CSS, so the URLs carry Astro's `base`.
 const fontFace = [
   `@font-face{font-family:'Inter Variable';font-style:normal;font-display:swap;font-weight:100 900;src:url('${interFont}') format('woff2-variations');}`,
-  `@font-face{font-family:'Instrument Serif';font-style:normal;font-display:swap;font-weight:400;src:url('${displayFont}') format('woff2');}`,
-  `@font-face{font-family:'Instrument Serif';font-style:italic;font-display:swap;font-weight:400;src:url('${displayItalic}') format('woff2');}`,
+  `@font-face{font-family:'JetBrains Mono Variable';font-style:normal;font-display:swap;font-weight:100 800;src:url('${monoFont}') format('woff2-variations');}`,
 ].join('');
 ---
 
@@ -73,7 +71,7 @@ const fontFace = [
 
     <style set:html={fontFace}></style>
     <link rel="preload" href={interFont} as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={monoFont} as="font" type="font/woff2" crossorigin />
 
     <link rel="icon" href={href('/favicon.ico')} sizes="any" />
     <link rel="icon" type="image/png" sizes="32x32" href={href('/favicon-32.png')} />

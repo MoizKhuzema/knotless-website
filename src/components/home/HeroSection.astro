@@ -2,51 +2,60 @@
 /**
  * Hero.
  *
- * Full viewport, dark, with the thread field behind it. The headline is set
- * enormous in the display serif and broken across two lines so "Untangled"
- * lands alone — the word the whole business turns on gets the strike through
- * it, the same cut the logo makes through its `o`.
+ * Two columns at desktop: the claim on the left, the product on the right.
  *
- * The wordmark sits above as a masthead and doubles as the nav reveal's
- * sentinel, so the mark is never on screen twice at once.
+ * The workflow diagram sits in its own framed panel rather than washing across
+ * the background. Behind the type it was wallpaper — handsome, and saying
+ * nothing. Framed, bracketed and captioned like a figure in a report, it reads
+ * as the thing being sold: a tangle of manual handoffs on one side, a running
+ * pipeline on the other.
+ *
+ * The wordmark above doubles as the nav reveal's sentinel, so the mark is
+ * never on screen twice at once.
  */
 import { HERO } from '../../data/homepage';
-import ThreadField from '../ThreadField.astro';
+import WorkflowField from '../WorkflowField.astro';
 import CtaButton from '../CtaButton.astro';
 import wordmark from '../../assets/logo/wordmark_secondary/Reverse_Wordmark_Secondary.svg';
 
-// "AI Untangled." — the last word carries the strike.
+// "AI Untangled." — the last word carries the rule.
 const [first, ...rest] = HERO.headline.split(' ');
 const last = rest.join(' ').replace(/\.$/, '');
 ---
 
 <section class="hero" data-reveal>
-  <ThreadField count={20} />
+  <div class="shell hero__grid">
+    <div class="hero__col">
+      <div class="hero__mark r" style="--i: 0">
+        <img src={wordmark.src} alt="" aria-hidden="true" width="266" height="48" data-brand-sentinel />
+      </div>
 
-  <!-- Soft ember bloom behind the type: keeps the headline legible over the
-       threads without putting a box around it. -->
-  <div class="hero__bloom" aria-hidden="true"></div>
+      <h1 class="hero__title display">
+        <span class="r" style="--i: 1">{first}</span>
+        <span class="r hero__line2" style="--i: 2"><span class="strike">{last}</span>.</span>
+      </h1>
 
-  <div class="shell hero__inner">
-    <div class="hero__mark r" style="--i: 0">
-      <img src={wordmark.src} alt="" aria-hidden="true" width="266" height="48" data-brand-sentinel />
+      <p class="hero__lead lead r" style="--i: 3">{HERO.standfirst}</p>
+
+      <div class="hero__cta r" style="--i: 4">
+        <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
+      </div>
     </div>
 
-    <h1 class="hero__title display">
-      <span class="r" style="--i: 1">{first}</span>
-      <span class="r" style="--i: 2"><em class="strike">{last}</em>.</span>
-    </h1>
-
-    <p class="hero__lead lead r" style="--i: 3">{HERO.standfirst}</p>
-
-    <div class="hero__cta r" style="--i: 4">
-      <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
-    </div>
-  </div>
-
-  <div class="hero__scroll meta r" style="--i: 5" aria-hidden="true">
-    <span>Scroll</span>
-    <span class="hero__scroll-line"></span>
+    <!-- The figure. Captioned, because an unlabelled diagram is decoration. -->
+    <figure class="hero__figure r" style="--i: 5">
+      <div class="hero__frame bracket">
+        <WorkflowField />
+      </div>
+      <figcaption class="hero__key meta">
+        <span class="hero__key-item">
+          <span class="hero__swatch hero__swatch--manual"></span>Manual process
+        </span>
+        <span class="hero__key-item">
+          <span class="hero__swatch hero__swatch--auto"></span>Automated
+        </span>
+      </figcaption>
+    </figure>
   </div>
 </section>
 
@@ -55,98 +64,98 @@ const last = rest.join(' ').replace(/\.$/, '');
     position: relative;
     display: flex;
     align-items: center;
-    min-height: 100svh;
-    padding-block: 9rem 6rem;
-    isolation: isolate;
+    min-height: 92svh;
+    padding-block: 8rem 4rem;
   }
 
-  .hero__bloom {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background:
-      radial-gradient(58% 50% at 28% 48%, rgba(13, 12, 10, 0.97) 34%, rgba(13, 12, 10, 0.55) 62%, transparent 84%),
-      radial-gradient(40% 36% at 20% 36%, rgba(207, 91, 48, 0.11), transparent 72%);
+  .hero__grid {
+    display: grid;
+    gap: clamp(3rem, 6vw, 4.5rem);
+    width: 100%;
+    align-items: center;
   }
-
-  .hero__inner {
-    position: relative;
-    z-index: 1;
+  @media (min-width: 64rem) {
+    .hero__grid {
+      grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+      gap: 4rem;
+    }
   }
 
   .hero__mark {
-    margin-bottom: clamp(2rem, 4vw, 3.25rem);
+    margin-bottom: clamp(1.75rem, 3vw, 2.5rem);
   }
   .hero__mark img {
     display: block;
-    height: clamp(1.5rem, 2.1vw, 2rem);
+    height: clamp(1.4rem, 1.9vw, 1.8rem);
     width: auto;
   }
 
   .hero__title {
     font-size: var(--text-display);
     margin: 0;
-    max-width: 18ch;
   }
-  .hero__title span {
+  .hero__title > span {
     display: block;
   }
-  /* The serif italic is the strongest thing this face does — worth spending
-     on the one word that matters. */
-  .hero__title em {
-    font-style: italic;
+  /* Keeps "Untangled." intact — the full stop belongs to the word, and at this
+     size a wrapped period reads as a stray dot. */
+  .hero__line2 {
+    white-space: nowrap;
   }
 
   .hero__lead {
-    margin-top: clamp(1.75rem, 3vw, 2.5rem);
-    max-width: 44ch;
+    margin-top: clamp(1.5rem, 2.5vw, 2rem);
+    max-width: 42ch;
     color: var(--color-cream-dim);
   }
 
   .hero__cta {
-    margin-top: clamp(2.25rem, 3.5vw, 3rem);
+    margin-top: clamp(2rem, 3vw, 2.75rem);
   }
 
-  .hero__scroll {
-    position: absolute;
-    left: 50%;
-    bottom: 2.25rem;
-    transform: translateX(-50%);
+  /* --- The figure ------------------------------------------------------ */
+
+  .hero__figure {
+    margin: 0;
+  }
+
+  .hero__frame {
+    position: relative;
+    aspect-ratio: 1200 / 620;
+    background-color: #0a0907;
+    border: 1px solid var(--color-line);
+    overflow: hidden;
+  }
+
+  .hero__key {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.75rem;
+    margin-top: 1rem;
     color: var(--color-cream-dim);
   }
-  .hero__scroll-line {
-    width: 1px;
-    height: 3rem;
-    background: linear-gradient(to bottom, var(--color-ember), transparent);
+  .hero__key-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
   }
-  @media (prefers-reduced-motion: no-preference) {
-    .hero__scroll-line {
-      animation: scroll-hint 2.6s var(--ease-out) infinite;
-      transform-origin: top;
-    }
+  .hero__swatch {
+    width: 1.5rem;
+    flex: none;
   }
-  @keyframes scroll-hint {
-    0%,
-    100% {
-      transform: scaleY(0.4);
-      opacity: 0.4;
-    }
-    45% {
-      transform: scaleY(1);
-      opacity: 1;
-    }
+  .hero__swatch--manual {
+    height: 1px;
+    background-color: var(--color-wire-lit);
+  }
+  .hero__swatch--auto {
+    height: 2px;
+    background-color: var(--color-ember);
   }
 
   @media (max-width: 639px) {
     .hero {
-      padding-block: 7rem 5rem;
-    }
-    .hero__scroll {
-      display: none;
+      padding-block: 6.5rem 4rem;
+      min-height: 0;
     }
     .hero__lead {
       max-width: none;

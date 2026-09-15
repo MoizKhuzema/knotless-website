@@ -13,6 +13,8 @@ import { WHAT_YOU_GET } from '../../data/homepage';
 
 <section class="wyg" id="what-you-get">
   <div class="shell">
+    <hr class="rule-measured" />
+
     <div class="wyg__top" data-reveal>
       <div class="wyg__rail">
         <p class="index meta r" style="--i: 0"><span>01</span></p>
@@ -60,6 +62,10 @@ import { WHAT_YOU_GET } from '../../data/homepage';
 </section>
 
 <style>
+  .rule-measured {
+    margin-bottom: clamp(2.5rem, 4vw, 3.5rem);
+  }
+
   .wyg {
     padding-top: var(--spacing-section-lg);
   }

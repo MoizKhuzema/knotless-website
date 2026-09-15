@@ -1,0 +1,253 @@
+---
+/**
+ * The workflow field — the site's signature visual, and a literal picture of
+ * what Knotless sells.
+ *
+ * LEFT: a manual process. A dozen scattered steps joined by crossing curves,
+ * with two rework loops doubling back on themselves. Hand-routed, organic,
+ * inefficient — the shape of work passed between people.
+ *
+ * RIGHT: the same process automated. One rail, evenly spaced steps, strictly
+ * orthogonal (Manhattan) routing — the language of a circuit or a flowchart,
+ * because that is what a built pipeline looks like. Pulses of ember run along
+ * it continuously: the thing is live, and it keeps running without anyone.
+ *
+ * The contrast IS the proposition. Curves mean people; right angles mean
+ * machines. The middle is where the tangle converges into the rail.
+ *
+ * Deliberately abstract: no figures, no fake metrics, no invented dashboard.
+ * Knotless has no case studies yet, and inventing numbers in the artwork would
+ * be the one thing that destroys what it sells.
+ *
+ * The rAF-free design means this costs almost nothing: draw-in and pulses are
+ * both CSS animations, so the compositor owns them and the main thread is free.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+
+/* ---------------------------------------------------------------------------
+ * Geometry, computed at build time so the markup ships static and identical on
+ * every load — the diagram is a designed composition, not a random one.
+ * ------------------------------------------------------------------------- */
+const W = 1200;
+const H = 620;
+const MID = H / 2;
+
+/** Manual side: scattered steps, spread to fill the frame. */
+const messy = [
+  [72, 110], [178, 232], [96, 356], [238, 128], [300, 330],
+  [214, 470], [356, 210], [372, 434], [470, 128], [486, 318],
+  [452, 528], [566, 226], [580, 404], [128, 520],
+] as [number, number][];
+
+/** Connectors between manual steps. Short hops that cross each other — the
+ *  shape of work handed between people, not a routed system. */
+const manualEdges: [number, number, number][] = [
+  // [from, to, bow]
+  [0, 3, 26], [3, 1, -22], [1, 4, 30], [4, 6, -26], [6, 8, 20],
+  [0, 1, -30], [3, 6, 24], [2, 1, 22], [2, 5, -26], [5, 7, 28],
+  [4, 7, -20], [7, 9, 24], [8, 11, -18], [9, 11, 22], [9, 12, -24],
+  [10, 7, 26], [13, 2, -20], [13, 5, 18], [6, 9, -28], [11, 12, 20],
+  [10, 12, -22],
+];
+
+const curve = (a: [number, number], b: [number, number], bow: number) => {
+  const mx = (a[0] + b[0]) / 2;
+  const my = (a[1] + b[1]) / 2;
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  const len = Math.hypot(dx, dy) || 1;
+  // Scale the bow by the run: a fixed offset on a short edge bends it into a
+  // balloon, which reads as an ornament rather than a connection.
+  const k = bow * Math.min(1, len / 260);
+  const cx = mx + (-dy / len) * k;
+  const cy = my + (dx / len) * k;
+  return `M${a[0]},${a[1]} Q${cx.toFixed(0)},${cy.toFixed(0)} ${b[0]},${b[1]}`;
+};
+
+/** Rework loops — work coming back to a step it already passed through. */
+const loops = [
+  'M178,232 C132,186 214,166 238,208 C256,240 214,262 180,240',
+  'M372,434 C420,396 466,438 438,474 C412,508 368,478 374,444',
+];
+
+/** Automated side: one rail with evenly spaced stations. */
+const RAIL_X0 = 720;
+const RAIL_X1 = 1150;
+const steps = 4;
+const railNodes = Array.from({ length: steps }, (_, i) =>
+  RAIL_X0 + ((RAIL_X1 - RAIL_X0) / (steps - 1)) * i,
+);
+
+/** Orthogonal feeders: the tangle converging into one entry point. */
+const feeders = [
+  `M566,226 H648 V${MID} H${RAIL_X0}`,
+  `M580,404 H648 V${MID} H${RAIL_X0}`,
+  `M486,318 H620 V${MID} H${RAIL_X0}`,
+];
+
+/** Right-angled branch stubs off the rail — each station's output. */
+const stubs = railNodes.map((x, i) => {
+  const dir = i % 2 === 0 ? -1 : 1;
+  return `M${x},${MID} V${MID + dir * 74} H${x + 70}`;
+});
+---
+
+<div class={`wf ${className}`} aria-hidden="true">
+  <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
+    <!-- ---------- manual side ---------- -->
+    <g class="wf__manual">
+      {manualEdges.map(([a, b, bow], i) => (
+        <path class="wf__edge" style={`--i:${i}`} d={curve(messy[a], messy[b], bow)} />
+      ))}
+      {loops.map((d, i) => <path class="wf__loop" style={`--i:${i}`} d={d} />)}
+      {messy.map(([x, y], i) => (
+        <rect class="wf__node" style={`--i:${i}`} x={x - 5} y={y - 5} width="10" height="10" />
+      ))}
+    </g>
+
+    <!-- ---------- convergence ---------- -->
+    <g class="wf__feed">
+      {feeders.map((d, i) => <path class="wf__ortho" style={`--i:${i}`} d={d} />)}
+    </g>
+
+    <!-- ---------- automated side ---------- -->
+    <g class="wf__auto">
+      {stubs.map((d, i) => <path class="wf__ortho wf__stub" style={`--i:${i}`} d={d} />)}
+      <path class="wf__rail" d={`M${RAIL_X0},${MID} H${RAIL_X1}`} />
+      <!-- The live pulse: a short dash travelling the rail, on repeat. -->
+      <path class="wf__pulse" d={`M${RAIL_X0},${MID} H${RAIL_X1}`} />
+      {railNodes.map((x, i) => (
+        <g class="wf__step" style={`--i:${i}`}>
+          <rect x={x - 9} y={MID - 9} width="18" height="18" />
+          <rect class="wf__step-core" x={x - 3} y={MID - 3} width="6" height="6" />
+        </g>
+      ))}
+    </g>
+  </svg>
+</div>
+
+<style>
+  .wf {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    /* Strongest on the right, where the resolved pipeline lives, and faded off
+       behind the headline on the left. */
+    /* Only the outer edges soften now; the diagram is the subject of its own
+       frame, not a wash behind type. */
+    mask-image: radial-gradient(150% 130% at 50% 50%, #000 62%, transparent 99%);
+    -webkit-mask-image: radial-gradient(150% 130% at 50% 50%, #000 62%, transparent 99%);
+  }
+
+  .wf svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .wf path {
+    fill: none;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* --- manual: hand-routed, dim, inert ------------------------------- */
+  .wf__edge,
+  .wf__loop {
+    stroke: var(--color-wire);
+    stroke-width: 1;
+  }
+  .wf__loop {
+    stroke-dasharray: 3 4; /* dashed = rework, the step that repeats */
+  }
+  .wf__node {
+    fill: #0a0907;
+    stroke: var(--color-wire);
+    stroke-width: 1.25;
+  }
+
+  /* --- automated: brighter, orthogonal, alive ------------------------ */
+  .wf__ortho {
+    stroke: var(--color-wire-lit);
+    stroke-width: 1;
+  }
+  .wf__stub {
+    stroke-dasharray: 2 5;
+  }
+  .wf__rail {
+    stroke: var(--color-wire-lit);
+    stroke-width: 2;
+  }
+  .wf__pulse {
+    stroke: var(--color-ember);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-dasharray: 26 1000;
+    stroke-dashoffset: 26;
+  }
+  .wf__step rect {
+    fill: #0a0907;
+    stroke: var(--color-wire-lit);
+    stroke-width: 1.5;
+  }
+  .wf__step-core {
+    fill: var(--color-ember);
+    stroke: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Draw-in: the mess first, then the rail resolving out of it. */
+    .wf__edge,
+    .wf__loop,
+    .wf__ortho,
+    .wf__rail {
+      stroke-dashoffset: 0;
+      animation: wf-fade 700ms var(--ease-out) backwards;
+      animation-delay: calc(var(--i, 0) * 55ms);
+    }
+    .wf__ortho,
+    .wf__rail {
+      animation-delay: calc(700ms + var(--i, 0) * 90ms);
+    }
+    .wf__node,
+    .wf__step {
+      animation: wf-fade 500ms var(--ease-out) backwards;
+      animation-delay: calc(var(--i, 0) * 55ms);
+    }
+    .wf__step {
+      animation-delay: calc(1100ms + var(--i, 0) * 110ms);
+    }
+
+    /* The pipeline running. Starts after the rail exists. */
+    .wf__pulse {
+      animation: wf-pulse 3.4s linear 1.6s infinite;
+    }
+  }
+
+  /* Reduced motion: the whole diagram is simply drawn, pulse parked at the
+     start of the rail so the ember still reads. */
+  @media (prefers-reduced-motion: reduce) {
+    .wf__pulse {
+      stroke-dasharray: 26 1000;
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes wf-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes wf-pulse {
+    from {
+      stroke-dashoffset: 26;
+    }
+    to {
+      stroke-dashoffset: -430;
+    }
+  }
+</style>
