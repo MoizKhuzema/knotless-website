@@ -184,6 +184,16 @@
     --text-3xl: 2.125rem; /* 34px                      (was 40) */
     --text-4xl: 2.5rem; /* 40px                      (was 48) */
     --text-5xl: 3.25rem; /* 52px                      (was 60) */
+
+    /* Section rhythm, stepped down on the same principle as the type above.
+     * DESIGN.md §05 states 144/96 as flat values with no mobile column, so this
+     * is a recorded deviation rather than an oversight. At 390px the desktop
+     * 144px eats about a sixth of the viewport before a word is read, which
+     * reads as a broken page rather than a considered one. What matters is the
+     * two-tier RELATIONSHIP, and that is preserved: a major movement stays half
+     * again the minor break. Overridden as tokens, so no call site changes. */
+    --spacing-section: 4rem; /* 64px  minor break     (was 96) */
+    --spacing-section-lg: 6rem; /* 96px  major movement  (was 144) */
   }
 }
 
