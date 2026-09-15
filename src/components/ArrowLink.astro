@@ -3,8 +3,9 @@
  * A quiet text link whose trailing glyph is a knot that untangles into a
  * rightward arrow on hover / keyboard focus.
  *
- * The text already shifts Ink → Terracotta on hover; the SVG stroke is
- * currentColor, so the knot picks up the same colour — one coordinated accent.
+ * The link stays Ink (or Cream on reversed sections) in every state. It used to
+ * shift to Terracotta on hover, which §02 bars — terracotta is a mark, and "a
+ * hover state" is on its Never list. Hover now underlines the text instead.
  *
  * Motion: the path's `d` morphs between two states that share an identical
  * command structure (M C C C L M L L), so the knot visually pulls straight into
@@ -34,14 +35,19 @@ const REST = 'M3 12 C8 12 6 7 10 8 C13 9 11 13 8 12 C5 11 14 11 17 12 L21 12 M17
 const ARROW = 'M3 12 C7 12 9 12 11 12 C13 12 15 12 16 12 C18 12 20 12 21 12 L21 12 M15 7 L21 12 L15 17';
 ---
 
+<!-- -my-2.5 / py-2.5 is the footer's idiom: the padding lifts the hit area over
+     44px (§11.9 — this link measured 22px, exactly half the minimum) while the
+     matching negative margin keeps the surrounding vertical rhythm intact.
+     inline-block, not inline-flex, so the SVG's `vertical-align: middle`
+     centring below still applies. -->
 <a
   href={withBase(href)}
   class:list={[
-    'arrow-link font-medium no-underline transition-colors',
-    onInk ? 'text-cream hover:text-terracotta' : 'text-ink hover:text-terracotta',
+    'arrow-link -my-2.5 inline-block min-h-11 py-2.5 font-medium no-underline',
+    onInk ? 'text-cream' : 'text-ink',
   ]}
 >
-  <slot /><svg
+  <span class="arrow-link__txt"><slot /></span><svg
     class="arrow-link__knot"
     viewBox="0 0 24 24"
     fill="none"
@@ -56,6 +62,21 @@ const ARROW = 'M3 12 C7 12 9 12 11 12 C13 12 15 12 16 12 C18 12 20 12 21 12 L21 
 </a>
 
 <style define:vars={{ rest: `path("${REST}")`, arrow: `path("${ARROW}")` }}>
+  /* Hover/focus underlines the TEXT only — the knot is 1.45em wide and an
+     underline running beneath it reads as a stray rule. Same underline idiom
+     as the nav and footer links.
+
+     This replaces an Ink → Terracotta hover, which §02 forbids outright
+     ("Never: … a hover state" under terracotta discipline). The knot morph is
+     the richer affordance, but it is static under prefers-reduced-motion and
+     resolves on scroll rather than hover on touch devices, so the underline is
+     what guarantees every visitor some hover feedback. */
+  .arrow-link:hover .arrow-link__txt,
+  .arrow-link:focus-visible .arrow-link__txt {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
   .arrow-link__knot {
     display: inline-block;
     width: 1.45em;
