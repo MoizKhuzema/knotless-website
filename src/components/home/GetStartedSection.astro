@@ -47,8 +47,8 @@ import CtaButton from '../CtaButton.astro';
   }
 
   .close__panel {
-    background-color: var(--color-paper);
-    color: #16150f;
+    background-color: var(--color-invert-bg);
+    color: var(--color-invert-fg);
     border-radius: 6px;
     padding: clamp(1.75rem, 5vw, 6rem);
     position: relative;
@@ -64,7 +64,7 @@ import CtaButton from '../CtaButton.astro';
     pointer-events: none;
     background-image: repeating-linear-gradient(
       to bottom,
-      rgba(22, 21, 15, 0.055) 0 1px,
+      var(--color-invert-texture) 0 1px,
       transparent 1px 14px
     );
     mask-image: linear-gradient(to left, #000, transparent 55%);
@@ -78,14 +78,14 @@ import CtaButton from '../CtaButton.astro';
 
   /* The index rule has to flip to ink on the light panel. */
   .close__index {
-    color: #b4491f;
+    color: var(--color-invert-accent);
   }
   .close__index::after {
-    background: linear-gradient(to right, rgba(22, 21, 15, 0.2), transparent);
+    background: linear-gradient(to right, var(--color-invert-line), transparent);
   }
 
   .close__h {
-    color: #16150f;
+    color: var(--color-invert-fg);
     margin: 1.25rem 0 0;
   }
 
@@ -108,14 +108,14 @@ import CtaButton from '../CtaButton.astro';
     font-size: var(--text-lead);
     line-height: 1.5;
     letter-spacing: var(--tracking-tight);
-    color: #2c2a22;
+    color: var(--color-invert-fg-dim);
   }
 
   /* A short ember dash, not a number — the thread, one segment per statement. */
   .close__bullet {
     width: 1.75rem;
     height: 2px;
-    background-color: #b4491f;
+    background-color: var(--color-invert-accent);
     margin-top: 0.85em;
   }
 

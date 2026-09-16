@@ -101,7 +101,7 @@ const { href, variant = 'primary' } = Astro.props;
   /* --- primary: ember fill, deepening on hover ------------------------ */
   .btn--primary {
     background-color: var(--color-ember);
-    color: #140f0c;
+    color: var(--color-on-accent);
   }
   .btn--primary::before {
     content: '';
@@ -131,7 +131,7 @@ const { href, variant = 'primary' } = Astro.props;
 
   /* --- inverse: for the light close panel ----------------------------- */
   .btn--inverse {
-    background-color: #16150f;
+    background-color: var(--color-invert-fg);
     color: var(--color-cream);
   }
   .btn--inverse::before {
@@ -139,7 +139,7 @@ const { href, variant = 'primary' } = Astro.props;
     position: absolute;
     inset: 0;
     z-index: -1;
-    background-color: #b4491f;
+    background-color: var(--color-invert-accent);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform var(--dur-fast) var(--ease-out);
@@ -169,11 +169,11 @@ const { href, variant = 'primary' } = Astro.props;
     .btn--primary:hover,
     .btn--primary:focus-visible {
       background-color: var(--color-cream);
-      color: #140f0c;
+      color: var(--color-on-accent);
     }
     .btn--inverse:hover,
     .btn--inverse:focus-visible {
-      background-color: #b4491f;
+      background-color: var(--color-invert-accent);
     }
   }
 

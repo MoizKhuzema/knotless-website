@@ -1,0 +1,79 @@
+---
+/**
+ * The wordmark, in whichever variant the active theme needs.
+ *
+ * The logo ships as two files per lockup — one drawn in ink for light grounds,
+ * one drawn in cream for dark. Both are emitted and the theme hides one, rather
+ * than recolouring a single file: the mark's terracotta strike must stay
+ * terracotta in both, so a CSS filter or a currentColor swap would break it.
+ *
+ * Two <img> tags cost one extra request of a file that is ~4KB and cached
+ * either way, which is cheaper than shipping a wrong-coloured logo.
+ */
+import wordmarkLight from '../assets/logo/wordmark_secondary/Wordmark_Secondary.svg';
+import wordmarkDark from '../assets/logo/wordmark_secondary/Reverse_Wordmark_Secondary.svg';
+import lockupLight from '../assets/logo/wordmark_primary/Wordmark_Flush.svg';
+import lockupDark from '../assets/logo/wordmark_primary/Reverse_Wordmark_Flush.svg';
+
+interface Props {
+  /** "wordmark" = the name alone. "lockup" = the name with the tagline under it. */
+  variant?: 'wordmark' | 'lockup';
+  /** Alt text. Empty string marks it decorative. */
+  alt?: string;
+  class?: string;
+  /**
+   * Mark this as the brand-reveal sentinel. It goes on the WRAPPER, never on
+   * the images: one of the two is always display:none, and querySelector would
+   * happily return the hidden one, whose zero-size box makes the
+   * IntersectionObserver fire nonsense.
+   */
+  sentinel?: boolean;
+}
+const { variant = 'wordmark', alt = '', class: className = '', sentinel = false } = Astro.props;
+
+const light = variant === 'lockup' ? lockupLight : wordmarkLight;
+const dark = variant === 'lockup' ? lockupDark : wordmarkDark;
+const h = variant === 'lockup' ? 76 : 48;
+---
+
+<span class={`brand ${className}`} data-brand-sentinel={sentinel ? '' : undefined}>
+  <img
+    class="brand__img brand__img--light"
+    src={light.src}
+    alt={alt}
+    aria-hidden={alt ? undefined : 'true'}
+    width="266"
+    height={h}
+  />
+  <img
+    class="brand__img brand__img--dark"
+    src={dark.src}
+    alt={alt}
+    aria-hidden={alt ? undefined : 'true'}
+    width="266"
+    height={h}
+  />
+</span>
+
+<style>
+  .brand {
+    display: block;
+  }
+  .brand__img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  /* Dark is the default ground, so the light-ground artwork is the one hidden
+     unless the light theme is on. display:none keeps the hidden copy out of the
+     accessibility tree, so the alt text is never read twice. */
+  .brand__img--light {
+    display: none;
+  }
+  :global([data-theme='light']) .brand__img--light {
+    display: block;
+  }
+  :global([data-theme='light']) .brand__img--dark {
+    display: none;
+  }
+</style>

@@ -46,6 +46,13 @@ const {
   brandReveal = false,
 } = Astro.props;
 
+/**
+ * GROUND. 'light' puts the site on the brand cream with ink type; 'dark' keeps
+ * the near-black. One constant, because every colour downstream is a token —
+ * see the [data-theme='light'] block in global.css.
+ */
+const THEME: 'light' | 'dark' = 'light';
+
 const fullTitle = `${title} - Knotless`;
 const ogImageAlt = `${SITE.legalEntityName} — ${SITE.tagline}`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
@@ -59,11 +66,11 @@ const fontFace = [
 ---
 
 <!doctype html>
-<html lang="en-AU">
+<html lang="en-AU" data-theme={THEME}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0d0c0a" />
+    <meta name="theme-color" content={THEME === 'light' ? '#efe9dd' : '#0d0c0a'} />
 
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
@@ -223,7 +230,7 @@ const fontFace = [
         top: 1.5rem;
         z-index: 90;
         background-color: var(--color-ember);
-        color: #140f0c;
+        color: var(--color-on-accent);
         display: inline-flex;
         align-items: center;
         min-height: 2.75rem;
@@ -259,7 +266,7 @@ const fontFace = [
       .progress span {
         display: block;
         height: 100%;
-        background: linear-gradient(to bottom, var(--color-ember), #8f3a1d);
+        background: linear-gradient(to bottom, var(--color-ember), var(--color-progress-end));
         transform: scaleY(0);
         transform-origin: top;
       }

@@ -11,7 +11,7 @@ import { href as withBase } from '../lib/href';
 
 interface Props {
   href: string;
-  /** Use on the light close panel. */
+  /** Use inside the contrast panel, whichever ground it has. */
   onPaper?: boolean;
 }
 const { href, onPaper = false } = Astro.props;
@@ -44,7 +44,7 @@ const { href, onPaper = false } = Astro.props;
     transition: color var(--dur-fast) var(--ease-out);
   }
   .alink--paper {
-    color: #16150f;
+    color: var(--color-invert-fg);
   }
 
   .alink__txt {

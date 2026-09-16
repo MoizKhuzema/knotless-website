@@ -13,7 +13,7 @@
  */
 import { SITE } from '../config/site';
 import { href } from '../lib/href';
-import wordmark from '../assets/logo/wordmark_secondary/Reverse_Wordmark_Secondary.svg';
+import BrandMark from './BrandMark.astro';
 
 const NAV_LINKS = [
   { label: 'About us', href: '/about' },
@@ -33,7 +33,7 @@ const isActive = (path: string) => here.startsWith(href(path));
 <nav class="nav" data-brand-reveal={brandReveal ? '' : undefined}>
   <div class="shell nav__bar">
     <a href={href('/')} aria-label={`${SITE.legalEntityName} — home`} class="nav__brand">
-      <img src={wordmark.src} alt={SITE.legalEntityName} width="266" height="48" />
+      <BrandMark class="nav__brand-img" alt={SITE.legalEntityName} />
     </a>
 
     <ul class="nav__links">
@@ -91,7 +91,7 @@ const isActive = (path: string) => here.startsWith(href(path));
     border-bottom: 1px solid transparent;
   }
   .nav[data-stuck] {
-    background-color: rgba(13, 12, 10, 0.72);
+    background-color: var(--color-nav-bg);
     backdrop-filter: blur(14px) saturate(140%);
     -webkit-backdrop-filter: blur(14px) saturate(140%);
     border-bottom-color: var(--color-line);
@@ -110,8 +110,7 @@ const isActive = (path: string) => here.startsWith(href(path));
     height: 100%;
     flex: none;
   }
-  .nav__brand img {
-    display: block;
+  .nav__brand :global(.brand__img) {
     height: 1.05rem;
     width: auto;
   }
@@ -330,7 +329,7 @@ const isActive = (path: string) => here.startsWith(href(path));
        * viewport both move, and a stale height puts the handoff in the wrong
        * place after a resize. */
       const CLEARANCE = 14;
-      let io;
+      let io: IntersectionObserver | undefined;
       const arm = () => {
         if (io) io.disconnect();
         io = new IntersectionObserver(
@@ -352,7 +351,7 @@ const isActive = (path: string) => here.startsWith(href(path));
 
       // Re-arm on resize (debounced): the bar's height and the lockup's size
       // both change with the viewport, so the trigger has to be recomputed.
-      let t;
+      let t: ReturnType<typeof setTimeout>;
       window.addEventListener(
         'resize',
         () => {

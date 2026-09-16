@@ -39,6 +39,26 @@
   --color-wire: #4c4640; /* inert diagram: the manual process       */
   --color-wire-lit: #8b7f72; /* live diagram: the built pipeline    */
 
+  /* Roles that were previously hardcoded at call sites. Naming them is what
+   * makes the ground swappable — see the light theme below. */
+  --color-figure: #0a0907; /* inside the diagram frame; node fills   */
+  --color-on-accent: #140f0c; /* type on an ember fill              */
+  --color-nav-bg: rgba(13, 12, 10, 0.72); /* the stuck bar          */
+  --color-grid: rgba(239, 233, 221, 0.055); /* blueprint, major     */
+  --color-grid-fine: rgba(239, 233, 221, 0.022); /* blueprint, minor */
+  --color-progress-end: #8f3a1d;
+  --color-body-2: #b9b2a8; /* the quieter second paragraph          */
+
+  /* The ONE panel that contrasts with the page. On the dark ground it is
+   * paper; on the light ground it inverts to ink. Everything inside it reads
+   * off these, so the panel flips wholesale with the theme. */
+  --color-invert-bg: #efe9dd;
+  --color-invert-fg: #16150f;
+  --color-invert-fg-dim: #2c2a22;
+  --color-invert-accent: #b4491f;
+  --color-invert-line: rgba(22, 21, 15, 0.2);
+  --color-invert-texture: rgba(22, 21, 15, 0.055);
+
   /* --- Type families -------------------------------------------------
    * Instrument Serif carries display only — hero, section headings, pull
    * moments. Inter carries everything a reader actually reads, plus all UI,
@@ -108,6 +128,48 @@
   --dur-fast: 260ms;
   --dur-mid: 620ms;
   --dur-slow: 1100ms;
+}
+
+/* =====================================================================
+ * LIGHT GROUND — set data-theme="light" on <html>.
+ *
+ * Grounded in the logo rather than invented: the page takes the brand cream
+ * #EFE9DD exactly, type takes the brand ink #1F1F1D exactly, and the accent
+ * returns to the brand terracotta #A04A2C exactly. The dark ground cannot use
+ * that terracotta — it sits too close to the background to read, which is why
+ * the dark theme lifts it to #CF5B30. So the light ground is the only one that
+ * ships the mark's real colours.
+ *
+ * Token NAMES stay dark-derived (--color-ink is the page, --color-cream is the
+ * type) because they are referenced in a hundred places; only the values move.
+ * If light wins, they should be renamed to roles — bg / fg / accent.
+ * ===================================================================== */
+[data-theme='light'] {
+  --color-ink: #efe9dd; /* the brand cream, as the page              */
+  --color-ink-raised: #e9e1d1;
+  --color-ink-panel: #e4dbc8; /* cards sit deeper than the page      */
+  --color-cream: #1f1f1d; /* the brand ink, as the type              */
+  --color-cream-dim: #6b645a;
+  --color-ember: #a04a2c; /* the brand terracotta, unlifted          */
+  --color-line: #cfc4ae;
+  --color-wire: #b3a893; /* hairlines need more bite on paper than on ink */
+  --color-wire-lit: #7d7263;
+
+  --color-figure: #f4f0e7; /* the diagram sits on lighter paper      */
+  --color-on-accent: #fbf8f2;
+  --color-nav-bg: rgba(239, 233, 221, 0.78);
+  --color-grid: rgba(31, 31, 29, 0.055);
+  --color-grid-fine: rgba(31, 31, 29, 0.028);
+  --color-progress-end: #6d3119;
+  --color-body-2: #5c554c;
+
+  /* The contrast panel inverts with the page: ink on a cream site. */
+  --color-invert-bg: #1f1f1d;
+  --color-invert-fg: #efe9dd;
+  --color-invert-fg-dim: #c2bbaf;
+  --color-invert-accent: #cf5b30;
+  --color-invert-line: rgba(239, 233, 221, 0.22);
+  --color-invert-texture: rgba(239, 233, 221, 0.055);
 }
 
 /* ---------------------------------------------------------------------
@@ -193,12 +255,19 @@
     z-index: 0;
     pointer-events: none;
     background-image:
-      repeating-linear-gradient(to right, rgba(239, 233, 221, 0.055) 0 1px, transparent 1px 160px),
-      repeating-linear-gradient(to bottom, rgba(239, 233, 221, 0.055) 0 1px, transparent 1px 160px),
-      repeating-linear-gradient(to right, rgba(239, 233, 221, 0.022) 0 1px, transparent 1px 32px),
-      repeating-linear-gradient(to bottom, rgba(239, 233, 221, 0.022) 0 1px, transparent 1px 32px);
+      repeating-linear-gradient(to right, var(--color-grid) 0 1px, transparent 1px 160px),
+      repeating-linear-gradient(to bottom, var(--color-grid) 0 1px, transparent 1px 160px),
+      repeating-linear-gradient(to right, var(--color-grid-fine) 0 1px, transparent 1px 32px),
+      repeating-linear-gradient(to bottom, var(--color-grid-fine) 0 1px, transparent 1px 32px);
     mask-image: radial-gradient(150% 100% at 50% 0%, #000 14%, transparent 84%);
     -webkit-mask-image: radial-gradient(150% 100% at 50% 0%, #000 14%, transparent 84%);
+  }
+  /* Graph paper, not a vignette: on the light ground the grid runs the whole
+     page, because a grid that stops halfway down reads as a rendering fault
+     rather than as atmosphere. */
+  [data-theme='light'] body::before {
+    mask-image: linear-gradient(to bottom, #000 0 62%, rgba(0, 0, 0, 0.45) 100%);
+    -webkit-mask-image: linear-gradient(to bottom, #000 0 62%, rgba(0, 0, 0, 0.45) 100%);
   }
 
   /* Film grain over the whole page. Fixed, so it reads as a property of the
@@ -214,6 +283,12 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.14'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 200px 200px;
     mix-blend-mode: overlay;
+  }
+  /* Overlay against a light ground darkens into visible speckle; soft-light
+     keeps the same texture without the dirt. */
+  [data-theme='light'] body::after {
+    mix-blend-mode: soft-light;
+    opacity: 0.5;
   }
 
   ::selection {
@@ -288,6 +363,12 @@
     font-size: var(--text-base);
     line-height: 1.75;
     color: var(--color-cream-dim);
+  }
+
+  /* The light ground needs a touch more weight to hold the same presence. */
+  [data-theme='light'] .display,
+  [data-theme='light'] .h-section {
+    font-weight: 620;
   }
 
   /* Eyebrow / index / label. Open tracking, small, always uppercase. */

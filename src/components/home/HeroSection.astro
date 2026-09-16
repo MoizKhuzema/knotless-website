@@ -22,10 +22,9 @@ import CtaButton from '../CtaButton.astro';
 //
 // The _Flush variant sets the tagline flush left to the wordmark rather than
 // centred under it, so the lockup shares the left edge every other element in
-// this column is aligned to. It is a derived file: the only difference is a
-// translate on the tagline path, and the canonical Reverse_Wordmark.svg is
-// left untouched.
-import lockup from '../../assets/logo/wordmark_primary/Reverse_Wordmark_Flush.svg';
+// this column is aligned to. BrandMark picks the ink or cream artwork to suit
+// the ground.
+import BrandMark from '../BrandMark.astro';
 ---
 
 <section class="hero" data-reveal>
@@ -35,13 +34,7 @@ import lockup from '../../assets/logo/wordmark_primary/Reverse_Wordmark_Flush.sv
           is a proper h1 — the page keeps its heading and its accessible name
           without setting the tagline twice. */}
       <h1 class="hero__lockup r" style="--i: 0">
-        <img
-          src={lockup.src}
-          alt={`Knotless — ${HERO.headline}`}
-          width="266"
-          height="76"
-          data-brand-sentinel
-        />
+        <BrandMark variant="lockup" alt={`Knotless — ${HERO.headline}`} sentinel />
       </h1>
 
       <p class="hero__lead lead r" style="--i: 1">{HERO.standfirst}</p>
@@ -97,11 +90,7 @@ import lockup from '../../assets/logo/wordmark_primary/Reverse_Wordmark_Flush.sv
     margin: 0;
     max-width: min(100%, 34rem);
   }
-  .hero__lockup img {
-    display: block;
-    width: 100%;
-    height: auto;
-  }
+
 
   .hero__lead {
     margin-top: clamp(1.75rem, 3vw, 2.5rem);
@@ -122,7 +111,7 @@ import lockup from '../../assets/logo/wordmark_primary/Reverse_Wordmark_Flush.sv
   .hero__frame {
     position: relative;
     aspect-ratio: 1200 / 620;
-    background-color: #0a0907;
+    background-color: var(--color-figure);
     border: 1px solid var(--color-line);
     overflow: hidden;
   }
