@@ -51,7 +51,17 @@ import BrandMark from '../BrandMark.astro';
   .hero {
     position: relative;
     display: flex;
-    align-items: center;
+    /* Sits LOW, not centred. Centred is the safe answer and the reason the
+       hero read as a block that happened to land in the middle of a screen;
+       weighted to the bottom-left it reads as composed — the lockup carries
+       the top of the mass, the space above it does the work, and the page
+       below is visibly next rather than hidden.
+       
+       padding-bottom becomes the composition: it is the distance the content
+       floats above the hero's own floor. padding-top stops being a position
+       and becomes a FLOOR — the minimum clearance under the bar, which the
+       content only touches on a viewport too short to give it more. */
+    align-items: flex-end;
     min-height: 88svh;
     /* Clearance stated as "the bar, plus this much air" rather than as a round
        number that happened to be bigger than the bar.
@@ -62,7 +72,8 @@ import BrandMark from '../BrandMark.astro';
        before: 26px of clearance at 390, 115px at 1440x900, 197px at 768 — the
        same layout reading as cramped, fine, and airy depending on the
        viewport. */
-    padding-block: calc(var(--nav-space) + clamp(3rem, 5vw, 4.5rem)) 4rem;
+    padding-block: calc(var(--nav-space) + clamp(3rem, 5vw, 4.5rem))
+      clamp(4rem, 9vh, 7rem);
   }
 
   .hero__grid {
