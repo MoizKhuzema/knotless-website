@@ -109,31 +109,64 @@ const isActive = (path: string) => here.startsWith(href(path));
 </nav>
 
 <style>
+  /* The bar no longer spans the viewport: it is a floating capsule the width
+     of the content, so it begins and ends where the mark and the action do.
+     The <nav> is now just the positioner and takes no pointer events, or the
+     transparent margin either side of the capsule would swallow clicks meant
+     for the page. */
   .nav {
     position: fixed;
     inset: 0 0 auto 0;
     z-index: 70;
-    transition:
-      background-color var(--dur-fast) var(--ease-out),
-      border-color var(--dur-fast) var(--ease-out),
-      backdrop-filter var(--dur-fast) var(--ease-out);
-    border-bottom: 1px solid transparent;
-  }
-  .nav[data-stuck] {
-    background-color: var(--color-nav-bg);
-    backdrop-filter: blur(14px) saturate(140%);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
-    border-bottom-color: var(--color-line);
+    /* One source for the capsule's box, because the drawer has to hang off the
+       bottom of it and a second copy of these numbers would drift. */
+    --nav-inset-top: clamp(0.65rem, 1.2vw, 1rem);
+    /* The side inset cannot come from .shell. The shell is width:100% with a
+       max-width, so it only pulls away from the edges once the viewport passes
+       80rem — below that the capsule ran 0..390 and 0..768, edge to edge, and
+       stopped reading as a floating object. The inset belongs to the nav, so it
+       holds at every width; above 80rem the shell's max-width is the binding
+       constraint and this changes nothing. */
+    --nav-inset-x: clamp(0.75rem, 1.2vw, 1.25rem);
+    --nav-h: 4.25rem;
+    padding-top: var(--nav-inset-top);
+    padding-inline: var(--nav-inset-x);
+    pointer-events: none;
   }
 
   /* 1fr / auto / 1fr centres the links against the VIEWPORT rather than against
      the remaining space, so they do not shift when the flanks appear. */
+  /* The glass itself. Blur and saturation do the work; the fill stays near
+     transparent, because glass that is mostly opaque is a panel with a blur
+     behind it. The edge is a hairline of light and the inset top line is the
+     specular catch along the upper curve. */
   .nav__bar {
+    pointer-events: auto;
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     gap: 1.5rem;
-    height: 5rem;
+    height: var(--nav-h);
+    border-radius: 999px;
+    background-color: var(--color-glass);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--color-glass-edge);
+    box-shadow:
+      0 10px 34px rgba(0, 0, 0, 0.34),
+      inset 0 1px 0 var(--color-glass-spec);
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out);
+  }
+  /* Scrolled: the glass thickens rather than switching on. It is always a
+     surface — a capsule that is invisible at the top of the page and appears
+     on scroll reads as two different objects. */
+  .nav[data-stuck] .nav__bar {
+    background-color: var(--color-glass-lift);
+    box-shadow:
+      0 14px 44px rgba(0, 0, 0, 0.44),
+      inset 0 1px 0 var(--color-glass-spec);
   }
 
   .nav__flank {
@@ -271,7 +304,7 @@ const isActive = (path: string) => here.startsWith(href(path));
        single biggest contributor to the technical feel (12 of the 27 instances)
        and the one place where legibility and warmth point the same way:
        navigation is meant to be READ, not decoded. */
-    font-size: var(--text-sm);
+    font-size: 0.9375rem; /* 15px — was 13, too quiet for the primary route */
     font-weight: 500;
     letter-spacing: 0.01em;
     transition: color var(--dur-fast) var(--ease-out);
@@ -331,11 +364,48 @@ const isActive = (path: string) => here.startsWith(href(path));
     transform: translateY(-3.75px) rotate(-45deg);
   }
 
+  /* The drawer no longer covers the page, so the page shows through beside and
+     below it — which put the page's own "Book a free fit call" thirty pixels
+     under the drawer's. The scrim puts the page behind glass instead of
+     competing with it, and gives the tap-outside-to-close target that the
+     full-bleed drawer used to get for free. */
+  .nav:has(#nav-menu:not([hidden]))::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: auto;
+    background-color: color-mix(in srgb, var(--color-ink) 72%, transparent);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+  }
+
+  /* The drawer hangs off the capsule rather than filling the screen under it.
+     A full-bleed panel butted against a floating capsule reads as the capsule
+     having failed to detach; a second rounded sheet reads as the same object
+     opening.
+
+     pointer-events is not decoration here: .nav is a pointer-events:none
+     positioner now, so without this the drawer's links take no clicks. */
   .nav__menu {
     position: fixed;
-    inset: 5rem 0 0 0;
-    background-color: var(--color-ink);
-    border-top: 1px solid var(--color-line);
+    top: calc(var(--nav-inset-top) + var(--nav-h) + 0.5rem);
+    left: var(--nav-inset-x);
+    right: var(--nav-inset-x);
+    max-height: calc(100dvh - var(--nav-inset-top) - var(--nav-h) - 1.5rem);
+    overflow-y: auto;
+    pointer-events: auto;
+    border-radius: var(--radius-lg);
+    /* Not the glass fill. The drawer carries body copy over whatever is
+       scrolled behind it, so it stays mostly ink and lets the blur supply the
+       glass rather than the transparency. */
+    background-color: color-mix(in srgb, var(--color-ink) 88%, transparent);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--color-glass-edge);
+    box-shadow:
+      0 18px 50px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 var(--color-glass-spec);
   }
   .nav__menu[hidden] {
     display: none;
@@ -348,7 +418,7 @@ const isActive = (path: string) => here.startsWith(href(path));
     gap: 0.5rem;
   }
   .nav__menu > .shell {
-    padding-block: 3rem;
+    padding-block: 2rem;
   }
   .nav__menu-cta {
     margin-top: 2.5rem;
@@ -405,6 +475,11 @@ const isActive = (path: string) => here.startsWith(href(path));
       });
       menu.addEventListener('click', (e) => {
         if ((e.target as HTMLElement).closest('a')) setOpen(false);
+      });
+      /* The scrim is .nav's ::after, so its clicks land on .nav itself — the bar
+         and the drawer are children and never report as the target. */
+      nav.addEventListener('click', (e) => {
+        if (e.target === nav) setOpen(false);
       });
     }
 

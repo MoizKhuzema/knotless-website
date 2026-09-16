@@ -72,7 +72,16 @@
      into the page. */
   --color-accent-hover-bg: #efe9dd;
   --color-accent-hover-fg: #16150f;
-  --color-nav-bg: rgba(13, 12, 10, 0.72); /* the stuck bar          */
+  /* --- Glass ----------------------------------------------------------
+   * The floating bar. Not a tint over the page but a SURFACE: a low-alpha fill
+   * that lets the blur do the work, a light edge that catches like a bevel, and
+   * a brighter inset top line for the specular highlight. Alpha stays low
+   * deliberately — glass that is mostly opaque is just a panel with a blur
+   * behind it. */
+  --color-glass: rgba(239, 233, 221, 0.055);
+  --color-glass-lift: rgba(239, 233, 221, 0.085);
+  --color-glass-edge: rgba(239, 233, 221, 0.12);
+  --color-glass-spec: rgba(255, 255, 255, 0.14);
   /* Halved, and the 32px FINE grid is gone entirely. A 32px grid over the
      whole viewport is graph paper, and graph paper is the single most literal
      "engineering drawing" signal a page can carry — it was doing more to make
@@ -209,7 +218,10 @@
   --color-on-accent: #fbf8f2;
   --color-accent-hover-bg: #16150f;
   --color-accent-hover-fg: #efe9dd;
-  --color-nav-bg: rgba(239, 233, 221, 0.78);
+  --color-glass: rgba(31, 31, 29, 0.05);
+  --color-glass-lift: rgba(31, 31, 29, 0.075);
+  --color-glass-edge: rgba(31, 31, 29, 0.12);
+  --color-glass-spec: rgba(255, 255, 255, 0.5);
   --color-grid: rgba(31, 31, 29, 0.028);
   --color-progress-end: #6d3119;
   --color-body-2: #5c554c;
