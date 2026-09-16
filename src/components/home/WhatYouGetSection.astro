@@ -87,7 +87,9 @@ import { WHAT_YOU_GET } from '../../data/homepage';
   .wyg__stages {
     display: grid;
     gap: clamp(2.5rem, 5vw, 4rem);
-    margin-top: clamp(3rem, 5vw, 4.5rem);
+    /* Was clamp(3rem, 5vw, 4.5rem) — 72px at 1440, which read as a break
+       between two sections rather than a heading over its own content. */
+    margin-top: clamp(1.75rem, 2.6vw, 2.5rem);
   }
   @media (min-width: 48rem) {
     .wyg__stages {
