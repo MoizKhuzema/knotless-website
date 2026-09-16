@@ -30,78 +30,40 @@
 export type Hex = string;
 
 /**
- * The palette.
+ * The palette — ONE set, used by the ribbon field AND by the line's segments.
+ *
+ * They were separate, and the field's was nineteen earth tones. Two problems:
+ * the field read as shades of terracotta rather than as colour, and the field
+ * and the line looked like two different pieces of work, because they were
+ * drawn from two different sets. Seven saturated hues, shared, fixes both — the
+ * ribbons you watch in phase 1 are literally the segments you watch flow along
+ * the line in phase 3.
  *
  * A DEVIATION, recorded rather than smuggled: DESIGN.md §02 allows five values
- * and forbids tints and shades. A field that covers the whole viewport in
- * ribbons cannot be built from five, and §02 was written for a printed-document
- * register rather than for motion. This is the intro's palette only — nothing
- * here is available to the page.
- *
- * WHY THE FIRST VERSION WAS BORING, precisely: every one of its thirteen values
- * sat between hue 20 and 35 degrees. It was one warm ramp plus three oranges —
- * varied by measurement and monochrome to the eye. Adding more steps to that
- * ramp would only have made a smoother monochrome.
- *
- * So the additions are HUES, not steps: an ochre-amber pair well off the
- * terracotta hue, an oxblood below it, an apricot above it, and two near-neutral
- * cools. The cools do the most work per unit of intrusion — one slightly cool
- * tone is what makes an all-warm field stop looking like a sepia photograph —
- * and they are desaturated far enough to read as grey rather than as blue.
+ * and forbids tints and shades, and these are neither five nor brand colours.
+ * §02 was written for a printed-document register, not for motion, and the
+ * whole sequence resolves to the brand's terracotta before the hero appears.
+ * Nothing here is available to the page.
  */
 export const FIELD_PALETTE: Hex[] = [
-  /* 0-3   darks. The floor is #2b211b, not something nearer the page's
-     #0d0c0a: a ribbon within a few levels of the ground stops reading as a
-     ribbon and reads as a HOLE in the field. Technically covered, perceptually
-     a gap — which fails the brief just as surely as an actual one. */
-  '#2b211b',
-  '#3a2c24',
-  '#4a3730',
-  '#4a2018',
-  /* 4-7   warm mids */
-  '#6e4a38',
-  '#8a5a3a',
-  '#5c564e',
-  '#7a7268',
-  /* 8-9   cool relief */
-  '#4a5257',
-  '#6e7a7a',
-  /* 10-14 the terracotta family, brand value at 11 */
-  '#7a2e1e',
-  '#a04a2c',
-  '#cf5b30',
-  '#e07a4e',
-  '#eb9a62',
-  /* 15-16 ochre */
-  '#c08a3c',
-  '#d9a857',
-  /* 17-18 lights */
-  '#c4bba7',
-  '#efe9dd',
+  '#cf5b30', // ember — the brand's orange
+  '#e8a93a', // marigold
+  '#efe9dd', // cream
+  '#2f8a5f', // green
+  '#7b6bc4', // periwinkle
+  '#e08aa0', // rose
+  '#8fc9b0', // mint
 ];
+
+/** What every colour resolves to at the end. */
+export const RESOLVE: Hex = '#a04a2c';
 
 /** What the canvas is cleared to. Never the page's #0d0c0a: a sub-pixel
  *  antialiasing hairline grounded in the page colour is the page showing
- *  through, which is the one thing this phase must not do. */
+ *  through, which is the one thing the field must not do. */
 export const FIELD_GROUND: Hex = '#2b211b';
 
-/**
- * Tonal families. A row draws mostly from ONE of these, and adjacent rows never
- * share one — so vertical contrast is structural rather than left to chance.
- *
- * It has to be structural because rows scroll at different speeds: which
- * segment sits above which changes every frame, so no static pairing rule could
- * hold. Giving each row a family means whatever lands next to whatever, the two
- * are from different parts of the range.
- */
-const TONES: number[][] = [
-  [0, 1, 2, 3, 10], // dark
-  [4, 5, 6, 7, 8, 9], // mid
-  [11, 12, 13, 15], // accent — saturated terracotta and ochre
-  [14, 16, 17, 18], // light
-];
-
-/** Relative luminance, for the adjacency guard below. */
+/** Relative luminance, for the adjacency guard. */
 const LUM = FIELD_PALETTE.map((h) => {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
   const f = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
@@ -109,8 +71,10 @@ const LUM = FIELD_PALETTE.map((h) => {
 });
 
 /** Minimum luminance gap between two segments that touch along a row. Below
- *  this the joint disappears and two ribbons read as one long one. */
-const MIN_STEP = 0.055;
+ *  this the joint disappears and two ribbons read as one long one. Lower than
+ *  it was, because seven saturated hues differ by HUE as well as by value and
+ *  demanding a big luminance step as well would rule out most pairs. */
+const MIN_STEP = 0.035;
 
 export const FIELD = {
   /** Wave height, as a fraction of viewport height. */
@@ -205,9 +169,12 @@ export function buildField(rowCount = 13, seed = 20260916): Field {
        textured image being panned. */
     const speed = 0.1 + rnd() * 0.26;
 
-    // This row's family, never the one above it.
-    let tone = Math.floor(rnd() * TONES.length);
-    if (tone === prevTone) tone = (tone + 1 + Math.floor(rnd() * (TONES.length - 1))) % TONES.length;
+    /* A colour this row leans on, never the one the row above leaned on — so
+       vertical contrast is structural. It has to be structural because rows
+       scroll at different speeds: which segment sits above which changes every
+       frame, so no static pairing rule could hold. */
+    let tone = Math.floor(rnd() * FIELD_PALETTE.length);
+    if (tone === prevTone) tone = (tone + 1 + Math.floor(rnd() * (FIELD_PALETTE.length - 1))) % FIELD_PALETTE.length;
     prevTone = tone;
 
     const segments: FieldSegment[] = [];
@@ -223,9 +190,10 @@ export function buildField(rowCount = 13, seed = 20260916): Field {
          length was legible as a ribbon passing. */
       const w = 0.32 + rnd() * 0.95;
 
-      /* Mostly this row's family, but a quarter of the time from another one —
-         so a row is recognisably a tone without being a single note. */
-      const pool = rnd() < 0.74 ? TONES[tone] : TONES[(tone + 1 + Math.floor(rnd() * 3)) % TONES.length];
+      /* Half the time the row's own colour, half the time anything else — so a
+         row reads as predominantly one hue without being a single note. */
+      const pool =
+        rnd() < 0.45 ? [tone] : FIELD_PALETTE.map((_, i) => i).filter((i) => i !== tone);
       let c = pool[Math.floor(rnd() * pool.length)];
 
       /* Adjacency guard. Two touching segments close in luminance make the

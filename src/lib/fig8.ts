@@ -22,39 +22,41 @@
  * polyline at every vertical stretch from 1.0 to 1.9, and asserted at module
  * load below.
  *
- * LAYOUT. The left tail occupies the whole left half of the shape, dead
- * straight at y=0, so it maps onto phase 2's finished line exactly and phase 3
- * can begin by simply continuing it. The knot body sits in the right half and
- * the right tail runs out to the edge.
+ * LAYOUT. The knot is CENTRED and spans just over two thirds of the width, with
+ * a short flat tail running out to each edge. Phase 3 is a MORPH, not a
+ * draw-on: the line is full length in every frame and bends into the knot, so
+ * the left tail no longer has to be half the width to match phase 2's line.
  */
 
 import { onCurve, selfCrossings, type Pt } from './knot';
 
-/** The knot body, positioned so its leftmost point sits at x=0 — the centre of
- *  the screen, where phase 2's line ends. */
+/** The knot body, CENTRED on x=0 and spanning 2.70 either side — just over two
+ *  thirds of the width, leaving a short tail at each edge. It sat in the right
+ *  half with a half-width tail, which left far more straight line than loop and
+ *  read as a knot tied at the end of a rope rather than as the shape itself. */
 const BODY: Pt[] = [
-  [0.859, 0.1],
-  [1.419, 0.6],
-  [2.017, 0.95],
-  [2.615, 1.02],
-  [3.137, 0.7],
-  [3.384, 0.0],
-  [3.115, -0.68],
-  [2.577, -1.0],
-  [2.017, -0.92],
-  [1.546, -0.48],
-  [1.27, 0.16],
-  [1.046, 0.66],
-  [0.71, 0.95],
-  [0.261, 0.8],
-  [0.0, 0.2],
-  [0.112, -0.46],
-  [0.56, -0.9],
-  [1.083, -0.84],
-  [1.606, -0.5],
-  [2.203, -0.1],
-  [2.801, 0.26],
-  [3.399, 0.36],
+  [-1.335, 0.1],
+  [-0.446, 0.6],
+  [0.504, 0.95],
+  [1.454, 1.02],
+  [2.284, 0.7],
+  [2.676, 0.0],
+  [2.249, -0.68],
+  [1.394, -1.0],
+  [0.504, -0.92],
+  [-0.244, -0.48],
+  [-0.682, 0.16],
+  [-1.038, 0.66],
+  [-1.572, 0.95],
+  [-2.285, 0.8],
+  [-2.7, 0.2],
+  [-2.522, -0.46],
+  [-1.81, -0.9],
+  [-0.979, -0.84],
+  [-0.149, -0.5],
+  [0.8, -0.1],
+  [1.75, 0.26],
+  [2.7, 0.36],
 ];
 
 /**
@@ -70,21 +72,18 @@ const BODY: Pt[] = [
 export function fig8Ctrl(stretch = 1.6): Pt[] {
   const s = (p: Pt): Pt => [p[0], p[1] * stretch];
   return [
-    // Left tail: the whole left half, flat.
+    // Left tail: short, flat, just enough to reach the edge.
     [-4.0, 0],
-    [-2.9, 0],
-    [-1.8, 0],
-    [-0.8, 0],
-    [-0.1, 0.01 * stretch],
-    [0.35, 0.03 * stretch],
+    [-3.5, 0],
+    [-3.0, 0.01 * stretch],
+    [-2.5, 0.03 * stretch],
     ...BODY.map(s),
     /* Right tail, out to the edge. Eased down in four steps rather than two:
        two left the Catmull-Rom overshooting off the last body point and the
        strand finished on a visible upward wedge instead of running out flat. */
-    [3.56, 0.3 * stretch],
-    [3.72, 0.19 * stretch],
-    [3.86, 0.08 * stretch],
-    [3.96, 0.02 * stretch],
+    [3.0, 0.24 * stretch],
+    [3.4, 0.13 * stretch],
+    [3.75, 0.05 * stretch],
     [4.0, 0.0],
   ];
 }
