@@ -75,9 +75,10 @@ const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 let field: Field | null = null;
 let fieldRows = -1;
 
-/** Phase 1. Still the slowest thing per unit of motion, but half what it was —
- *  the field reads in the first few frames and the rest was dwell. */
-const FIELD_MS = 500;
+/** Phase 1. A quarter of what it started at. At 250ms the field is about
+ *  fifteen frames — enough to register as ribbons in motion, not enough to
+ *  dwell on, which is the point: it is the establishing shot, not the subject. */
+const FIELD_MS = 250;
 /** Phase 2, the collapse. Fast — it is a transition, not a thing to look at,
  *  and at much over this it stops reading as being pulled in. */
 const COLLAPSE_MS = 280;
