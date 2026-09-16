@@ -53,7 +53,16 @@ import BrandMark from '../BrandMark.astro';
     display: flex;
     align-items: center;
     min-height: 88svh;
-    padding-block: 7rem 4rem;
+    /* Clearance stated as "the bar, plus this much air" rather than as a round
+       number that happened to be bigger than the bar.
+       
+       It matters because of the centring: the content is centred in the
+       padding box, and the bar is not in that box at all, so whatever the
+       padding does not account for comes out of the gap at the top. Measured
+       before: 26px of clearance at 390, 115px at 1440x900, 197px at 768 — the
+       same layout reading as cramped, fine, and airy depending on the
+       viewport. */
+    padding-block: calc(var(--nav-space) + clamp(3rem, 5vw, 4.5rem)) 4rem;
   }
 
   .hero__grid {
@@ -81,7 +90,8 @@ import BrandMark from '../BrandMark.astro';
 
   @media (max-width: 639px) {
     .hero {
-      padding-block: 6.5rem 4rem;
+      /* No padding override: the clearance formula above already scales, and a
+         second number here is how the phone ended up 26px under the bar. */
       min-height: 0;
     }
     .hero__lead {

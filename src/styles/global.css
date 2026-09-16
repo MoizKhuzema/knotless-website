@@ -332,7 +332,18 @@
    *
    * The column count is odd at both side-by-side breakpoints — see body::before
    * for why that is load-bearing rather than aesthetic. */
+  /* The fixed bar's footprint. These lived on .nav, which meant nothing else
+     could clear it without copying the numbers — and the hero, which sits
+     underneath it, was doing exactly that with a 7rem padding that had no
+     stated relationship to the thing it was clearing. Declared here, the nav
+     still reads them by inheritance and everything else can too. */
   :root {
+    --nav-inset-top: clamp(0.65rem, 1.2vw, 1rem);
+    --nav-inset-x: clamp(0.75rem, 1.2vw, 1.25rem);
+    --nav-h: 4.25rem;
+    /* Everything the bar occupies, measured from the top of the viewport. */
+    --nav-space: calc(var(--nav-inset-top) + var(--nav-h));
+
     --vw: 100vw;
     --page-pad: var(--spacing-gutter);
     --grid-cols: 4;

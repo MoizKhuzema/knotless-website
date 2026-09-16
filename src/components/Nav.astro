@@ -114,17 +114,11 @@ const isActive = (path: string) => here.startsWith(href(path));
     position: fixed;
     inset: 0 0 auto 0;
     z-index: 70;
-    /* One source for the capsule's box, because the drawer has to hang off the
-       bottom of it and a second copy of these numbers would drift. */
-    --nav-inset-top: clamp(0.65rem, 1.2vw, 1rem);
-    /* The side inset cannot come from .shell. The shell is width:100% with a
-       max-width, so it only pulls away from the edges once the viewport passes
-       80rem — below that the capsule ran 0..390 and 0..768, edge to edge, and
-       stopped reading as a floating object. The inset belongs to the nav, so it
-       holds at every width; above 80rem the shell's max-width is the binding
-       constraint and this changes nothing. */
-    --nav-inset-x: clamp(0.75rem, 1.2vw, 1.25rem);
-    --nav-h: 4.25rem;
+    /* --nav-inset-top / --nav-inset-x / --nav-h are declared on :root in
+       global.css, because the hero has to clear this bar and a second copy of
+       those numbers would drift. The side inset in particular cannot come from
+       .shell: the shell is width:100% with a max-width, so it only pulls away
+       from the edges past 80rem, and below that the capsule ran edge to edge. */
     padding-top: var(--nav-inset-top);
     padding-inline: var(--nav-inset-x);
     pointer-events: none;
