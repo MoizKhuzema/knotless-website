@@ -291,6 +291,129 @@
     opacity: 0.5;
   }
 
+  /* ---------------------------------------------------------------------
+   * GRID MOTION — candidates, all off by default.
+   *
+   * Switched with ?grid=drift|pulse|sweep|parallax so they can be compared on
+   * the real page rather than in a mock. Nothing here runs unless the attribute
+   * is set, and every one of them animates TRANSFORM or OPACITY only — the same
+   * rule the intro holds to, for the same reason: this layer covers the whole
+   * viewport and is behind everything, so anything that repaints it per frame
+   * repaints the page.
+   *
+   * All four sit inside prefers-reduced-motion: no-preference. Falling through
+   * leaves the grid exactly as it is today.
+   * ------------------------------------------------------------------- */
+  @media (prefers-reduced-motion: no-preference) {
+    /* Overscan, so a translated grid never drags its own edge into view.
+     *
+     * 320px, and the number is not free: a repeating background starts at the
+     * ELEMENT's origin, so growing the box shifts the whole grid by the
+     * overscan. The first attempt used 240px and moved every line a cell and a
+     * half sideways — a diff put it at 131,765 pixels different from today's
+     * page, at rest, before anything had animated. Any whole multiple of the
+     * 160px major pitch realigns it, and 160 is itself a multiple of the 32px
+     * fine pitch, so one number fixes both.
+     *
+     * The mask is restated in viewport units for the same reason the inset is
+     * a multiple: percentages would now be percentages of the bigger box. */
+    [data-grid='drift'] body::before,
+    [data-grid='parallax'] body::before {
+      inset: -320px;
+      /* Stated in viewport units, not as percentages of the overscanned box.
+         The first attempt scaled the percentages by (100vw / (100vw + 480px)),
+         which divides a length by a length — not valid in calc, so the whole
+         declaration was dropped and the vignette was computed against the
+         bigger box instead. It looked plausible and was wrong by 131,765
+         pixels at rest, which a diff caught and an eye would not have. */
+      mask-image: radial-gradient(150vw 100vh at 50% 320px, #000 14%, transparent 84%);
+      -webkit-mask-image: radial-gradient(150vw 100vh at 50% 320px, #000 14%, transparent 84%);
+      will-change: transform;
+    }
+
+    /* DRIFT — the surface is very slowly moving. One major cell, diagonally,
+       per 72s. Looping on exactly 160px makes it seamless: the pattern at the
+       end of the cycle is identical to the pattern at the start, so there is no
+       jump to hide. */
+    [data-grid='drift'] body::before {
+      animation: grid-drift 72s linear infinite;
+    }
+    @keyframes grid-drift {
+      to {
+        transform: translate3d(160px, 160px, 0);
+      }
+    }
+
+    /* PARALLAX — the surface moves only while the page is being read. Costs
+       nothing at rest, which is the whole argument for it. */
+    [data-grid='parallax'] body::before {
+      transform: translate3d(0, var(--grid-shift, 0px), 0);
+    }
+
+    /* PULSE — the grid brightens and dims. Opacity only, and slow enough that
+       it is never caught changing. */
+    [data-grid='pulse'] body::before {
+      animation: grid-pulse 11s ease-in-out infinite;
+    }
+    @keyframes grid-pulse {
+      0%,
+      100% {
+        opacity: 0.55;
+      }
+      50% {
+        opacity: 1.35;
+      }
+    }
+
+    /* SWEEP — a band of slightly brighter grid crosses the page. A second copy
+       of the same lines, masked to a soft band, translated across. The copy is
+       what keeps this to transform and opacity: brightening the original would
+       mean animating a colour. */
+    [data-grid='sweep'] .grid-sweep {
+      animation: grid-sweep 13s linear infinite;
+    }
+    @keyframes grid-sweep {
+      from {
+        transform: translate3d(-60%, 0, 0);
+      }
+      to {
+        transform: translate3d(160%, 0, 0);
+      }
+    }
+  }
+
+  /* The sweep's travelling band. Present but static unless the variant is on,
+     so no-JS and reduced-motion both get a layer that does nothing. */
+  .grid-sweep {
+    position: fixed;
+    inset: -320px -60% -320px -60%;
+    z-index: 0;
+    pointer-events: none;
+    display: none;
+    background-image:
+      repeating-linear-gradient(to right, var(--color-grid) 0 1px, transparent 1px 160px),
+      repeating-linear-gradient(to bottom, var(--color-grid) 0 1px, transparent 1px 160px);
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      #000 12%,
+      #000 18%,
+      transparent 30%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      #000 12%,
+      #000 18%,
+      transparent 30%,
+      transparent 100%
+    );
+  }
+  [data-grid='sweep'] .grid-sweep {
+    display: block;
+  }
+
   ::selection {
     background-color: var(--color-ember);
     color: var(--color-cream);
