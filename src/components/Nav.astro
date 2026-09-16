@@ -7,11 +7,10 @@
  * content later. Fixed rather than sticky: sticky ghosted page content over
  * the bar on iOS Safari.
  *
- * The bar is the wordmark and the routes, and nothing else. It carried the
- * call to action as well; it no longer does, so the bar asks for nothing and
- * the page's own buttons are the only place the action is offered. The drawer
- * below md keeps one, because there the drawer IS the page for as long as it
- * is open.
+ * The bar is the wordmark and the routes, and nothing else — on the phone
+ * drawer too. It carried the call to action in both; it no longer does, so
+ * navigation asks for nothing anywhere and the page's own buttons are the only
+ * place the action is offered.
  *
  * The mark and the links size to their content and the capsule is shrink-to-
  * fit, so it is only ever as wide as what is in it — the mark collapses its
@@ -28,8 +27,6 @@
 import { SITE } from '../config/site';
 import { href } from '../lib/href';
 import BrandMark from './BrandMark.astro';
-import CtaButton from './CtaButton.astro';
-import { HERO } from '../data/homepage';
 
 const NAV_LINKS = [
   { label: 'About us', href: '/about' },
@@ -103,11 +100,6 @@ const isActive = (path: string) => here.startsWith(href(path));
           ))
         }
       </ul>
-      {/* The bar has no room for the button at phone width, so the action
-          lives here instead of being dropped. */}
-      <div class="nav__menu-cta" style={`--i: ${NAV_LINKS.length}`}>
-        <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
-      </div>
     </div>
   </div>
 </nav>
@@ -480,9 +472,6 @@ const isActive = (path: string) => here.startsWith(href(path));
   .nav__menu > .shell {
     padding-block: 2rem;
   }
-  .nav__menu-cta {
-    margin-top: 2.5rem;
-  }
   .nav__menu-link {
     display: block;
     padding: 0.4rem 0;
@@ -494,8 +483,7 @@ const isActive = (path: string) => here.startsWith(href(path));
     color: var(--color-ember);
   }
   @media (prefers-reduced-motion: no-preference) {
-    .nav__menu:not([hidden]) li,
-    .nav__menu:not([hidden]) .nav__menu-cta {
+    .nav__menu:not([hidden]) li {
       animation: menu-in var(--dur-mid) var(--ease-out) backwards;
       animation-delay: calc(var(--i) * 70ms);
     }
