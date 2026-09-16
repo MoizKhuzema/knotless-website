@@ -116,23 +116,36 @@ const isActive = (path: string) => here.startsWith(href(path));
     width: auto;
   }
 
-  /* Hidden state for the reveal. Inside no-preference only, so under reduced
-     motion the wordmark is simply always visible. visibility (not display)
-     keeps the box, so the bar never changes height, and takes the link out of
-     the tab order while it is invisible. */
+  /* The handoff. The hero carries the full lockup; this is the wordmark alone,
+     and only one of them is ever on screen.
+     
+     Hidden state is CSS keyed on the server-rendered attribute, so it is right
+     at first paint. Inside no-preference only, so under reduced motion the
+     wordmark is simply always visible. visibility (not display) keeps the box,
+     so the bar never changes height, and takes the link out of the tab order
+     while it is invisible.
+
+     The small downward offset is what sells it: the mark rises into the bar as
+     the hero lockup leaves upward, so the two read as one handoff rather than
+     two unrelated fades. Entry is faster than exit — arriving should feel
+     decisive, leaving should feel like it is getting out of the way. */
   @media (prefers-reduced-motion: no-preference) {
     .nav[data-brand-reveal] .nav__brand {
       visibility: hidden;
       opacity: 0;
+      transform: translateY(6px);
       transition:
-        opacity var(--dur-fast) var(--ease-out),
-        visibility 0s linear var(--dur-fast);
+        opacity 240ms var(--ease-out),
+        transform 240ms var(--ease-out),
+        visibility 0s linear 240ms;
     }
     .nav[data-brand-reveal][data-brand-shown] .nav__brand {
       visibility: visible;
       opacity: 1;
+      transform: none;
       transition:
-        opacity var(--dur-fast) var(--ease-out),
+        opacity 200ms var(--ease-out),
+        transform 320ms var(--ease-out),
         visibility 0s;
     }
   }
@@ -304,13 +317,50 @@ const isActive = (path: string) => here.startsWith(href(path));
         nav.setAttribute('data-brand-shown', ''); // fail visible
         return;
       }
-      new IntersectionObserver(
-        ([entry]) => {
-          const past = !entry.isIntersecting && entry.boundingClientRect.top < 0;
-          nav.toggleAttribute('data-brand-shown', past);
+      /* Trigger point is the whole trick.
+       *
+       * The root's top edge is pushed down past the bar, so "stopped
+       * intersecting" means "the hero lockup has gone under the nav" rather
+       * than "left the screen". The extra 14px of clearance matters because
+       * the bar is translucent once stuck — without it the lockup is still
+       * faintly readable through the blur at the moment the nav mark arrives,
+       * which is the one thing this is meant to prevent.
+       *
+       * Measured live rather than cached: the bar is 5rem, but rem and the
+       * viewport both move, and a stale height puts the handoff in the wrong
+       * place after a resize. */
+      const CLEARANCE = 14;
+      let io;
+      const arm = () => {
+        if (io) io.disconnect();
+        io = new IntersectionObserver(
+          ([entry]) => {
+            // Two ways to not intersect: scrolled past (above) or not yet
+            // reached (below, e.g. a restored scroll position). Only the first
+            // should show the wordmark.
+            const past = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+            nav.toggleAttribute('data-brand-shown', past);
+          },
+          {
+            rootMargin: `-${nav.offsetHeight + CLEARANCE}px 0px 0px 0px`,
+            threshold: 0,
+          },
+        );
+        io.observe(mark);
+      };
+      arm();
+
+      // Re-arm on resize (debounced): the bar's height and the lockup's size
+      // both change with the viewport, so the trigger has to be recomputed.
+      let t;
+      window.addEventListener(
+        'resize',
+        () => {
+          clearTimeout(t);
+          t = setTimeout(arm, 150);
         },
-        { rootMargin: `-${nav.offsetHeight}px 0px 0px 0px`, threshold: 0 },
-      ).observe(mark);
+        { passive: true },
+      );
     };
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

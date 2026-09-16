@@ -16,34 +16,37 @@
 import { HERO } from '../../data/homepage';
 import WorkflowField from '../WorkflowField.astro';
 import CtaButton from '../CtaButton.astro';
-import wordmark from '../../assets/logo/wordmark_secondary/Reverse_Wordmark_Secondary.svg';
-
-// "AI Untangled." — the last word carries the rule.
-const [first, ...rest] = HERO.headline.split(' ');
-const last = rest.join(' ').replace(/\.$/, '');
+// The PRIMARY lockup: wordmark with the tagline set beneath it. It carries
+// "AI Untangled." itself, so the hero no longer sets that line as type — the
+// brand says it once, in its own lettering.
+import lockup from '../../assets/logo/wordmark_primary/Reverse_Wordmark.svg';
 ---
 
 <section class="hero" data-reveal>
   <div class="shell hero__grid">
     <div class="hero__col">
-      <div class="hero__mark r" style="--i: 0">
-        <img src={wordmark.src} alt="" aria-hidden="true" width="266" height="48" data-brand-sentinel />
-      </div>
-
-      <h1 class="hero__title display">
-        <span class="r" style="--i: 1">{first}</span>
-        <span class="r hero__line2" style="--i: 2"><span class="strike">{last}</span>.</span>
+      {/* The lockup IS the h1. An <img> inside the heading with real alt text
+          is a proper h1 — the page keeps its heading and its accessible name
+          without setting the tagline twice. */}
+      <h1 class="hero__lockup r" style="--i: 0">
+        <img
+          src={lockup.src}
+          alt={`Knotless — ${HERO.headline}`}
+          width="266"
+          height="76"
+          data-brand-sentinel
+        />
       </h1>
 
-      <p class="hero__lead lead r" style="--i: 3">{HERO.standfirst}</p>
+      <p class="hero__lead lead r" style="--i: 1">{HERO.standfirst}</p>
 
-      <div class="hero__cta r" style="--i: 4">
+      <div class="hero__cta r" style="--i: 2">
         <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
       </div>
     </div>
 
     <!-- The figure. Captioned, because an unlabelled diagram is decoration. -->
-    <figure class="hero__figure r" style="--i: 5">
+    <figure class="hero__figure r" style="--i: 3">
       <div class="hero__frame bracket">
         <WorkflowField />
       </div>
@@ -64,8 +67,8 @@ const last = rest.join(' ').replace(/\.$/, '');
     position: relative;
     display: flex;
     align-items: center;
-    min-height: 92svh;
-    padding-block: 8rem 4rem;
+    min-height: 88svh;
+    padding-block: 7rem 4rem;
   }
 
   .hero__grid {
@@ -81,30 +84,21 @@ const last = rest.join(' ').replace(/\.$/, '');
     }
   }
 
-  .hero__mark {
-    margin-bottom: clamp(1.75rem, 3vw, 2.5rem);
-  }
-  .hero__mark img {
-    display: block;
-    height: clamp(1.4rem, 1.9vw, 1.8rem);
-    width: auto;
-  }
-
-  .hero__title {
-    font-size: var(--text-display);
+  /* The lockup carries the weight the headline used to. Sized off the column
+     rather than a fixed height, so it scales with the layout; the 3.52:1 ratio
+     of the asset does the rest. */
+  .hero__lockup {
     margin: 0;
+    max-width: min(100%, 34rem);
   }
-  .hero__title > span {
+  .hero__lockup img {
     display: block;
-  }
-  /* Keeps "Untangled." intact — the full stop belongs to the word, and at this
-     size a wrapped period reads as a stray dot. */
-  .hero__line2 {
-    white-space: nowrap;
+    width: 100%;
+    height: auto;
   }
 
   .hero__lead {
-    margin-top: clamp(1.5rem, 2.5vw, 2rem);
+    margin-top: clamp(1.75rem, 3vw, 2.5rem);
     max-width: 42ch;
     color: var(--color-cream-dim);
   }
