@@ -581,7 +581,7 @@
      rather than on source order. The generic variant paints a solid fill, which
      on a ruled scale would be a 5px ember band instead of lit ticks. */
   .rule-thread[data-catch]::after {
-    color: var(--color-ember);
+    color: var(--catch-lit);
     background-color: transparent;
     background-image: var(--thread-img);
     background-size: 100% 1px, 100% 5px;
@@ -697,6 +697,29 @@
     border-radius: var(--radius-sm);
   }
 
+  /* --- How hard things catch the light ---------------------------------
+   * One number for the whole lit scene. The ring, the line and the bead all
+   * derive from it, so they brighten and calm together and there is a single
+   * place to turn it.
+   *
+   * The line and the bead were painting at full-strength ember — alpha 1.0,
+   * a delta of 189 in 8 bits against the bead's unlit glass, against the
+   * ring's 0.55. Three different intensities for one effect, the loudest of
+   * them louder than the light source itself.
+   *
+   * At 0.28 the bead reads a delta of 57 and the hairline 51: well clear of
+   * the ~12 an eye needs on this ground, and a quarter of what it was.
+   *
+   * This is NOT the background illumination, which keeps its own weight. That
+   * one is the light; these are things the light falls on, and an object
+   * brighter than its source reads as a fault rather than as lighting. */
+  :root {
+    --catch-peak: 0.28;
+    --catch-lit: rgba(207, 91, 48, var(--catch-peak));
+    --catch-soft: rgba(207, 91, 48, calc(var(--catch-peak) * 0.3));
+    --catch-halo: rgba(207, 91, 48, calc(var(--catch-peak) * 0.4));
+  }
+
   /* --- Catching the light ----------------------------------------------
    * An element marked data-catch brightens along its EDGE as the cursor light
    * passes near it, so the page reads as one lit scene rather than a flat
@@ -736,8 +759,8 @@
     opacity: 0;
     background: radial-gradient(
       18rem 18rem at var(--cx, 50%) var(--cy, 50%),
-      rgba(207, 91, 48, 0.55),
-      rgba(207, 91, 48, 0.12) 45%,
+      var(--catch-lit),
+      var(--catch-soft) 45%,
       transparent 72%
     );
     -webkit-mask:
@@ -759,7 +782,7 @@
     inset: 0;
     pointer-events: none;
     opacity: 0;
-    background-color: var(--color-ember);
+    background-color: var(--catch-lit);
     mask-image: radial-gradient(
       12rem 12rem at var(--cx, -999px) var(--cy, 50%),
       #000 0%,
@@ -784,8 +807,8 @@
     border-radius: 50%;
     pointer-events: none;
     opacity: 0;
-    background-color: var(--color-ember);
-    box-shadow: 0 0 0.6rem rgba(207, 91, 48, 0.45);
+    background-color: var(--catch-lit);
+    box-shadow: 0 0 0.5rem var(--catch-halo);
   }
 
   :root[data-pointer-lit] [data-catch]::after {
