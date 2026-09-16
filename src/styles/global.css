@@ -33,7 +33,14 @@
   --color-ink-panel: #1a1815; /* cards, insets                     */
   --color-cream: #efe9dd; /* primary text                          */
   --color-cream-dim: #a29b91; /* secondary text, metadata          */
-  --color-ember: #cf5b30; /* the strike, lifted for dark ground    */
+  --color-ember: #cf5b30; /* MARKS on ink: rules, indices, carets  */
+  /* FILLS. The brand terracotta, exactly as the logo sets it. It is a separate
+     token from --color-ember because the two cannot be one value: ember is
+     lifted so a 1px rule and an 11px index stay legible on the near-black
+     ground, and that lift is precisely what made the button read as orange.
+     Marks need the lift; a fill the size of a button does not. */
+  --color-terracotta: #a04a2c;
+  --color-terracotta-deep: #8a3f25; /* the fill, deepened on hover   */
   --color-paper: #efe9dd; /* the one light panel                   */
   --color-line: #262320; /* hairlines                              */
   --color-wire: #4c4640; /* inert diagram: the manual process       */
@@ -42,7 +49,11 @@
   /* Roles that were previously hardcoded at call sites. Naming them is what
    * makes the ground swappable — see the light theme below. */
   --color-figure: #0a0907; /* inside the diagram frame; node fills   */
-  --color-on-accent: #140f0c; /* type on an ember fill              */
+  /* Cream, not near-black. The logo's terracotta carries dark type at only
+     3.18:1 — under AA — which is why the button was lifted to ember in the
+     first place. Cream on the same fill is 4.95:1 and passes, so the fill can
+     go back to the brand value. */
+  --color-on-accent: #efe9dd; /* type on a terracotta fill          */
   --color-nav-bg: rgba(13, 12, 10, 0.72); /* the stuck bar          */
   --color-grid: rgba(239, 233, 221, 0.055); /* blueprint, major     */
   --color-grid-fine: rgba(239, 233, 221, 0.022); /* blueprint, minor */

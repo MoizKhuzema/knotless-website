@@ -439,10 +439,11 @@ const schema = graph([
       color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
       border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   }
+  /* A fill carrying text: the brand terracotta, not the lifted ember. */
   .stage-tab[aria-selected='true'] {
-    background-color: var(--color-ember);
+    background-color: var(--color-terracotta);
     color: var(--color-on-accent);
-    border-color: var(--color-ember);
+    border-color: var(--color-terracotta);
   }
   @media (min-width: 640px) {
     .stage-tab {

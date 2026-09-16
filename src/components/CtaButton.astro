@@ -25,7 +25,10 @@ interface Props {
 const { href, variant = 'primary' } = Astro.props;
 ---
 
-<a href={withBase(href)} class:list={['btn', `btn--${variant}`]}>
+{/* Every call to action is a sentinel for the bar's own button: the bar hides
+    its action whenever one of these is on screen, so the same action is never
+    offered twice at once. Nav.astro filters out the two inside itself. */}
+<a href={withBase(href)} class:list={['btn', `btn--${variant}`]} data-cta-sentinel>
   <span class="btn__label" aria-hidden="true">
     <span class="btn__a"><slot /></span>
     <span class="btn__b"><slot /></span>
@@ -98,17 +101,21 @@ const { href, variant = 'primary' } = Astro.props;
     transform: translateX(3px);
   }
 
-  /* --- primary: ember fill, deepening on hover ------------------------ */
+  /* --- primary: the brand terracotta, deepening on hover -------------- */
   .btn--primary {
-    background-color: var(--color-ember);
+    background-color: var(--color-terracotta);
     color: var(--color-on-accent);
   }
+  /* Deepens rather than flashing pale. The wipe used to go to cream, which
+     the comment above already called "deepening" — it was not. Deepening also
+     raises the contrast on hover instead of lowering it, and keeps the button
+     terracotta throughout rather than blinking to the page's text colour. */
   .btn--primary::before {
     content: '';
     position: absolute;
     inset: 0;
     z-index: -1;
-    background-color: var(--color-cream);
+    background-color: var(--color-terracotta-deep);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform var(--dur-fast) var(--ease-out);
@@ -168,7 +175,7 @@ const { href, variant = 'primary' } = Astro.props;
     }
     .btn--primary:hover,
     .btn--primary:focus-visible {
-      background-color: var(--color-cream);
+      background-color: var(--color-terracotta-deep);
       color: var(--color-on-accent);
     }
     .btn--inverse:hover,

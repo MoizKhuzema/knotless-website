@@ -40,7 +40,11 @@ const here = Astro.url.pathname;
 const isActive = (path: string) => here.startsWith(href(path));
 ---
 
-<nav class="nav" data-nav-reveal={navReveal ? '' : undefined}>
+<nav
+  class="nav"
+  data-nav-reveal={navReveal ? '' : undefined}
+  data-cta-hidden={navReveal ? '' : undefined}
+>
   <div class="shell nav__bar">
     <!-- LEFT: the mark. Hidden until the hero's button has gone past. -->
     <div class="nav__flank nav__flank--start">
@@ -184,8 +188,7 @@ const isActive = (path: string) => here.startsWith(href(path));
      two unrelated fades. Entry is faster than exit — arriving should feel
      decisive, leaving should feel like it is getting out of the way. */
   @media (prefers-reduced-motion: no-preference) {
-    .nav[data-nav-reveal] .nav__brand,
-    .nav[data-nav-reveal] .nav__flank--end :global(.btn) {
+    .nav[data-nav-reveal] .nav__brand {
       visibility: hidden;
       opacity: 0;
       transform: translateY(6px);
@@ -194,8 +197,7 @@ const isActive = (path: string) => here.startsWith(href(path));
         transform 240ms var(--ease-out),
         visibility 0s linear 240ms;
     }
-    .nav[data-nav-reveal][data-nav-shown] .nav__brand,
-    .nav[data-nav-reveal][data-nav-shown] .nav__flank--end :global(.btn) {
+    .nav[data-nav-reveal][data-nav-shown] .nav__brand {
       visibility: visible;
       opacity: 1;
       transform: none;
@@ -204,11 +206,42 @@ const isActive = (path: string) => here.startsWith(href(path));
         transform 320ms var(--ease-out),
         visibility 0s;
     }
-    /* The button trails the mark by a beat, so the bar fills as one gesture
-       sweeping left to right rather than as a simultaneous pop. The mark is on
-       the left now, so it leads. */
-    .nav[data-nav-reveal][data-nav-shown] .nav__flank--end :global(.btn) {
-      transition-delay: 70ms;
+  }
+
+  /* --- the bar's action ------------------------------------------------
+   * Independent of the mark, and live on EVERY page rather than only the ones
+   * with a reveal. The mark answers "is the hero's lockup on screen"; the
+   * action answers "is ANY of the page's own calls to action on screen" — and
+   * those are different questions with different answers. They shared one
+   * state, which is why the bar's button sat next to the closing section's
+   * button at the bottom of the homepage. */
+  .nav[data-cta-hidden] .nav__flank--end :global(.btn) {
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(6px);
+    transition:
+      opacity 240ms var(--ease-out),
+      transform 240ms var(--ease-out),
+      visibility 0s linear 240ms;
+  }
+  .nav__flank--end :global(.btn) {
+    /* Trails the mark by a beat when both arrive, so the bar fills as one
+       gesture sweeping left to right rather than as a simultaneous pop. */
+    transition:
+      opacity 200ms var(--ease-out) 70ms,
+      transform 320ms var(--ease-out) 70ms,
+      visibility 0s;
+  }
+  /* No transition on the first frame: on pages that do not server-render the
+     hidden state, the script sets it after parse, and without this the button
+     fades out on load instead of simply not being there. */
+  .nav[data-cta-init] .nav__flank--end :global(.btn) {
+    transition: none !important;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nav[data-cta-hidden] .nav__flank--end :global(.btn),
+    .nav__flank--end :global(.btn) {
+      transition: none;
     }
   }
 
@@ -371,7 +404,54 @@ const isActive = (path: string) => here.startsWith(href(path));
       });
     }
 
-    /* --- flank reveal --------------------------------------------------
+    /* --- the bar's action ----------------------------------------------
+     * Hidden while any of the page's OWN calls to action is on screen, so the
+     * same action is never offered twice at once. Runs on every page and under
+     * reduced motion: two identical buttons on one screen is a content problem,
+     * not a motion one, and the CSS above drops the transition rather than the
+     * behaviour.
+     *
+     * Same trigger line as the mark: the root's top edge is pushed down to the
+     * bar's own height, so a call to action counts as "on screen" exactly while
+     * it is visible BELOW the bar, not while it is sliding under it. */
+    const pageCtas = [...document.querySelectorAll<HTMLElement>('[data-cta-sentinel]')].filter(
+      (el) => !el.closest('.nav'),
+    );
+    if (pageCtas.length && 'IntersectionObserver' in window) {
+      const onScreen = new Set<Element>();
+      let cio: IntersectionObserver | undefined;
+      const armCta = () => {
+        cio?.disconnect();
+        onScreen.clear();
+        cio = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (e.isIntersecting) onScreen.add(e.target);
+              else onScreen.delete(e.target);
+            }
+            nav.toggleAttribute('data-cta-hidden', onScreen.size > 0);
+          },
+          { rootMargin: `-${nav.offsetHeight}px 0px 0px 0px`, threshold: 0 },
+        );
+        pageCtas.forEach((el) => cio!.observe(el));
+      };
+      // Suppress the transition for the first frame, then let it run.
+      nav.setAttribute('data-cta-init', '');
+      armCta();
+      requestAnimationFrame(() => requestAnimationFrame(() => nav.removeAttribute('data-cta-init')));
+
+      let ct: ReturnType<typeof setTimeout>;
+      window.addEventListener(
+        'resize',
+        () => {
+          clearTimeout(ct);
+          ct = setTimeout(armCta, 150);
+        },
+        { passive: true },
+      );
+    }
+
+    /* --- the mark ------------------------------------------------------
      * The hidden state is CSS keyed on the server-rendered attribute, so it
      * is correct at first paint. The sentinel lives in the hero, which the
      * parser reaches after this nav, so the observer is wired on DOM ready.
@@ -395,10 +475,12 @@ const isActive = (path: string) => here.startsWith(href(path));
        *   M > navH        fires while the sentinel is still showing BELOW the bar
        *   M < navH        fires after it is hidden, leaving a gap with neither
        *
-       * The sentinel is the hero's OWN call to action, so the bar's button
-       * appears exactly as the hero's leaves. Two of the same button on one
-       * screen is the thing to avoid, and the wordmark rides the same trigger
-       * so the bar fills in one movement.
+       * The sentinel is the hero's own call to action, which is where the
+       * lockup stops being on screen too — so the mark appears as the hero
+       * leaves. The bar's BUTTON no longer rides this trigger: it has its own
+       * observer above, because "the hero has gone" and "no call to action is
+       * on screen" stop being the same question the moment a page has a second
+       * call to action at the bottom.
        *
        * Measured live rather than cached: the bar's height moves with rem and
        * the viewport, and a stale value puts the handoff in the wrong place. */

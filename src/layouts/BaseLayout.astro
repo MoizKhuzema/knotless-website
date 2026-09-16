@@ -243,7 +243,10 @@ const fontFace = [
         left: 1.5rem;
         top: 1.5rem;
         z-index: 90;
-        background-color: var(--color-ember);
+        /* A FILL carrying text, so it takes the brand terracotta rather than
+           the lifted ember — same rule as the button. Cream on ember is
+           3.35:1 and fails AA; cream on terracotta is 4.95:1. */
+        background-color: var(--color-terracotta);
         color: var(--color-on-accent);
         display: inline-flex;
         align-items: center;
