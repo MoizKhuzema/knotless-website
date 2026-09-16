@@ -2,26 +2,28 @@
 /**
  * Section 01 — What you get.
  *
- * ONE grid for the whole section: a sticky label rail on the left, a single
- * content column on the right. The prose and the verticals used to sit on
- * different grids — 576px of prose above 1159px of verticals — and nothing
- * lined up, which is most of why the two halves read as different pages.
+ * TWO STAGES, NOT A PARAGRAPH AND A FOOTNOTE.
  *
- * THE TWO PARAGRAPHS ARE SET IDENTICALLY, on purpose. They are a pair: the
- * first is the Assessment, the second is the build. The first used to set at
- * 26px cream against the second at 18px dimmed — 1.44x the size, brighter, and
- * 2.4x the height — which said one was the argument and the other a footnote.
- * The comment justifying it admitted the real reason was density ("without a
- * step down it reads as an undifferentiated wall"), which is a density problem
- * answered with a hierarchy tool. The hairline between them marks the turn from
- * what we find to what we build; that is the hierarchy, and it is structural.
+ * The copy is one engagement in two parts: what the Assessment finds, then what
+ * gets built if the case is there. It used to be set as continuous prose with
+ * the first paragraph a size up and the second dimmed — which forced a
+ * hierarchy the content does not have. Measured, the first ran 2.45 times the
+ * visual mass of the second (468px against 191px at 1440), so the second read
+ * as a footnote to the first rather than its equal.
  *
- * THE VERTICALS' LEAD CARRIES THE CLAIM and now reads like it. "We specialise
- * in two verticals" is the sentence that does the differentiating, and it was
- * set at 11px — the smallest text on the page — under names at 52px, a 4.7x
- * inversion of importance. The lead is now a rail heading like the section's
- * own, and the names sit on a scale step instead of between two (52px was
- * hand-picked: the scale goes 34, 48, 60).
+ * They are now two columns of identical width, size, weight and colour. Equal
+ * value stops being something the type asserts and becomes something the
+ * geometry proves — and it costs no words, which matters because the copy is
+ * fixed.
+ *
+ * It also closes the hole the old layout left. A sticky heading rail beside one
+ * column of prose meant roughly 710px of empty left column at 1440, which reads
+ * as unfinished rather than spacious. Full-width heading over two equal columns
+ * has no second column to leave empty.
+ *
+ * THE VERTICALS are an index, not a menu: a row per vertical, its members set
+ * beside the name rather than beneath it, so the row spans its width and the
+ * short one does not look like a mistake.
  */
 import { WHAT_YOU_GET } from '../../data/homepage';
 ---
@@ -30,47 +32,45 @@ import { WHAT_YOU_GET } from '../../data/homepage';
   <div class="shell">
     <hr class="rule-measured" />
 
-    <div class="wyg__block" data-reveal>
-      <div class="wyg__rail">
-        <p class="index meta r" style="--i: 0"><span>01</span></p>
-        <h2 class="h-section wyg__h r" style="--i: 1">{WHAT_YOU_GET.heading}</h2>
-      </div>
-
-      <div class="wyg__prose">
-        {
-          WHAT_YOU_GET.body.map((para, i) => (
-            <p class="wyg__p r" style={`--i: ${i + 2}`}>
-              {para}
-            </p>
-          ))
-        }
-      </div>
+    <div class="wyg__head" data-reveal>
+      <p class="index meta r" style="--i: 0"><span>01</span></p>
+      <h2 class="h-section wyg__h r" style="--i: 1">{WHAT_YOU_GET.heading}</h2>
     </div>
 
-    <div class="wyg__block wyg__block--verticals" data-reveal>
-      {/* The claim, given a heading's position rather than a caption's size. */}
-      <h3 class="wyg__vhead r" style="--i: 0">{WHAT_YOU_GET.verticalsLead}</h3>
+    {/* Two stages, side by side and identical. The rule above each is the
+        thread again: a hairline with its first stretch in ember. */}
+    <div class="wyg__stages" data-reveal>
+      {
+        WHAT_YOU_GET.body.map((para, i) => (
+          <div class="stage r" style={`--i: ${i}`}>
+            <span class="stage__rule" aria-hidden="true" />
+            <p class="stage__p">{para}</p>
+          </div>
+        ))
+      }
+    </div>
 
-      <dl class="vlist">
+    <div class="wyg__verticals" data-reveal>
+      <p class="wyg__vlead r" style="--i: 0">{WHAT_YOU_GET.verticalsLead}</p>
+
+      <ul class="vlist">
         {
           WHAT_YOU_GET.verticals.map((v, i) => (
-            <div class="vlist__row r" style={`--i: ${i + 1}`}>
-              <dt class="vlist__name">{v.name}</dt>
-              {/* Stacked, not a run of hairline-separated words. Seven services
-                  flowing as one 15px line is the weakest way to present the
-                  thing that proves the focus; in two columns they read as an
-                  index, which is what they are. */}
-              <dd class="vlist__members">
-                <ul class:list={[v.members.length > 4 && 'is-two-up']}>
-                  {v.members.map((m) => (
-                    <li>{m}</li>
-                  ))}
-                </ul>
-              </dd>
-            </div>
+            <li class="vlist__row r" style={`--i: ${i + 1}`}>
+              <span class="vlist__n meta">{String(i + 1).padStart(2, '0')}</span>
+              <h3 class="vlist__name">{v.name}</h3>
+              <p class="vlist__members">
+                {v.members.map((m, j) => (
+                  <>
+                    {j > 0 && <span class="vlist__sep" aria-hidden="true" />}
+                    <span>{m}</span>
+                  </>
+                ))}
+              </p>
+            </li>
           ))
         }
-      </dl>
+      </ul>
     </div>
   </div>
 </section>
@@ -84,112 +84,148 @@ import { WHAT_YOU_GET } from '../../data/homepage';
     padding-top: var(--spacing-section-lg);
   }
 
-  /* One grid, used twice — the prose and the verticals sit on the same two
-     columns, so the section reads as a single document rather than as two. */
-  .wyg__block {
-    display: grid;
-    gap: 2.5rem;
-  }
-  @media (min-width: 64rem) {
-    .wyg__block {
-      grid-template-columns: minmax(0, 20rem) minmax(0, 40rem);
-      gap: 0 5rem;
-      justify-content: space-between;
-    }
-    .wyg__rail {
-      position: sticky;
-      top: 8rem;
-      align-self: start;
-    }
-  }
-
   .wyg__h {
     margin: 1.25rem 0 0;
   }
 
-  /* Both paragraphs, identically. */
-  .wyg__p {
-    font-size: var(--text-lg);
-    line-height: 1.6;
-    letter-spacing: var(--tracking-tight);
-    color: var(--color-cream);
-    margin: 0;
+  /* --- The two stages ------------------------------------------------- */
+
+  .wyg__stages {
+    display: grid;
+    gap: clamp(2.5rem, 5vw, 4rem);
+    margin-top: clamp(3rem, 5vw, 4.5rem);
   }
-  .wyg__p + .wyg__p {
-    margin-top: 2.25rem;
-    padding-top: 2.25rem;
-    border-top: 1px solid var(--color-line);
+  @media (min-width: 48rem) {
+    .wyg__stages {
+      /* Equal fractions, not auto: the two paragraphs differ in length by 173
+         characters, and anything that sizes to content would hand the longer one
+         more width and undo the point. */
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: clamp(3rem, 5vw, 5rem);
+    }
+  }
+
+  .stage__rule {
+    display: block;
+    height: 1px;
+    background-color: var(--color-line);
+    margin-bottom: 1.75rem;
+    /* The first stretch in ember — the thread surfacing, the same device as the
+       strike and the section index, rather than a new kind of ornament. */
+    background-image: linear-gradient(to right, var(--color-ember) 0 2.5rem, transparent 2.5rem);
+  }
+
+  .stage__p {
+    margin: 0;
+    font-size: var(--text-lg);
+    line-height: 1.65;
+    color: var(--color-cream);
+    /* Both stages are cream. The second was --color-body-2 and a size down,
+       which is what made it read as an aside. */
   }
 
   /* --- Verticals ----------------------------------------------------- */
 
-  .wyg__block--verticals {
-    margin-top: clamp(4rem, 7vw, 6rem);
+  .wyg__verticals {
+    margin-top: clamp(4.5rem, 8vw, 7.5rem);
   }
 
-  /* The lead, at the scale's caption step rather than its smallest label step,
-     and holding a heading's position in the rail. */
-  .wyg__vhead {
-    margin: 0;
+  /* Was --text-meta at 11px: smaller than the member lists it introduces, and
+     the smallest text in the section. It is the sentence that frames the whole
+     block, so it is set at 13px, in cream, with the tracking that marks it as a
+     label rather than prose. */
+  .wyg__vlead {
+    margin: 0 0 1.75rem;
     font-family: var(--font-mono);
     font-size: var(--text-sm);
-    font-weight: 400;
-    line-height: 1.5;
-    letter-spacing: var(--tracking-meta);
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--color-cream-dim);
-  }
-  @media (min-width: 64rem) {
-    .wyg__vhead {
-      position: sticky;
-      top: 8rem;
-      align-self: start;
-    }
+    color: var(--color-cream);
   }
 
   .vlist {
+    list-style: none;
     margin: 0;
+    padding: 0;
     border-top: 1px solid var(--color-line);
   }
 
   .vlist__row {
-    padding: clamp(1.5rem, 2.5vw, 2rem) 0;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.75rem 1.5rem;
+    padding: clamp(1.75rem, 3vw, 2.5rem) 0;
     border-bottom: 1px solid var(--color-line);
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+  @media (min-width: 48rem) {
+    .vlist__row {
+      /* Name and members side by side. Beneath the name, the two-member row
+         left a large word over a short line and a lot of air; beside it, both
+         rows span the full width and the short one reads as brevity rather
+         than as something missing. */
+      /* Wide enough that "Professional services" holds one line at 34px. It
+         wrapped to "Professional / services" at 15rem, which reads as a break
+         nobody chose. */
+      grid-template-columns: auto minmax(0, 22rem) minmax(0, 1fr);
+      align-items: baseline;
+      gap: 0 clamp(1.5rem, 3vw, 3rem);
+    }
   }
 
+  .vlist__n {
+    color: var(--color-ember);
+  }
+
+  /* Was 52px against the h2's 60px — 0.87x, so the vertical names competed with
+     the section heading instead of sitting under it. At this scale the section
+     reads 60 / 34 / 21 / 13 and the order is unambiguous. */
   .vlist__name {
-    font-size: var(--text-xl);
-    line-height: 1.2;
-    letter-spacing: var(--tracking-tight);
-    color: var(--color-cream);
+    font-family: var(--font-display, inherit);
+    font-size: clamp(1.5rem, 1rem + 1.4vw, 2.125rem);
+    line-height: 1.15;
+    letter-spacing: var(--tracking-display);
+    font-weight: 600;
     margin: 0;
+    color: var(--color-cream);
+    transition: color var(--dur-fast) var(--ease-out);
   }
 
   .vlist__members {
-    margin: 1rem 0 0;
-  }
-  .vlist__members ul {
-    list-style: none;
+    grid-column: 2;
     margin: 0;
-    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.9rem;
     font-size: var(--text-sm);
-    line-height: 2;
     color: var(--color-cream-dim);
   }
-  /* Two columns only when there is enough to fill them. Property's two members
-     split across two columns left one stranded at the far side of the measure,
-     which reads as a mistake rather than as a layout. */
-  .vlist__members ul.is-two-up {
-    columns: 2;
-    column-gap: 2rem;
-  }
-  .vlist__members li {
-    break-inside: avoid;
+  @media (min-width: 48rem) {
+    .vlist__members {
+      grid-column: 3;
+    }
   }
 
-  @media (max-width: 639px) {
-    .vlist__members ul.is-two-up {
-      columns: 1;
+  /* A hairline between members instead of commas — quieter, and it echoes the
+     rules running through the rest of the page. */
+  .vlist__sep {
+    width: 1.25rem;
+    height: 1px;
+    background-color: var(--color-line);
+  }
+
+  /* Hovering one row lights it and dims its neighbour. Pointer-fine only: on
+     touch there is no hover, and a permanently dimmed row would look broken. */
+  @media (hover: hover) and (pointer: fine) {
+    .vlist:hover .vlist__row {
+      opacity: 0.4;
+    }
+    .vlist:hover .vlist__row:hover {
+      opacity: 1;
+    }
+    .vlist__row:hover .vlist__name {
+      color: var(--color-ember);
     }
   }
 </style>
