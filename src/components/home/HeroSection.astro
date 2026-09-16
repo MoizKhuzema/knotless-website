@@ -10,8 +10,9 @@
  * as the thing being sold: a tangle of manual handoffs on one side, a running
  * pipeline on the other.
  *
- * The wordmark above doubles as the nav reveal's sentinel, so the mark is
- * never on screen twice at once.
+ * The call to action below is the nav reveal's sentinel: the bar's own button
+ * and wordmark appear only once this one has scrolled past, so neither the
+ * action nor the mark is ever on screen twice.
  */
 import { HERO } from '../../data/homepage';
 import WorkflowField from '../WorkflowField.astro';
@@ -34,12 +35,14 @@ import BrandMark from '../BrandMark.astro';
           is a proper h1 — the page keeps its heading and its accessible name
           without setting the tagline twice. */}
       <h1 class="hero__lockup r" style="--i: 0">
-        <BrandMark variant="lockup" alt={`Knotless — ${HERO.headline}`} sentinel />
+        <BrandMark variant="lockup" alt={`Knotless — ${HERO.headline}`} />
       </h1>
 
       <p class="hero__lead lead r" style="--i: 1">{HERO.standfirst}</p>
 
-      <div class="hero__cta r" style="--i: 2">
+      {/* The nav's flanks key off THIS element: the bar's button appears as
+          this one leaves, so the same action is never on screen twice. */}
+      <div class="hero__cta r" style="--i: 2" data-nav-sentinel>
         <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
       </div>
     </div>

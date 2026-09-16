@@ -29,11 +29,11 @@ interface Props {
    */
   bleed?: boolean;
   /**
-   * Start with the nav wordmark hidden and reveal it once the page's own brand
-   * mark scrolls out from under the bar. The page must also mark that hero
-   * element `data-brand-sentinel`.
+   * Start with the nav's two flanks — its call to action and its wordmark —
+   * hidden, and bring them in together once the page's own hero action scrolls
+   * under the bar. The page must mark that element `data-nav-sentinel`.
    */
-  brandReveal?: boolean;
+  navReveal?: boolean;
 }
 
 const {
@@ -43,7 +43,7 @@ const {
   schema,
   bare = false,
   bleed = false,
-  brandReveal = false,
+  navReveal = false,
 } = Astro.props;
 
 /**
@@ -125,7 +125,7 @@ const fontFace = [
             <span></span>
           </div>
 
-          <Nav brandReveal={brandReveal} />
+          <Nav navReveal={navReveal} />
           <main id="main" tabindex="-1" class={bleed ? undefined : 'main--contained'}>
             {bleed ? <slot /> : <div class="shell"><slot /></div>}
           </main>

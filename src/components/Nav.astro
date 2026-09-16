@@ -7,13 +7,22 @@
  * content later. Fixed rather than sticky: sticky ghosted page content over
  * the bar on iOS Safari.
  *
- * Brand reveal (opt-in via `brandReveal`): pages whose hero carries the
- * wordmark start with the nav copy hidden and fade it in once the hero mark
- * scrolls under the bar. Off by default.
+ * Layout is three tracks: the call to action on the left, the links centred,
+ * the wordmark on the right. The centre track is centred against the VIEWPORT,
+ * not against whatever the two sides happen to weigh — 1fr/auto/1fr, so the
+ * links stay put when the flanks appear.
+ *
+ * Reveal (opt-in via `navReveal`): pages whose hero carries its own wordmark
+ * and its own call to action start with BOTH flanks hidden and bring them in
+ * together once the hero's button scrolls under the bar. Until then the hero
+ * holds the brand and the action, and the bar holds only navigation. Off by
+ * default — every other page shows the full bar immediately.
  */
 import { SITE } from '../config/site';
 import { href } from '../lib/href';
 import BrandMark from './BrandMark.astro';
+import CtaButton from './CtaButton.astro';
+import { HERO } from '../data/homepage';
 
 const NAV_LINKS = [
   { label: 'About us', href: '/about' },
@@ -22,20 +31,23 @@ const NAV_LINKS = [
 ];
 
 interface Props {
-  brandReveal?: boolean;
+  /** See the note above. Requires a [data-nav-sentinel] in the page. */
+  navReveal?: boolean;
 }
-const { brandReveal = false } = Astro.props;
+const { navReveal = false } = Astro.props;
 
 const here = Astro.url.pathname;
 const isActive = (path: string) => here.startsWith(href(path));
 ---
 
-<nav class="nav" data-brand-reveal={brandReveal ? '' : undefined}>
+<nav class="nav" data-nav-reveal={navReveal ? '' : undefined}>
   <div class="shell nav__bar">
-    <a href={href('/')} aria-label={`${SITE.legalEntityName} — home`} class="nav__brand">
-      <BrandMark class="nav__brand-img" alt={SITE.legalEntityName} />
-    </a>
+    <!-- LEFT: the action. Hidden until the hero's own button has gone past. -->
+    <div class="nav__flank nav__flank--start">
+      <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
+    </div>
 
+    <!-- CENTRE: navigation, and nothing else. -->
     <ul class="nav__links">
       {
         NAV_LINKS.map((link) => (
@@ -52,30 +64,43 @@ const isActive = (path: string) => here.startsWith(href(path));
       }
     </ul>
 
-    <button
-      type="button"
-      class="nav__toggle"
-      aria-label="Open menu"
-      aria-expanded="false"
-      aria-controls="nav-menu"
-    >
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
-    </button>
+    <!-- RIGHT: the mark, plus the menu toggle below md. -->
+    <div class="nav__flank nav__flank--end">
+      <a href={href('/')} aria-label={`${SITE.legalEntityName} — home`} class="nav__brand">
+        <BrandMark alt={SITE.legalEntityName} />
+      </a>
+      <button
+        type="button"
+        class="nav__toggle"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="nav-menu"
+      >
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </button>
+    </div>
   </div>
 
   <div id="nav-menu" class="nav__menu" hidden>
-    <ul class="shell">
-      {
-        NAV_LINKS.map((link, i) => (
-          <li style={`--i: ${i}`}>
-            <a href={href(link.href)} class="nav__menu-link display">
-              {link.label}
-            </a>
-          </li>
-        ))
-      }
-    </ul>
+    <div class="shell">
+      <ul>
+        {
+          NAV_LINKS.map((link, i) => (
+            <li style={`--i: ${i}`}>
+              <a href={href(link.href)} class="nav__menu-link display">
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      {/* The bar has no room for the button at phone width, so the action
+          lives here instead of being dropped. */}
+      <div class="nav__menu-cta" style={`--i: ${NAV_LINKS.length}`}>
+        <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -97,17 +122,44 @@ const isActive = (path: string) => here.startsWith(href(path));
     border-bottom-color: var(--color-line);
   }
 
+  /* 1fr / auto / 1fr centres the links against the VIEWPORT rather than against
+     the remaining space, so they do not shift when the flanks appear. */
   .nav__bar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1.5rem;
+    height: 5rem;
+  }
+
+  .nav__flank {
     display: flex;
     align-items: center;
-    gap: 2rem;
-    height: 5rem;
+    gap: 1rem;
+    min-width: 0;
+  }
+  .nav__flank--start {
+    justify-content: flex-start;
+  }
+  .nav__flank--end {
+    justify-content: flex-end;
+  }
+
+  /* The bar's button is the compact end of the scale — the hero and the close
+     carry the full-size one. */
+  .nav__flank--start :global(.btn) {
+    min-height: 2.5rem;
+    padding-inline: 1.15rem;
+  }
+  @media (max-width: 47.99rem) {
+    .nav__flank--start {
+      display: none; /* no room; the action moves into the drawer */
+    }
   }
 
   .nav__brand {
     display: flex;
     align-items: center;
-    height: 100%;
     flex: none;
   }
   .nav__brand :global(.brand__img) {
@@ -129,7 +181,8 @@ const isActive = (path: string) => here.startsWith(href(path));
      two unrelated fades. Entry is faster than exit — arriving should feel
      decisive, leaving should feel like it is getting out of the way. */
   @media (prefers-reduced-motion: no-preference) {
-    .nav[data-brand-reveal] .nav__brand {
+    .nav[data-nav-reveal] .nav__brand,
+    .nav[data-nav-reveal] .nav__flank--start :global(.btn) {
       visibility: hidden;
       opacity: 0;
       transform: translateY(6px);
@@ -138,7 +191,8 @@ const isActive = (path: string) => here.startsWith(href(path));
         transform 240ms var(--ease-out),
         visibility 0s linear 240ms;
     }
-    .nav[data-brand-reveal][data-brand-shown] .nav__brand {
+    .nav[data-nav-reveal][data-nav-shown] .nav__brand,
+    .nav[data-nav-reveal][data-nav-shown] .nav__flank--start :global(.btn) {
       visibility: visible;
       opacity: 1;
       transform: none;
@@ -147,12 +201,17 @@ const isActive = (path: string) => here.startsWith(href(path));
         transform 320ms var(--ease-out),
         visibility 0s;
     }
+    /* The mark trails the button by a beat, so the two arrive as one gesture
+       sweeping across the bar rather than as a simultaneous pop. */
+    .nav[data-nav-reveal][data-nav-shown] .nav__brand {
+      transition-delay: 70ms;
+    }
   }
 
   .nav__links {
     display: none;
     list-style: none;
-    margin: 0 0 0 auto;
+    margin: 0;
     padding: 0;
     gap: 2.25rem;
   }
@@ -202,7 +261,6 @@ const isActive = (path: string) => here.startsWith(href(path));
   /* --- mobile toggle + full-screen menu -------------------------------- */
 
   .nav__toggle {
-    margin-left: auto;
     width: 2.75rem;
     height: 2.75rem;
     display: grid;
@@ -244,9 +302,15 @@ const isActive = (path: string) => here.startsWith(href(path));
   .nav__menu ul {
     list-style: none;
     margin: 0;
-    padding-block: 3rem;
+    padding: 0;
     display: grid;
     gap: 0.5rem;
+  }
+  .nav__menu > .shell {
+    padding-block: 3rem;
+  }
+  .nav__menu-cta {
+    margin-top: 2.5rem;
   }
   .nav__menu-link {
     display: block;
@@ -259,7 +323,8 @@ const isActive = (path: string) => here.startsWith(href(path));
     color: var(--color-ember);
   }
   @media (prefers-reduced-motion: no-preference) {
-    .nav__menu:not([hidden]) li {
+    .nav__menu:not([hidden]) li,
+    .nav__menu:not([hidden]) .nav__menu-cta {
       animation: menu-in var(--dur-mid) var(--ease-out) backwards;
       animation-delay: calc(var(--i) * 70ms);
     }
@@ -302,18 +367,18 @@ const isActive = (path: string) => here.startsWith(href(path));
       });
     }
 
-    /* --- brand reveal -------------------------------------------------
+    /* --- flank reveal --------------------------------------------------
      * The hidden state is CSS keyed on the server-rendered attribute, so it
      * is correct at first paint. The sentinel lives in the hero, which the
      * parser reaches after this nav, so the observer is wired on DOM ready.
-     * Reduced motion: the CSS never hides it, so there is nothing to do. */
-    if (!nav.hasAttribute('data-brand-reveal')) return;
+     * Reduced motion: the CSS never hides them, so there is nothing to do. */
+    if (!nav.hasAttribute('data-nav-reveal')) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const init = () => {
-      const mark = document.querySelector('[data-brand-sentinel]');
+      const mark = document.querySelector('[data-nav-sentinel]');
       if (!mark || !('IntersectionObserver' in window)) {
-        nav.setAttribute('data-brand-shown', ''); // fail visible
+        nav.setAttribute('data-nav-shown', ''); // fail visible
         return;
       }
       /* Trigger point is the whole trick.
@@ -322,19 +387,14 @@ const isActive = (path: string) => here.startsWith(href(path));
        * stops intersecting when its bottom crosses above M. So M is literally
        * the handoff line:
        *
-       *   M = navH        the lockup's bottom meets the bar's bottom — exact
-       *   M > navH        fires while the lockup is still showing BELOW the bar
+       *   M = navH        the sentinel's bottom meets the bar's bottom — exact
+       *   M > navH        fires while the sentinel is still showing BELOW the bar
        *   M < navH        fires after it is hidden, leaving a gap with neither
        *
-       * This previously read navH + 14, which is the wrong side: it revealed
-       * the nav mark while 14px of lockup was still on screen. It measured
-       * clean only because the bar was taller then and a 20px probe stepped
-       * over the overlapping frame.
-       *
-       * navH exactly it is. The bar is translucent once stuck, so the lockup
-       * is briefly soft behind the blur — but blur-through is a softness, not
-       * a second logo, and any margin either way trades it for a real overlap
-       * or a real gap.
+       * The sentinel is the hero's OWN call to action, so the bar's button
+       * appears exactly as the hero's leaves. Two of the same button on one
+       * screen is the thing to avoid, and the wordmark rides the same trigger
+       * so the bar fills in one movement.
        *
        * Measured live rather than cached: the bar's height moves with rem and
        * the viewport, and a stale value puts the handoff in the wrong place. */
@@ -343,11 +403,24 @@ const isActive = (path: string) => here.startsWith(href(path));
         if (io) io.disconnect();
         io = new IntersectionObserver(
           ([entry]) => {
-            // Two ways to not intersect: scrolled past (above) or not yet
-            // reached (below, e.g. a restored scroll position). Only the first
-            // should show the wordmark.
-            const past = !entry.isIntersecting && entry.boundingClientRect.top < 0;
-            nav.toggleAttribute('data-brand-shown', past);
+            /* Two ways to not intersect: scrolled past (above the root) or not
+             * yet reached (below it, e.g. a restored scroll position). Only the
+             * first should fill the bar.
+             *
+             * Compare the sentinel's BOTTOM against the root's top edge, not
+             * its top against 0. The callback only runs at the moment
+             * intersection changes, and at that moment a short sentinel's top
+             * is still POSITIVE — its bottom crossed the line, its top has not.
+             * Testing `top < 0` therefore reads false at the only moment the
+             * observer speaks, and since nothing intersects afterwards, no
+             * further callback ever arrives to correct it.
+             *
+             * The previous sentinel was the 148px lockup, whose top was already
+             * well past 0 when its bottom crossed, so the wrong test happened
+             * to agree. A 48px button does not give it that cover. */
+            const rootTop = entry.rootBounds?.top ?? 0;
+            const past = !entry.isIntersecting && entry.boundingClientRect.bottom <= rootTop;
+            nav.toggleAttribute('data-nav-shown', past);
           },
           {
             rootMargin: `-${nav.offsetHeight}px 0px 0px 0px`,
@@ -358,7 +431,7 @@ const isActive = (path: string) => here.startsWith(href(path));
       };
       arm();
 
-      // Re-arm on resize (debounced): the bar's height and the lockup's size
+      // Re-arm on resize (debounced): the bar's height and the hero's layout
       // both change with the viewport, so the trigger has to be recomputed.
       let t: ReturnType<typeof setTimeout>;
       window.addEventListener(

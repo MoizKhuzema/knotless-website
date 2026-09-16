@@ -49,9 +49,10 @@ const schema = graph([
 ]);
 ---
 
-<!-- brandReveal: the hero carries the wordmark, so the nav copy stays hidden
-     until the hero mark scrolls under the bar. See Nav.astro. -->
-<BaseLayout title={title} description={description} schema={schema} brandReveal bleed>
+<!-- navReveal: the hero carries both the wordmark and the call to action, so
+     the nav's flanks stay empty until the hero's button scrolls under the bar.
+     See Nav.astro. -->
+<BaseLayout title={title} description={description} schema={schema} navReveal bleed>
   <HeroSection />
   <WhatYouGetSection />
   <FoundersSection />
