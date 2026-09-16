@@ -26,6 +26,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     <div class="lab__controls">
       <label>
+        mode
+        <select data-mode>
+          <option value="knot" selected>knot only</option>
+          <option value="seq">phases 1-3</option>
+        </select>
+      </label>
+      <label>
+        backdrop
+        <select data-bd>
+          <option value="ink" selected>ink (matches current site)</option>
+          <option value="cream">cream</option>
+        </select>
+      </label>
+      <label>
+        t <output data-out="t">0.00</output>
+        <input type="range" data-t min="0" max="1" step="0.005" value="1" />
+      </label>
+      <label>
         shape
         <select data-shape>
           <option value="trefoil" selected>D trefoil</option>
@@ -153,7 +171,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </style>
 
 <script>
-  import { SHAPES, selfCrossings, strand, ribbonOutline, clamp01, trefoilWithTails } from '../lib/knot';
+  import {
+    SHAPES, selfCrossings, strand, ribbonOutline, clamp01, lerp, trefoilWithTails,
+    BANDS, bandPoint,
+  } from '../lib/knot';
   import type { Pt, ShapeName } from '../lib/knot';
 
   const $ = <T extends Element>(s: string) => document.querySelector(s) as T;
@@ -168,10 +189,46 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const wOut = $<HTMLOutputElement>('[data-out="w"]');
   const dOut = $<HTMLOutputElement>('[data-out="d"]');
 
-  const css = getComputedStyle(document.documentElement);
-  const v = (n: string, f: string) => css.getPropertyValue(n).trim() || f;
-  const EMBER = v('--color-ember', '#cf5b30');
-  const GROUND = v('--color-figure', '#0a0907');
+  const modeSel = $<HTMLSelectElement>('[data-mode]');
+  const bdSel = $<HTMLSelectElement>('[data-bd]');
+  const tIn = $<HTMLInputElement>('[data-t]');
+  const tOut = $<HTMLOutputElement>('[data-out="t"]');
+
+  /**
+   * Two grounds, because which one the intro should use is a brand decision,
+   * not a technical one — and the occlusion gaps are punched in the BACKDROP
+   * colour, so whether they still read on cream is the thing to look at.
+   *
+   * Note the ink ground matches the site as it currently ships, so an ink
+   * overlay reveals nothing; a cream overlay would flash bright and then hand
+   * off to a dark page. On a light site that inverts.
+   */
+  const GROUNDS = {
+    ink: {
+      bg: '#0d0c0a',
+      resolve: '#cf5b30',
+      palette: ['#cf5b30', '#efe9dd', '#8b7f72', '#cf5b30', '#a29b91', '#4c4640'],
+    },
+    cream: {
+      bg: '#efe9dd',
+      resolve: '#a04a2c',
+      // No near-cream values: #c4bba7 all but vanished against the #efe9dd
+      // ground. Every band has to read against its own backdrop.
+      palette: ['#a04a2c', '#1f1f1d', '#8a8580', '#a04a2c', '#55504a', '#b5411f'],
+    },
+  } as const;
+
+  const clampT = (t: number, a: number, b: number) => clamp01((t - a) / (b - a));
+  const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+
+  const mixHex = (a: string, b: string, t: number) => {
+    const h = (c: string) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+    const [r1, g1, b1] = h(a);
+    const [r2, g2, b2] = h(b);
+    const m = (x: number, y: number) => Math.round(x + (y - x) * t);
+    return `rgb(${m(r1, r2)},${m(g1, g2)},${m(b1, b2)})`;
+  };
 
   const SAMPLES = 300;
 
@@ -205,13 +262,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const project = (p: Pt): Pt => [W / 2 + (p[0] - midX) * scale, H / 2 + (p[1] - midY) * scale];
     const halfW = scale * widthRatio;
 
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = GROUND;
-    ctx.fillRect(0, 0, W, H);
-
-    // Centre line, sampled once and reused for the ribbon and the crossings.
-    const pts: Pt[] = [];
-    for (let i = 0; i < SAMPLES; i++) pts.push(project(strand(ctrl, i / (SAMPLES - 1), k)));
+    const G = GROUNDS[bdSel.value as keyof typeof GROUNDS];
+    const GROUND = G.bg;
 
     const fillPoly = (poly: Pt[], fill: string) => {
       ctx.beginPath();
@@ -221,8 +273,72 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       ctx.fill();
     };
 
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = GROUND;
+    ctx.fillRect(0, 0, W, H);
+
+    // --- phases 1-2: bands sweeping in and converging -----------------------
+    if (modeSel.value === 'seq') {
+      const t = Number(tIn.value);
+      // The windows overlap deliberately: a band that finishes arriving before
+      // it starts converging leaves a tidy staircase, which is the ugliest
+      // frame of the whole sequence.
+      const sweep = easeOut(clampT(t, 0, 0.34));
+      const converge = easeInOut(clampT(t, 0.2, 0.62));
+      const tie = easeInOut(clampT(t, 0.55, 1));
+      const resolve = easeInOut(clampT(t, 0.34, 0.72));
+
+      for (const band of BANDS) {
+        const enter = clamp01((sweep - band.delay) / Math.max(0.001, 1 - band.delay));
+        if (enter <= 0) continue;
+        // Each band converges on its own clock, and its THICKNESS trails its
+        // position — so bands stay full-height while they gather and only thin
+        // down once they are nearly in place. Shrinking in lockstep is what
+        // produced the row of tiles.
+        const cv = clamp01((converge - band.cDelay * 0.45) / Math.max(0.001, 1 - band.cDelay * 0.45));
+        const cvThick = clamp01((cv - 0.35) / 0.65);
+        const n = 64;
+        const line: Pt[] = [];
+        const hw: number[] = [];
+        for (let i = 0; i < n; i++) {
+          const u = i / (n - 1);
+          line.push(bandPoint(band, ctrl, u, enter, cv, tie, W, H, project));
+          hw.push(lerp(band.thickness * H, halfW, cvThick));
+        }
+        fillPoly(ribbonOutline(line, hw), mixHex(G.palette[band.colour], G.resolve, resolve));
+      }
+
+      // Over/under only matters once it is one strand and actually knotted.
+      if (converge > 0.985 && tie > 0.04 && gapsIn.checked) {
+        const probe: Pt[] = [];
+        for (let i = 0; i < 120; i++) probe.push(project(strand(ctrl, i / 119, tie)));
+        for (const c of selfCrossings(probe)) {
+          const half = 0.028;
+          const n = 30;
+          const win: Pt[] = [];
+          const gap: number[] = [];
+          const core: number[] = [];
+          for (let i = 0; i < n; i++) {
+            const u = clamp01(c.over - half + (2 * half * i) / (n - 1));
+            win.push(project(strand(ctrl, u, tie)));
+            const edge = Math.sin((i / (n - 1)) * Math.PI);
+            gap.push(halfW + halfW * 0.55 * edge);
+            core.push(halfW);
+          }
+          fillPoly(ribbonOutline(win, gap), GROUND);
+          const seg = Math.min(BANDS.length - 1, Math.floor(c.over * BANDS.length));
+          fillPoly(ribbonOutline(win, core), mixHex(G.palette[BANDS[seg].colour], G.resolve, resolve));
+        }
+      }
+      return;
+    }
+
+    // Centre line, sampled once and reused for the ribbon and the crossings.
+    const pts: Pt[] = [];
+    for (let i = 0; i < SAMPLES; i++) pts.push(project(strand(ctrl, i / (SAMPLES - 1), k)));
+
     // The whole strand, in curve order.
-    fillPoly(ribbonOutline(pts, pts.map(() => halfW)), EMBER);
+    fillPoly(ribbonOutline(pts, pts.map(() => halfW)), G.resolve);
 
     // Over/under. For each crossing, redraw a short window around the LATER
     // parameter — the strand drawn second, therefore the one in front — as a
@@ -246,7 +362,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           core.push(halfW);
         }
         fillPoly(ribbonOutline(win, gap), GROUND);
-        fillPoly(ribbonOutline(win, core), EMBER);
+        fillPoly(ribbonOutline(win, core), G.resolve);
       }
     }
 
@@ -267,10 +383,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     kOut.value = Number(kIn.value).toFixed(2);
     wOut.value = Number(wIn.value).toFixed(3);
     dOut.value = Number(dIn.value).toFixed(2);
+    tOut.value = Number(tIn.value).toFixed(2);
+    document.body.style.background = GROUNDS[bdSel.value as keyof typeof GROUNDS].bg;
     canvases.forEach(render);
   }
 
-  [shapeSel, kIn, wIn, dIn, gapsIn, marksIn].forEach((el) =>
+  [shapeSel, kIn, wIn, dIn, gapsIn, marksIn, modeSel, bdSel, tIn].forEach((el) =>
     el.addEventListener('input', renderAll),
   );
 
@@ -281,6 +399,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     if (d.k !== undefined) kIn.value = String(d.k);
     if (d.w !== undefined) wIn.value = String(d.w);
     if (d.d !== undefined) dIn.value = String(d.d);
+    if (d.mode) modeSel.value = d.mode;
+    if (d.bd) bdSel.value = d.bd;
+    if (d.t !== undefined) tIn.value = String(d.t);
     if (d.gaps !== undefined) gapsIn.checked = !!d.gaps;
     if (d.marks !== undefined) marksIn.checked = !!d.marks;
     renderAll();

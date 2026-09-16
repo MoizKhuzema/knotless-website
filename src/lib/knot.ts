@@ -276,3 +276,81 @@ export function ribbonOutline(pts: Pt[], halfW: number[]): Pt[] {
   for (let i = n - 1; i >= 0; i--) out.push([pts[i][0] - norm[i][0] * halfW[i], pts[i][1] - norm[i][1] * halfW[i]]);
   return out;
 }
+
+/* ---------------------------------------------------------------------------
+ * Phases 1-2: the viewport fills with ribbons, then they converge into one.
+ *
+ * Each band becomes a consecutive SEGMENT of the finished ribbon rather than
+ * fading out while a separate ribbon fades in. That is what makes "many
+ * colours become one" a single continuous motion instead of a crossfade — the
+ * colour blocks along the final ribbon are literally the bands that arrived.
+ * ------------------------------------------------------------------------- */
+
+export interface Band {
+  /** Where this band sits vertically before converging, 0..1 of the viewport. */
+  y: number;
+  /** Half-thickness before converging, as a fraction of viewport height. */
+  thickness: number;
+  /** Horizontal extent before converging, 0..1 of viewport width. */
+  x0: number;
+  x1: number;
+  /** Gentle bow, so these read as tape laid at a slight angle, not as bars. */
+  bow: number;
+  /** Entry delay, 0..1 of the sweep-in window. */
+  delay: number;
+  /** Converge delay. Separate from entry: bands that all shrink in lockstep
+   *  produce a tidy row of tiles mid-merge, which is the ugliest frame. */
+  cDelay: number;
+  /** Index into the palette. */
+  colour: number;
+}
+
+/**
+ * Hand-picked rather than random: the brief asks for varied length, thickness
+ * and position, and a designed set reads better than a seeded one and is the
+ * same on every load. Deliberately not a stack of equal bars — some run edge
+ * to edge, some stop short.
+ */
+export const BANDS: Band[] = [
+  { y: 0.09, thickness: 0.055, x0: -0.05, x1: 0.72, bow: 0.018, delay: 0.0, cDelay: 0.22, colour: 0 },
+  { y: 0.23, thickness: 0.032, x0: 0.18, x1: 1.05, bow: -0.012, delay: 0.16, cDelay: 0.05, colour: 1 },
+  { y: 0.37, thickness: 0.07, x0: -0.05, x1: 1.05, bow: 0.022, delay: 0.06, cDelay: 0.3, colour: 2 },
+  { y: 0.52, thickness: 0.042, x0: -0.05, x1: 0.58, bow: -0.02, delay: 0.26, cDelay: 0.13, colour: 3 },
+  { y: 0.66, thickness: 0.06, x0: 0.3, x1: 1.05, bow: 0.014, delay: 0.1, cDelay: 0.34, colour: 4 },
+  { y: 0.81, thickness: 0.038, x0: -0.05, x1: 0.88, bow: -0.016, delay: 0.22, cDelay: 0.0, colour: 5 },
+  { y: 0.93, thickness: 0.05, x0: 0.12, x1: 1.05, bow: 0.01, delay: 0.32, cDelay: 0.18, colour: 0 },
+];
+
+/**
+ * One band's centre line at a given moment.
+ *
+ * `enter` 0..1 slides it in from the left; `converge` 0..1 morphs it into its
+ * arc of the master strand. The two overlap in time on purpose — a band that
+ * has finished arriving before it starts converging produces a tidy, ugly
+ * staircase, which was the single worst-looking moment of the earlier attempt.
+ */
+export function bandPoint(
+  b: Band,
+  ctrl: Pt[],
+  u: number,
+  enter: number,
+  converge: number,
+  k: number,
+  W: number,
+  H: number,
+  project: (p: Pt) => Pt,
+): Pt {
+  // Phase 1: a bowed horizontal band, swept in from the left.
+  const bx = lerp(b.x0, b.x1, u) * W - (1 - enter) * W * 1.35;
+  const by = (b.y + Math.sin(u * Math.PI) * b.bow) * H;
+  // Phase 2 target: this band's own arc of the single strand.
+  const span = 1 / BANDS.length;
+  const idx = BANDS.indexOf(b);
+  const [tx, ty] = project(strand(ctrl, idx * span + u * span, k));
+  // Arc the merge rather than sliding straight: a linear lerp from a row of
+  // bars to a row of arcs passes through a tidy staircase, which reads as a
+  // glitch. Easing y ahead of x makes them gather vertically first, then close
+  // up along the strand.
+  const cy = clamp01(converge * 1.25);
+  return [lerp(bx, tx, converge), lerp(by, ty, cy)];
+}
