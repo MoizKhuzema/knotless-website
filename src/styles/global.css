@@ -39,11 +39,20 @@
      lifted so a 1px rule and an 11px index stay legible on the near-black
      ground, and that lift is precisely what made the button read as orange.
      Marks need the lift; a fill the size of a button does not. */
-  /* Lifted a step off the logo's #a04a2c — as far as it can go and still carry
-     CREAM type at AA. #a84e2f is 4.58:1; two steps further (#ad5030) is 4.38
-     and fails. Past this point the type has to go near-black, which is exactly
-     how the button ended up orange in the first place. */
-  --color-terracotta: #a84e2f;
+  /* The logo's #a04a2c, hue held at 16 and CHROMA raised from 56% to 70%, with
+     lightness down a point to pay for it.
+
+     Vibrancy is chroma, not lightness, and the two trade against each other
+     here. Lifting HSL lightness costs contrast fast — #ad5030 is 4.38:1 and
+     fails AA against cream type — which is the wall the previous, duller
+     #a84e2f was sitting against. Saturating while dropping lightness a point
+     costs nothing: #b0461f reads 4.64:1, marginally BETTER than the value it
+     replaces, and looks considerably less flat.
+
+     There is far more headroom on this axis than on the other — full
+     saturation still clears AA at 4.71:1 — but #bf3300 is vermilion, and the
+     mark this has to sit beside is #a04a2c. 70% is a step, not a new colour. */
+  --color-terracotta: #b0461f;
   --color-paper: #efe9dd; /* the one light panel                   */
   --color-line: #262320; /* hairlines                              */
   --color-wire: #4c4640; /* inert diagram: the manual process       */
