@@ -270,7 +270,12 @@ const isActive = (path: string) => here.startsWith(href(path));
     display: grid;
     grid-template-columns: 1fr;
     min-width: 0;
-    padding-right: 1.75rem;
+    /* The mark is set apart from the routes, not evenly spaced with them: 56px
+       here against the 36px between the links themselves. They are two
+       different things — an identity and a route list — and at 28px the mark
+       sat CLOSER to "About us" than the links sat to each other, which read it
+       as the first item in the menu. */
+    padding-right: 3.5rem;
   }
   .nav__flank--start > * {
     min-width: 0;
