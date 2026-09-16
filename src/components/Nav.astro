@@ -7,8 +7,8 @@
  * content later. Fixed rather than sticky: sticky ghosted page content over
  * the bar on iOS Safari.
  *
- * Layout is three tracks: the call to action on the left, the links centred,
- * the wordmark on the right. The centre track is centred against the VIEWPORT,
+ * Layout is three tracks: the wordmark on the left, the links centred, the
+ * call to action on the right. The centre track is centred against the VIEWPORT,
  * not against whatever the two sides happen to weigh — 1fr/auto/1fr, so the
  * links stay put when the flanks appear.
  *
@@ -42,9 +42,11 @@ const isActive = (path: string) => here.startsWith(href(path));
 
 <nav class="nav" data-nav-reveal={navReveal ? '' : undefined}>
   <div class="shell nav__bar">
-    <!-- LEFT: the action. Hidden until the hero's own button has gone past. -->
+    <!-- LEFT: the mark. Hidden until the hero's button has gone past. -->
     <div class="nav__flank nav__flank--start">
-      <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
+      <a href={href('/')} aria-label={`${SITE.legalEntityName} — home`} class="nav__brand">
+        <BrandMark alt={SITE.legalEntityName} />
+      </a>
     </div>
 
     <!-- CENTRE: navigation, and nothing else. -->
@@ -64,11 +66,9 @@ const isActive = (path: string) => here.startsWith(href(path));
       }
     </ul>
 
-    <!-- RIGHT: the mark, plus the menu toggle below md. -->
+    <!-- RIGHT: the action, plus the menu toggle below md. -->
     <div class="nav__flank nav__flank--end">
-      <a href={href('/')} aria-label={`${SITE.legalEntityName} — home`} class="nav__brand">
-        <BrandMark alt={SITE.legalEntityName} />
-      </a>
+      <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
       <button
         type="button"
         class="nav__toggle"
@@ -147,13 +147,16 @@ const isActive = (path: string) => here.startsWith(href(path));
 
   /* The bar's button is the compact end of the scale — the hero and the close
      carry the full-size one. */
-  .nav__flank--start :global(.btn) {
+  .nav__flank--end :global(.btn) {
     min-height: 2.5rem;
     padding-inline: 1.15rem;
   }
+  /* Below md the bar has no room for the button, but the toggle shares this
+     flank — so hide the BUTTON, not the flank around it. The action moves into
+     the drawer. */
   @media (max-width: 47.99rem) {
-    .nav__flank--start {
-      display: none; /* no room; the action moves into the drawer */
+    .nav__flank--end :global(.btn) {
+      display: none;
     }
   }
 
@@ -182,7 +185,7 @@ const isActive = (path: string) => here.startsWith(href(path));
      decisive, leaving should feel like it is getting out of the way. */
   @media (prefers-reduced-motion: no-preference) {
     .nav[data-nav-reveal] .nav__brand,
-    .nav[data-nav-reveal] .nav__flank--start :global(.btn) {
+    .nav[data-nav-reveal] .nav__flank--end :global(.btn) {
       visibility: hidden;
       opacity: 0;
       transform: translateY(6px);
@@ -192,7 +195,7 @@ const isActive = (path: string) => here.startsWith(href(path));
         visibility 0s linear 240ms;
     }
     .nav[data-nav-reveal][data-nav-shown] .nav__brand,
-    .nav[data-nav-reveal][data-nav-shown] .nav__flank--start :global(.btn) {
+    .nav[data-nav-reveal][data-nav-shown] .nav__flank--end :global(.btn) {
       visibility: visible;
       opacity: 1;
       transform: none;
@@ -201,9 +204,10 @@ const isActive = (path: string) => here.startsWith(href(path));
         transform 320ms var(--ease-out),
         visibility 0s;
     }
-    /* The mark trails the button by a beat, so the two arrive as one gesture
-       sweeping across the bar rather than as a simultaneous pop. */
-    .nav[data-nav-reveal][data-nav-shown] .nav__brand {
+    /* The button trails the mark by a beat, so the bar fills as one gesture
+       sweeping left to right rather than as a simultaneous pop. The mark is on
+       the left now, so it leads. */
+    .nav[data-nav-reveal][data-nav-shown] .nav__flank--end :global(.btn) {
       transition-delay: 70ms;
     }
   }
