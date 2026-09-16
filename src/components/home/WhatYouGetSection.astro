@@ -33,7 +33,7 @@ import { WHAT_YOU_GET } from '../../data/homepage';
 <section class="wyg" id="what-you-get">
   <div class="shell">
     <div class="wyg__head" data-reveal>
-      <span class="rule-thread r" aria-hidden="true" style="--i: 0"></span>
+      <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
       <h2 class="h-section wyg__h r" style="--i: 1">{WHAT_YOU_GET.heading}</h2>
     </div>
 
@@ -44,7 +44,12 @@ import { WHAT_YOU_GET } from '../../data/homepage';
     <ol class="wyg__stages" data-reveal>
       {
         WHAT_YOU_GET.stages.map((stage, i) => (
-          <li class="stage r" data-catch style={`--i: ${i}`}>
+          <li class="stage r" data-catch="ring" style={`--i: ${i}`}>
+            {/* A real element, not a pseudo: the card's ::after is spoken for by
+                the catch ring, and the connector has to register as a catcher in
+                its own right to know how close the cursor is to IT rather than
+                to the card. */}
+            {i > 0 && <span class="stage__link" data-catch="line" aria-hidden="true" />}
             <p class="stage__n meta meta--num">{String(i + 1).padStart(2, '0')}</p>
             <h3 class="stage__h">{stage.title}</h3>
             <ul class="stage__list">
@@ -159,22 +164,20 @@ import { WHAT_YOU_GET } from '../../data/homepage';
    * it lands under the ordinal. Side by side it runs across the gap at the
    * cards' shared middle — which only holds because they are equal-height grid
    * items. */
-  .stage + .stage::before {
-    content: '';
+  .stage__link {
     position: absolute;
     left: clamp(1.5rem, 2.6vw, 2.25rem);
     top: calc(-1 * var(--stage-gap));
     width: 1px;
     height: var(--stage-gap);
-    background-image: linear-gradient(to bottom, transparent, var(--color-line) 35%);
+    background-color: var(--color-line);
   }
   @media (min-width: 48rem) {
-    .stage + .stage::before {
+    .stage__link {
       left: calc(-1 * var(--stage-gap) - 1px);
       top: 50%;
       width: var(--stage-gap);
       height: 1px;
-      background-image: linear-gradient(to right, var(--color-line), var(--color-line));
     }
   }
 

@@ -561,16 +561,32 @@
 
      Decorative: no child, no text, aria-hidden at every call site. */
   .rule-thread {
+    /* The pattern is a custom property drawn in currentColor so the glow layer
+       can reuse it verbatim at a different colour. Two copies of these stops
+       would drift the first time either changed. */
+    --thread-img:
+      linear-gradient(to right, currentColor 0 100%),
+      repeating-linear-gradient(to right, currentColor 0 1px, transparent 1px 16px);
     display: block;
     height: 5px;
-    background-image:
-      linear-gradient(to right, var(--color-line) 0 100%),
-      repeating-linear-gradient(to right, var(--color-line) 0 1px, transparent 1px 16px);
+    color: var(--color-line);
+    background-image: var(--thread-img);
     background-size: 100% 1px, 100% 5px;
     background-position: 0 2px, 0 0;
     background-repeat: no-repeat, repeat-x;
     mask-image: linear-gradient(to right, #000 55%, transparent);
     -webkit-mask-image: linear-gradient(to right, #000 55%, transparent);
+  }
+  /* More specific than [data-catch='line']::after so it wins on specificity
+     rather than on source order. The generic variant paints a solid fill, which
+     on a ruled scale would be a 5px ember band instead of lit ticks. */
+  .rule-thread[data-catch]::after {
+    color: var(--color-ember);
+    background-color: transparent;
+    background-image: var(--thread-img);
+    background-size: 100% 1px, 100% 5px;
+    background-position: 0 2px, 0 0;
+    background-repeat: no-repeat, repeat-x;
   }
 
   /* --- Emphasis ------------------------------------------------------
@@ -692,17 +708,25 @@
    * falling on a surface says nothing about whether you can click it, and this
    * fires on PROXIMITY, not on the pointer being over the element at all.
    *
-   * The ring is a gradient clipped to a 1px frame by two masks composited to
-   * exclude each other — the standard way to get a gradient border without a
-   * second element or a background-clip hack that eats the radius.
-   *
    * --cx/--cy are the pointer in the element's own coordinates and --cnear is
    * 1 at the edge falling to 0 at the falloff distance; both are written from
-   * the one pointer rAF in BaseLayout. */
+   * the one pointer rAF in BaseLayout. The ATTRIBUTE is the registration — the
+   * script picks up [data-catch] whatever its value — and the VALUE chooses how
+   * the element spends the signal, because a 1px border ring is the right
+   * answer for a card and the wrong one for a hairline or an 8px dot.
+   *
+   *   ring  a gradient clipped to the 1px border. Cards.
+   *   line  the line's own mark, relit in ember under the cursor. Rules.
+   *   dot   the whole mark warms. Anything too small to position a gradient in.
+   */
   [data-catch] {
     position: relative;
   }
-  [data-catch]::after {
+
+  /* RING. The gradient is clipped to a 1px frame by two masks composited to
+     exclude each other — the standard way to get a gradient border without a
+     second element or a background-clip hack that eats the radius. */
+  [data-catch='ring']::after {
     content: '';
     position: absolute;
     inset: -1px; /* sits exactly over the existing 1px border */
@@ -725,6 +749,31 @@
     -webkit-mask-composite: xor;
     mask-composite: exclude;
   }
+  /* LINE. A rule has no interior to put a ring around — the mark IS the
+     element. So the glow is the same mark drawn again in ember and masked to a
+     pool under the cursor, which lights the ticks it passes over and leaves the
+     rest alone. Positioned by --cx, so it tracks along the rule. */
+  [data-catch='line']::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background-color: var(--color-ember);
+    mask-image: radial-gradient(
+      12rem 12rem at var(--cx, -999px) var(--cy, 50%),
+      #000 0%,
+      rgba(0, 0, 0, 0.35) 35%,
+      transparent 72%
+    );
+    -webkit-mask-image: radial-gradient(
+      12rem 12rem at var(--cx, -999px) var(--cy, 50%),
+      #000 0%,
+      rgba(0, 0, 0, 0.35) 35%,
+      transparent 72%
+    );
+  }
+
   :root[data-pointer-lit] [data-catch]::after {
     opacity: var(--cnear, 0);
   }
