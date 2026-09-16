@@ -128,6 +128,11 @@ const fontFace = [
             Skip to content
           </a>
 
+          {/* The ground lights where the reader's attention is. Sits at the
+              grid's layer, so it illuminates the surface and passes BEHIND the
+              content rather than washing over the type. */}
+          <div class="glow" aria-hidden="true"><span></span></div>
+
           {/* Scroll progress, drawn as a thread down the left edge of the
               viewport — the hero's bundle, resolved into a single line. */}
           <div class="progress" aria-hidden="true">
@@ -142,6 +147,42 @@ const fontFace = [
         </>
       )
     }
+
+    <script is:inline>
+      /* Cursor illumination.
+       *
+       * Moved with transform ONLY — a radial gradient repositioned by its
+       * background-position repaints a viewport-sized layer every frame, where
+       * a translated element is composited. Coalesced into one rAF so a mouse
+       * reporting at 1000Hz still costs one move per frame.
+       *
+       * Fine pointers only, and never under reduced motion: a light that
+       * chases the cursor is motion, and there is nothing to follow on a
+       * touchscreen. */
+      (() => {
+        const glow = document.querySelector('.glow');
+        if (!glow) return;
+        const dot = glow.firstElementChild;
+        if (!dot) return;
+        if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        let x = 0, y = 0, queued = false, lit = false;
+        const paint = () => {
+          queued = false;
+          dot.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+          if (!lit) { lit = true; glow.setAttribute('data-lit', ''); }
+        };
+        addEventListener('pointermove', (e) => {
+          x = e.clientX; y = e.clientY;
+          if (!queued) { queued = true; requestAnimationFrame(paint); }
+        }, { passive: true });
+        addEventListener('pointerleave', () => { lit = false; glow.removeAttribute('data-lit'); });
+        // A pointer that leaves through the document edge does not always fire
+        // pointerleave on window; the document one does.
+        document.addEventListener('mouseleave', () => { lit = false; glow.removeAttribute('data-lit'); });
+      })();
+    </script>
 
     <script is:inline>
       // Reveal. One observer for the whole page; each block staggers its own
@@ -267,6 +308,46 @@ const fontFace = [
       @media (max-width: 639px) {
         .main--contained {
           padding-top: 7rem;
+        }
+      }
+
+      /* z-index 0 puts it on the grid's layer: above the page's own
+         background, below `main`/`nav`/`footer`, which are z-index 1. So it
+         lights the surface and never lifts the type sitting on it. */
+      .glow {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        pointer-events: none;
+        contain: strict;
+      }
+      .glow span {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 34rem;
+        height: 34rem;
+        margin: -17rem 0 0 -17rem;
+        border-radius: 50%;
+        /* Warm, and weak. Two stops rather than one so it falls off before the
+           edge — a single stop to transparent leaves a visible disc rim. */
+        background: radial-gradient(
+          circle closest-side,
+          rgba(207, 91, 48, 0.1),
+          rgba(207, 91, 48, 0.045) 45%,
+          transparent 78%
+        );
+        opacity: 0;
+        transition: opacity 420ms var(--ease-out);
+        will-change: transform;
+      }
+      .glow[data-lit] span {
+        opacity: 1;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .glow {
+          display: none;
         }
       }
 
