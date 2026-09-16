@@ -18,7 +18,7 @@ import CtaButton from '../CtaButton.astro';
   <div class="shell">
     <div class="close__panel" data-reveal>
       <div class="close__inner">
-        <p class="index meta close__index r" style="--i: 0"><span>03</span></p>
+        <span class="rule-thread close__rule r" aria-hidden="true" style="--i: 0"></span>
 
         <h2 class="h-section close__h r" style="--i: 1">{GET_STARTED.heading}</h2>
 
@@ -77,10 +77,7 @@ import CtaButton from '../CtaButton.astro';
   }
 
   /* The index rule has to flip to ink on the light panel. */
-  .close__index {
-    color: var(--color-invert-accent);
-  }
-  .close__index::after {
+  .close__rule {
     background: linear-gradient(to right, var(--color-invert-line), transparent);
   }
 

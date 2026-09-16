@@ -476,8 +476,7 @@
      or a unit is data, tabular figures are the right tool for it, and a firm
      that quantifies should set its numbers like one — that was always the
      argument, it was just being applied to words as well. */
-  .meta--num,
-  .index > span {
+  .meta--num {
     font-family: var(--font-mono);
     font-size: var(--text-meta);
     font-weight: 400;
@@ -485,21 +484,18 @@
     letter-spacing: var(--tracking-meta);
   }
 
-  /* A section's index marker: 01 / 02 / 03, ember, with a hairline running
-     off to the right. The rule is the thread, continued. */
-  /* Section index, set as a schematic callout: [01] on a measured rule with a
-     node at the junction, the way a step is labelled on a process drawing. */
-  .index {
-    display: flex;
-    align-items: center;
-    gap: 0.85rem;
-    color: var(--color-ember);
-  }
-  .index > span::before { content: '['; opacity: 0.55; }
-  .index > span::after { content: ']'; opacity: 0.55; }
-  .index::after {
-    content: '';
-    flex: 1;
+  /* A section's opening rule: a measured hairline running off to the right,
+     fading out. The thread, continued.
+
+     It used to carry an ember [01] / [02] / [03] at its left end and was named
+     .index for it. The numbering moved onto the stages themselves, where it
+     says something — first the Assessment, then the Implementation — rather
+     than counting sections the reader was not asked to count. What is left is
+     the rule, so it is named for the rule.
+
+     Decorative: no child, no text, aria-hidden at every call site. */
+  .rule-thread {
+    display: block;
     height: 5px;
     background-image:
       linear-gradient(to right, var(--color-line) 0 100%),
