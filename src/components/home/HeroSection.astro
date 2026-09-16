@@ -4,18 +4,16 @@
  *
  * Two columns at desktop: the claim on the left, the product on the right.
  *
- * The workflow diagram sits in its own framed panel rather than washing across
- * the background. Behind the type it was wallpaper — handsome, and saying
- * nothing. Framed, bracketed and captioned like a figure in a report, it reads
- * as the thing being sold: a tangle of manual handoffs on one side, a running
- * pipeline on the other.
+ * The knot sits in its own framed panel: a ribbon ties itself and then pulls
+ * open into a single straight line — the brand's name as a motion, ending on
+ * the terracotta strike from the wordmark.
  *
  * The call to action below is the nav reveal's sentinel: the bar's own button
  * and wordmark appear only once this one has scrolled past, so neither the
  * action nor the mark is ever on screen twice.
  */
 import { HERO } from '../../data/homepage';
-import WorkflowField from '../WorkflowField.astro';
+import KnotRibbon from '../KnotRibbon.astro';
 import CtaButton from '../CtaButton.astro';
 // The PRIMARY lockup: wordmark with the tagline set beneath it. It carries
 // "AI Untangled." itself, so the hero no longer sets that line as type — the
@@ -50,14 +48,11 @@ import BrandMark from '../BrandMark.astro';
     <!-- The figure. Captioned, because an unlabelled diagram is decoration. -->
     <figure class="hero__figure r" style="--i: 3">
       <div class="hero__frame bracket">
-        <WorkflowField />
+        <KnotRibbon />
       </div>
       <figcaption class="hero__key meta">
         <span class="hero__key-item">
-          <span class="hero__swatch hero__swatch--manual"></span>Manual process
-        </span>
-        <span class="hero__key-item">
-          <span class="hero__swatch hero__swatch--auto"></span>Automated
+          <span class="hero__swatch hero__swatch--auto"></span>Tangled, then not
         </span>
       </figcaption>
     </figure>
