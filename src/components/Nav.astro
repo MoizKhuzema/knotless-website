@@ -318,17 +318,26 @@ const isActive = (path: string) => here.startsWith(href(path));
       }
       /* Trigger point is the whole trick.
        *
-       * The root's top edge is pushed down past the bar, so "stopped
-       * intersecting" means "the hero lockup has gone under the nav" rather
-       * than "left the screen". The extra 14px of clearance matters because
-       * the bar is translucent once stuck — without it the lockup is still
-       * faintly readable through the blur at the moment the nav mark arrives,
-       * which is the one thing this is meant to prevent.
+       * rootMargin pushes the root's top edge DOWN to y = M, and the sentinel
+       * stops intersecting when its bottom crosses above M. So M is literally
+       * the handoff line:
        *
-       * Measured live rather than cached: the bar is 5rem, but rem and the
-       * viewport both move, and a stale height puts the handoff in the wrong
-       * place after a resize. */
-      const CLEARANCE = 14;
+       *   M = navH        the lockup's bottom meets the bar's bottom — exact
+       *   M > navH        fires while the lockup is still showing BELOW the bar
+       *   M < navH        fires after it is hidden, leaving a gap with neither
+       *
+       * This previously read navH + 14, which is the wrong side: it revealed
+       * the nav mark while 14px of lockup was still on screen. It measured
+       * clean only because the bar was taller then and a 20px probe stepped
+       * over the overlapping frame.
+       *
+       * navH exactly it is. The bar is translucent once stuck, so the lockup
+       * is briefly soft behind the blur — but blur-through is a softness, not
+       * a second logo, and any margin either way trades it for a real overlap
+       * or a real gap.
+       *
+       * Measured live rather than cached: the bar's height moves with rem and
+       * the viewport, and a stale value puts the handoff in the wrong place. */
       let io: IntersectionObserver | undefined;
       const arm = () => {
         if (io) io.disconnect();
@@ -341,7 +350,7 @@ const isActive = (path: string) => here.startsWith(href(path));
             nav.toggleAttribute('data-brand-shown', past);
           },
           {
-            rootMargin: `-${nav.offsetHeight + CLEARANCE}px 0px 0px 0px`,
+            rootMargin: `-${nav.offsetHeight}px 0px 0px 0px`,
             threshold: 0,
           },
         );
