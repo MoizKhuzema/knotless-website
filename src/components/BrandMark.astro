@@ -116,6 +116,26 @@ const dark = wordmarkDark;
     display: none;
   }
 
+  /* A nearer ancestor can override the theme by declaring the ground it sits
+     on. The nav does this: it floats over the page, so the theme is the wrong
+     authority — what matters is the colour of the thing directly behind it, and
+     the closing panel is the opposite of the page it sits in.
+
+     Equal specificity to the theme rules above, so SOURCE ORDER is what makes
+     the nearer declaration win. Do not move these. */
+  :global([data-ground='light']) .brand__img--light {
+    display: block;
+  }
+  :global([data-ground='light']) .brand__img--dark {
+    display: none;
+  }
+  :global([data-ground='dark']) .brand__img--light {
+    display: none;
+  }
+  :global([data-ground='dark']) .brand__img--dark {
+    display: block;
+  }
+
   /* The inlined lockup. currentColor carries the glyphs, so one file serves
      both grounds. */
   .brand--inline {

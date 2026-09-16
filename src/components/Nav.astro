@@ -7,10 +7,15 @@
  * content later. Fixed rather than sticky: sticky ghosted page content over
  * the bar on iOS Safari.
  *
- * Layout is three tracks: the wordmark on the left, the links centred, the
- * call to action on the right. The centre track is centred against the VIEWPORT,
- * not against whatever the two sides happen to weigh — 1fr/auto/1fr, so the
- * links stay put when the flanks appear.
+ * Layout is three tracks: the wordmark on the left, the links in the middle,
+ * the call to action on the right. All three size to their content and the
+ * capsule is shrink-to-fit, so it is only ever as wide as what is in it — the
+ * flanks collapse their tracks rather than merely fading, and the capsule opens
+ * and closes around them.
+ *
+ * It also senses what is behind it. The bar is glass over whatever the page
+ * puts under it, and the closing panel is a cream slab — so the palette is
+ * chosen from the measured luminance of the ground, not from the theme.
  *
  * Reveal (opt-in via `navReveal`): pages whose hero carries its own wordmark
  * and its own call to action start with BOTH flanks hidden and bring them in
@@ -70,9 +75,18 @@ const isActive = (path: string) => here.startsWith(href(path));
       }
     </ul>
 
-    <!-- RIGHT: the action, plus the menu toggle below md. -->
+    <!-- RIGHT: the action, plus the menu toggle below md. The action sits in
+         its own collapsing track; the toggle must not collapse with it. -->
     <div class="nav__flank nav__flank--end">
-      <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
+      <div class="nav__cta">
+        {/* The inner box is what gets clipped. The button cannot be, because a
+            box's own padding still counts toward the track's size even when its
+            content is clipped to nothing — measured: the collapsed flank held
+            39px of button padding open. */}
+        <div class="nav__cta-in">
+          <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
+        </div>
+      </div>
       <button
         type="button"
         class="nav__toggle"
@@ -134,8 +148,6 @@ const isActive = (path: string) => here.startsWith(href(path));
     pointer-events: none;
   }
 
-  /* 1fr / auto / 1fr centres the links against the VIEWPORT rather than against
-     the remaining space, so they do not shift when the flanks appear. */
   /* The glass itself. Blur and saturation do the work; the fill stays near
      transparent, because glass that is mostly opaque is a panel with a blur
      behind it. The edge is a hairline of light and the inset top line is the
@@ -143,9 +155,24 @@ const isActive = (path: string) => here.startsWith(href(path));
   .nav__bar {
     pointer-events: auto;
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    /* Was 1fr auto 1fr across the full shell, which centred the links against
+       the viewport but left the capsule the same width whether the flanks were
+       there or not — three links floating in 1,280px of glass at the top of the
+       homepage. The tracks size to their content now and the capsule is
+       shrink-to-fit, so it is only ever as wide as what is in it.
+
+       The cost, stated plainly: the capsule no longer lines up with the page's
+       content column, and the links are centred in the capsule rather than in
+       the viewport. A capsule that hugs its contents cannot also hold a fixed
+       grid position — those are the same measurement. */
+    grid-template-columns: auto auto auto;
+    width: fit-content;
+    max-width: min(var(--container-page), 100%);
     align-items: center;
-    gap: 1.5rem;
+    /* No column gap: a gap survives its track collapsing to zero and would
+       leave dead glass either side of the links. The spacing rides on the
+       collapsing content instead. */
+    gap: 0;
     height: var(--nav-h);
     border-radius: 999px;
     background-color: var(--color-glass);
@@ -153,26 +180,77 @@ const isActive = (path: string) => here.startsWith(href(path));
     -webkit-backdrop-filter: blur(22px) saturate(180%);
     border: 1px solid var(--color-glass-edge);
     box-shadow:
-      0 10px 34px rgba(0, 0, 0, 0.34),
+      var(--nav-shadow),
       inset 0 1px 0 var(--color-glass-spec);
     transition:
       background-color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
       box-shadow var(--dur-fast) var(--ease-out);
   }
   /* Scrolled: the glass thickens rather than switching on. It is always a
      surface — a capsule that is invisible at the top of the page and appears
      on scroll reads as two different objects. */
+  /* --- ground sensing --------------------------------------------------
+   * The capsule is transparent, so it takes its legibility from whatever is
+   * behind it — and the closing panel is a cream slab the bar floats straight
+   * over. Cream links on cream is not a subtle failure.
+   *
+   * data-ground is written by the script from the ACTUAL pixels behind the bar,
+   * so this is stated as two complete palettes rather than as a "flip": under
+   * the light theme the page is cream and the closing panel is ink, and the
+   * same sensor has to solve that case in the other direction.
+   *
+   * These are nav-local names on purpose. Redefining --color-cream to a dark
+   * value would be a lie that leaks to every child. */
+  .nav__bar {
+    --nav-fg: var(--color-cream);
+    --nav-fg-dim: var(--color-cream-dim);
+    --nav-shadow: 0 10px 34px rgba(0, 0, 0, 0.34);
+    --nav-shadow-stuck: 0 14px 44px rgba(0, 0, 0, 0.44);
+  }
+  .nav[data-ground='light'] .nav__bar {
+    --nav-fg: #16150f;
+    /* Not the light theme's --color-cream-dim (#6b645a). The ground here is the
+       glass composited over the cream panel, #dfdacf, and #6b645a measures
+       4.19:1 against it — under AA. This is 6.72:1. */
+    --nav-fg-dim: #4b463c;
+    --color-glass: rgba(31, 31, 29, 0.05);
+    --color-glass-lift: rgba(31, 31, 29, 0.075);
+    --color-glass-edge: rgba(31, 31, 29, 0.14);
+    --color-glass-spec: rgba(255, 255, 255, 0.5);
+    /* A drop shadow tuned for a dark ground is a bruise on a cream one. Same
+       geometry, a third of the weight. */
+    --nav-shadow: 0 10px 30px rgba(22, 21, 15, 0.13);
+    --nav-shadow-stuck: 0 14px 38px rgba(22, 21, 15, 0.17);
+  }
+  .nav[data-ground='dark'] .nav__bar {
+    /* The shipped values of --color-cream / --color-cream-dim, literal rather
+       than referenced: the sensor writes data-ground on every page, so this
+       block always wins, and a value that drifted from the token here would
+       silently restyle every link on the site. */
+    --nav-fg: #efe9dd;
+    --nav-fg-dim: #a29b91;
+    --color-glass: rgba(239, 233, 221, 0.055);
+    --color-glass-lift: rgba(239, 233, 221, 0.085);
+    --color-glass-edge: rgba(239, 233, 221, 0.12);
+    --color-glass-spec: rgba(255, 255, 255, 0.14);
+    --nav-shadow: 0 10px 34px rgba(0, 0, 0, 0.34);
+    --nav-shadow-stuck: 0 14px 44px rgba(0, 0, 0, 0.44);
+  }
+
   .nav[data-stuck] .nav__bar {
     background-color: var(--color-glass-lift);
     box-shadow:
-      0 14px 44px rgba(0, 0, 0, 0.44),
+      var(--nav-shadow-stuck),
       inset 0 1px 0 var(--color-glass-spec);
   }
 
   .nav__flank {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    /* Spacing is carried by the collapsing children, as above — a flex gap here
+       would double it and survive the collapse. */
+    gap: 0;
     min-width: 0;
   }
   .nav__flank--start {
@@ -180,6 +258,77 @@ const isActive = (path: string) => here.startsWith(href(path));
   }
   .nav__flank--end {
     justify-content: flex-end;
+  }
+
+  /* The collapsing tracks.
+   *
+   * A single-column grid animated 1fr -> 0fr, with the child clipped. This is
+   * the only way to transition to an element's OWN width: max-width needs a
+   * number, and any number large enough to clear the content makes the easing
+   * finish early and the motion read as a snap. The capsule is shrink-to-fit,
+   * so its width follows these tracks frame by frame and needs no transition of
+   * its own — width itself is not interpolable between fit-content states.
+   *
+   * Spacing is the track's own padding rather than a margin on the child, and
+   * it animates to zero alongside the column. A margin would have been simpler
+   * but it survives the collapse: measured, it left 28px of dead glass at each
+   * end of a capsule that was supposed to be closed.
+   *
+   * Clipping is `clip` with a margin, not `hidden`, so the 2px focus ring at
+   * 3px offset still escapes. `hidden` would have swallowed it. */
+  .nav__flank--start,
+  .nav__cta {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-width: 0;
+  }
+  .nav__flank--start {
+    padding-right: 1.75rem;
+  }
+  .nav__cta {
+    padding-left: 1.75rem;
+  }
+  .nav__flank--start > *,
+  .nav__cta-in {
+    min-width: 0;
+    overflow: clip;
+    overflow-clip-margin: 6px;
+  }
+  .nav__toggle {
+    margin-left: 1.25rem;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .nav__flank--start,
+    .nav__cta {
+      transition:
+        grid-template-columns 320ms var(--ease-out),
+        padding 320ms var(--ease-out);
+    }
+    .nav__cta {
+      /* Trails the mark, the same beat the opacity already uses, so the capsule
+         opens left to right rather than in both directions at once. */
+      transition-delay: 70ms;
+    }
+  }
+  .nav[data-nav-reveal]:not([data-nav-shown]) .nav__flank--start {
+    grid-template-columns: 0fr;
+    padding-right: 0;
+  }
+  .nav[data-cta-hidden] .nav__cta {
+    grid-template-columns: 0fr;
+    padding-left: 0;
+  }
+  /* Below md the button is display:none, so its track is empty — the padding
+     would otherwise hold open space for something that is not there. */
+  @media (max-width: 47.99rem) {
+    .nav__cta {
+      padding-left: 0;
+    }
+  }
+  /* First frame, same reason as the button's own rule below: pages that do not
+     server-render the hidden state would otherwise play a close on load. */
+  .nav[data-cta-init] .nav__cta {
+    transition: none !important;
   }
 
   /* The bar's button is the compact end of the scale — the hero and the close
@@ -297,7 +446,7 @@ const isActive = (path: string) => here.startsWith(href(path));
     display: inline-flex;
     align-items: center;
     min-height: 2.75rem;
-    color: var(--color-cream-dim);
+    color: var(--nav-fg-dim);
     text-decoration: none;
     /* Sentence case. The navigation was 11px uppercase at 0.16em tracking —
        the primary way through the site, set like a machine readout. It is the
@@ -324,7 +473,7 @@ const isActive = (path: string) => here.startsWith(href(path));
   .nav__link:hover,
   .nav__link:focus-visible,
   .nav__link.is-active {
-    color: var(--color-cream);
+    color: var(--nav-fg);
   }
   .nav__link:hover::after,
   .nav__link:focus-visible::after,
@@ -354,7 +503,7 @@ const isActive = (path: string) => here.startsWith(href(path));
     display: block;
     width: 22px;
     height: 1.5px;
-    background-color: var(--color-cream);
+    background-color: var(--nav-fg);
     transition: transform var(--dur-fast) var(--ease-out);
   }
   .nav__toggle[aria-expanded='true'] span:first-child {
@@ -455,9 +604,88 @@ const isActive = (path: string) => here.startsWith(href(path));
 
     /* --- stuck state ------------------------------------------------- */
     const sentinelTop = () => window.scrollY > 24;
-    const sync = () => nav.toggleAttribute('data-stuck', sentinelTop());
+
+    /* --- ground sensing -----------------------------------------------
+     * What colour is the thing behind the capsule, right now.
+     *
+     * Sensed from the live pixels rather than from sections marked up as light
+     * or dark. Marking would have been less code, but it is a list that has to
+     * be kept in step with the CSS by hand, and a section whose background is
+     * themed — the closing panel is cream in the dark theme and ink in the
+     * light one — would need its marking to change with the theme too. Reading
+     * the computed background asks the question the eye actually asks.
+     *
+     * elementsFromPoint skips pointer-events:none elements for free, which is
+     * exactly right here: the cursor glow is a decorative wash over everything
+     * and must not be sensed. .nav's own subtree is filtered explicitly,
+     * because .nav__bar does take pointer events.
+     *
+     * The escape hatch is data-ground on any element the computed background
+     * cannot describe — an image, a canvas, a gradient. Nothing needs it yet. */
+    const bar = nav.querySelector<HTMLElement>('.nav__bar');
+
+    const channel = (c: number) => {
+      const s = c / 255;
+      return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+    };
+    /* WCAG relative luminance. #efe9dd is 0.818 and the ink ground is 0.004, so
+       the midpoint is not a close call — 0.45 sits in empty space. */
+    const isLight = (r: number, g: number, b: number) =>
+      0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b) > 0.45;
+
+    /** true = light, false = dark, null = nothing conclusive at this point. */
+    const groundAt = (x: number, y: number): boolean | null => {
+      for (const el of document.elementsFromPoint(x, y)) {
+        if (nav.contains(el)) continue;
+        const declared = (el as HTMLElement).closest<HTMLElement>('[data-ground]');
+        if (declared && !nav.contains(declared)) return declared.dataset.ground === 'light';
+        const p = getComputedStyle(el).backgroundColor.match(/[\d.]+/g);
+        if (!p) continue;
+        /* See-through: it is not the ground, it is something in front of it. */
+        if (p.length > 3 && parseFloat(p[3]) < 0.9) continue;
+        return isLight(+p[0], +p[1], +p[2]);
+      }
+      return null;
+    };
+
+    const senseGround = () => {
+      if (!bar) return;
+      const r = bar.getBoundingClientRect();
+      if (!r.width) return;
+      const y = Math.round(r.top + r.height / 2);
+      /* Three points, not one. The capsule is narrower than the page now, and
+         the closing panel is inset — so its edges can sit over the page ground
+         while its middle is over cream. The capsule has one colour, so the
+         majority decides it. */
+      let seen = 0;
+      let light = 0;
+      for (const x of [r.left + 20, (r.left + r.right) / 2, r.right - 20]) {
+        const g = groundAt(Math.round(x), y);
+        if (g === null) continue;
+        seen++;
+        if (g) light++;
+      }
+      if (!seen) return;
+      nav.dataset.ground = light * 2 > seen ? 'light' : 'dark';
+    };
+
+    let queued = false;
+    const sync = () => {
+      nav.toggleAttribute('data-stuck', sentinelTop());
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => {
+        queued = false;
+        senseGround();
+      });
+    };
     sync();
+    senseGround();
     window.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync, { passive: true });
+    /* The capsule's own width animates, so its edges move over new ground
+       without the page having scrolled. */
+    bar?.addEventListener('transitionend', senseGround);
 
     /* --- mobile menu -------------------------------------------------- */
     const btn = nav.querySelector<HTMLButtonElement>('.nav__toggle');
