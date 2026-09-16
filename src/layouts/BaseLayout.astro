@@ -371,9 +371,9 @@ const fontFace = [
         position: absolute;
         top: 0;
         left: 0;
-        width: 46rem;
-        height: 46rem;
-        margin: -23rem 0 0 -23rem;
+        width: 34rem;
+        height: 34rem;
+        margin: -17rem 0 0 -17rem;
         border-radius: 50%;
         /* A falloff, not a disc.
          *
@@ -383,16 +383,17 @@ const fontFace = [
          * light actually follows: most of the intensity spent inside the first
          * fifth of the radius, then a long thin tail.
          *
-         * The curve is scaled so the PEAK sits at 0.16, the same core the two-
-         * stop version had — the shape was the point of the change, not the
-         * brightness, and 0.20 took the core from a delta of 31 in 8 bits to
-         * 39, which is where it started reading as a light rather than a warm
-         * patch of ground.
+         * Peak and radius are back at the values this started from, 0.1 and
+         * 34rem, so the curve is the only thing kept from the falloff pass.
+         * Integrated against the two-stop ramp at the same size: mean alpha
+         * 0.77x and total emitted 0.77x — dimmer everywhere, because an
+         * inverse-square tail is thinner than a linear one.
          *
-         * Integrated against that old ramp: mean alpha over the disc 0.72x,
-         * total emitted light 1.31x. Dimmer everywhere, spread wider. The extra
-         * total is all tail — the outer stops are alpha 0.010 to 0.024, deltas
-         * of 2 to 5 in 8 bits, which is reach rather than brightness.
+         * The core is a delta of 19 in 8 bits, the number originally flagged as
+         * what a dim display swallows. It survives now for a reason that did
+         * not hold then: the light MOVES. Motion is detected far below the
+         * contrast threshold of a static patch, and the grid behind it is twice
+         * the contrast it was. Do not read this value as safe on its own.
          *
          * The radius grows 34rem -> 46rem because the tail needs somewhere to
          * go; at the old size the curve was still at 0.018 when it hit the
@@ -404,11 +405,11 @@ const fontFace = [
          * ink desaturates toward the ground on its own. */
         background: radial-gradient(
           circle closest-side,
-          rgba(207, 91, 48, 0.16) 0%,
-          rgba(207, 91, 48, 0.098) 20%,
-          rgba(207, 91, 48, 0.045) 40%,
-          rgba(207, 91, 48, 0.024) 60%,
-          rgba(207, 91, 48, 0.01) 80%,
+          rgba(207, 91, 48, 0.1) 0%,
+          rgba(207, 91, 48, 0.061) 20%,
+          rgba(207, 91, 48, 0.028) 40%,
+          rgba(207, 91, 48, 0.015) 60%,
+          rgba(207, 91, 48, 0.006) 80%,
           transparent 100%
         );
         opacity: 0;
