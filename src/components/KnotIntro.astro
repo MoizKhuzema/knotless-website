@@ -1,0 +1,521 @@
+---
+/**
+ * The hero intro: the whole viewport fills with ribbons, they merge into one,
+ * it ties itself into a knot, the knot is pulled straight, and the resulting bar
+ * flies into the wordmark and becomes the terracotta strike through the `o`.
+ *
+ * Five phases, one continuous motion, ~3.3s. Phases 1-4 are a single canvas;
+ * phase 5 hands off to one <div> and animates transform and opacity only.
+ *
+ * WHY CANVAS FOR 1-4. The shape needs real width, per-segment colour and true
+ * over/under occlusion. A stroked path gives none of those. Generated SVG
+ * polygons give them at the cost of hundreds of DOM nodes mutated per frame,
+ * which is strictly worse than one already-composited canvas layer — and the
+ * canvas never touches layout, which is what the transform/opacity-only
+ * requirement is actually protecting.
+ *
+ * WHY A DIV FOR 5. The landing has to be pixel-exact on a target that moves with
+ * the viewport, and canvas cannot hand a shape to the DOM. FLIP makes the
+ * landing exact by construction rather than by tuning: the div is positioned at
+ * the measured strike, transformed backwards onto the bar, and animated to
+ * identity. Identity IS the strike, so it cannot drift.
+ *
+ * Geometry lives in ../lib/knot — this file owns timing, painting and lifecycle.
+ */
+---
+
+<div class="intro" data-intro-root aria-hidden="true">
+  {/* Separate from the canvas so it can fade on its own clock. The canvas draws
+      on transparency and punches its occlusion gaps in this exact colour, so
+      the two read as one opaque ground until this one lifts. */}
+  <div class="intro__bg"></div>
+  <canvas class="intro__canvas" data-intro-canvas></canvas>
+  {/* The landing bar. Two layers: the strike's literal #A04A2C underneath, the
+      ember the canvas resolved to on top. Fading the top one shifts the colour
+      using opacity alone, so the colour handover never touches a paint property
+      the brief rules out. */}
+  <div class="intro__bar" data-intro-bar>
+    <span class="intro__bar-ember" data-intro-ember></span>
+  </div>
+</div>
+
+<script is:inline>
+  /**
+   * THE GATE. Synchronous and inline, and deliberately tiny.
+   *
+   * It has to run before the hero paints. If the overlay were revealed later —
+   * from the module script, or a rAF — the reader would see the hero, then see
+   * it covered, which is worse than no animation at all. So the overlay is
+   * display:none in CSS and this script opts it in by putting data-intro on
+   * <html> while the parser is still above the hero.
+   *
+   * That also gives fails-open for free: no JS, an exception here, reduced
+   * motion, or a second visit, and the attribute is simply never set, so there
+   * is no overlay to be stuck behind — not a blank panel waiting for a script
+   * that never came.
+   */
+  (() => {
+    try {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      /* sessionStorage throws outright in Safari private browsing and wherever
+         site data is blocked. A storage failure must mean the animation PLAYS,
+         never that the page breaks — so both the read and the write are caught
+         separately and both fall through to playing. */
+      let seen = false;
+      try {
+        seen = sessionStorage.getItem('knotless:intro') === '1';
+      } catch (e) {
+        seen = false;
+      }
+      if (seen) return;
+      try {
+        // Set BEFORE the animation, not after: a reload halfway through must not
+        // replay it.
+        sessionStorage.setItem('knotless:intro', '1');
+      } catch (e) {
+        /* play anyway */
+      }
+
+      document.documentElement.setAttribute('data-intro', 'play');
+
+      /* Belt to the module script's braces. If the module fails to load, throws
+         on import, or is blocked, nothing would ever remove the overlay and the
+         page would be a black rectangle. The module clears this the moment it
+         takes over. */
+      window.__knotIntroFailsafe = window.setTimeout(() => {
+        document.documentElement.removeAttribute('data-intro');
+        const el = document.querySelector('[data-intro-root]');
+        if (el) el.remove();
+      }, 6000);
+    } catch (e) {
+      document.documentElement.removeAttribute('data-intro');
+    }
+  })();
+</script>
+
+<script>
+  import { SHAPES, selfCrossings, strand, ribbonOutline, clamp01, lerp, BANDS, bandPoint } from '../lib/knot';
+  import type { Pt } from '../lib/knot';
+
+  declare global {
+    interface Window {
+      /** Set by the inline gate; cleared the moment this module takes over. */
+      __knotIntroFailsafe?: number;
+    }
+  }
+
+  /** Seconds. One continuous motion; every window overlaps its neighbour. */
+  const T = {
+    sweep: [0.0, 0.55],
+    converge: [0.35, 1.05],
+    tie: [0.95, 1.85],
+    /** The pull-straight. k is driven 1 -> 0, so the knot is genuinely opened. */
+    pull: [1.85, 2.5],
+    /** Colours resolve to one ember while the strand is still gathering. */
+    resolve: [1.0, 1.9],
+    /** Canvas out, div in — the same frame. */
+    hand: 2.5,
+    fly: 600,
+    bgOut: 450,
+    fade: 200,
+  } as const;
+
+  const GROUND = '#0d0c0a';
+  const RESOLVE = '#cf5b30';
+  const PALETTE = ['#cf5b30', '#efe9dd', '#8b7f72', '#cf5b30', '#a29b91', '#4c4640'];
+  const WIDTH_RATIO = 0.085;
+
+  const clampT = (t: number, a: number, b: number) => clamp01((t - a) / (b - a));
+  const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+  const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+  const mixHex = (a: string, b: string, t: number) => {
+    const h = (c: string) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+    const [r1, g1, b1] = h(a);
+    const [r2, g2, b2] = h(b);
+    const m = (x: number, y: number) => Math.round(x + (y - x) * t);
+    return `rgb(${m(r1, r2)},${m(g1, g2)},${m(b1, b2)})`;
+  };
+
+  function run() {
+    const root = document.querySelector<HTMLElement>('[data-intro-root]');
+    if (!root) return;
+    // The gate decides whether this plays. If it declined — reduced motion,
+    // already seen this session, or it threw — there is nothing to do, and the
+    // overlay is display:none anyway.
+    if (document.documentElement.getAttribute('data-intro') !== 'play') {
+      root.remove();
+      return;
+    }
+
+    /* The strike's own proportions, read from the asset's attributes (not its
+       layout, so this is safe before fonts settle). They give the corner
+       geometry the landing div will have, which the canvas has to match BEFORE
+       the swap — see `endTaper`. */
+    const canvas = root.querySelector<HTMLCanvasElement>('[data-intro-canvas]');
+    const bar = root.querySelector<HTMLElement>('[data-intro-bar]');
+    const ember = root.querySelector<HTMLElement>('[data-intro-ember]');
+    const ctx = canvas?.getContext('2d');
+    /* The landing target, in the live DOM. BrandMark inlines the lockup so this
+       is a real <rect> that can be measured; without it there is nothing to fly
+       to, so bail rather than invent a destination. */
+    const strike = document.querySelector<SVGRectElement>('[data-strike]');
+
+    let done = false;
+    let raf = 0;
+    const ac = new AbortController();
+
+    const teardown = () => {
+      if (done) return;
+      done = true;
+      cancelAnimationFrame(raf);
+      ac.abort();
+      clearTimeout(window.__knotIntroFailsafe);
+      document.documentElement.removeAttribute('data-intro');
+      /* Removed, not faded. An abort is the reader saying they have started
+         reading — a backdrop that lingers on its way out is in the way of the
+         thing they turned to. The hero underneath was never touched by any of
+         this, so removing the node leaves it exactly as the page would be. */
+      root.remove();
+    };
+
+    if (!canvas || !ctx || !bar || !ember || !strike) {
+      teardown();
+      return;
+    }
+
+    /* Any deliberate input ends it immediately. wheel and scroll are the common
+       case, not the edge case — readers scroll straight away. */
+    for (const type of ['pointerdown', 'wheel', 'touchstart', 'keydown', 'scroll']) {
+      addEventListener(type, teardown, { passive: true, capture: true, signal: ac.signal });
+    }
+    // A backgrounded tab would otherwise resume mid-sequence, seconds late.
+    document.addEventListener(
+      'visibilitychange',
+      () => document.hidden && teardown(),
+      { signal: ac.signal },
+    );
+
+    // --- projection ---------------------------------------------------------
+
+    const CTRL = SHAPES.trefoil;
+    const b = CTRL.reduce(
+      (a, p) => [Math.min(a[0], p[0]), Math.max(a[1], p[0]), Math.min(a[2], p[1]), Math.max(a[3], p[1])],
+      [Infinity, -Infinity, Infinity, -Infinity],
+    );
+    const spanX = b[1] - b[0];
+    const spanY = Math.max(b[3] - b[2], 0.001);
+    const midX = (b[0] + b[1]) / 2;
+    const midY = (b[2] + b[3]) / 2;
+
+    let W = 0;
+    let H = 0;
+    let scale = 0;
+    let halfW = 0;
+
+    const size = () => {
+      W = root.clientWidth;
+      H = root.clientHeight;
+      // DPR capped at 2: measured, 2 costs the same as 1.5 on this workload and
+      // anything above is invisible.
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      /* UNIFORM. Fitting x and y independently squashes the shape until its
+         strands stop actually intersecting — a non-uniform fit silently took the
+         knot to zero crossings once already, while still looking roughly right.
+         The topology is the entire point, so it must not depend on the aspect of
+         whatever viewport it lands in. */
+      const pad = 1.18; // room for the ribbon's own width
+      scale = Math.min(W / (spanX * pad), H / (spanY * pad));
+      halfW = scale * WIDTH_RATIO;
+    };
+    const project = (p: Pt): Pt => [W / 2 + (p[0] - midX) * scale, H / 2 + (p[1] - midY) * scale];
+
+    /* THE SEAM. The landing div carries the strike's border-radius, and the
+     * FLIP scale blows it up with everything else: at handover the horizontal
+     * corner radius is (rx/width) of the bar's whole length — about 70px at
+     * 1440 — so each end tapers to a fifth of its thickness. A square-cut canvas
+     * bar swapped for that pops, measurably: 4839 pixels changed by more than
+     * 8/255 across the two frames, the worst going ember to ink at the very end
+     * of the bar.
+     *
+     * So the canvas grows the same ends. Ramped by `pull`, so the taper appears
+     * as the knot straightens rather than switching on.
+     *
+     *   Rx = (rx / width) · barLength     Ry = (rx / height) · barThickness
+     *
+     * both derived from the asset's own attribute ratios, which is why this
+     * stays correct if the artwork's rounding ever changes.
+     */
+    const rxA = Number(strike.getAttribute('rx') || 0);
+    const rwA = Number(strike.getAttribute('width') || 1);
+    const rhA = Number(strike.getAttribute('height') || 1);
+    const RX_RATIO = rxA / rwA;
+    const RY_RATIO = rxA / rhA;
+
+    size();
+    addEventListener('resize', size, { passive: true, signal: ac.signal });
+
+    const fillPoly = (poly: Pt[], fill: string) => {
+      ctx.beginPath();
+      poly.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+    };
+
+    /** The over-strand's occlusion window: gap punched in the ground, strand
+     *  colour back over it, tapered at both ends so it blends rather than
+     *  notching. Without this the crossings merge and it reads as a squiggle. */
+    const occlude = (u0: number, k: number, colour: (u: number) => string) => {
+      const half = 0.028;
+      const n = 30;
+      const win: Pt[] = [];
+      const gap: number[] = [];
+      const core: number[] = [];
+      for (let i = 0; i < n; i++) {
+        const u = clamp01(u0 - half + (2 * half * i) / (n - 1));
+        win.push(project(strand(CTRL, u, k)));
+        gap.push(halfW + halfW * 0.55 * Math.sin((i / (n - 1)) * Math.PI));
+        core.push(halfW);
+      }
+      fillPoly(ribbonOutline(win, gap), GROUND);
+      fillPoly(ribbonOutline(win, core), colour(u0));
+    };
+
+    // --- phases 1-4 ---------------------------------------------------------
+
+    function draw(t: number) {
+      ctx!.clearRect(0, 0, W, H);
+
+      const sweep = easeOut(clampT(t, T.sweep[0], T.sweep[1]));
+      const converge = easeInOut(clampT(t, T.converge[0], T.converge[1]));
+      const resolve = easeInOut(clampT(t, T.resolve[0], T.resolve[1]));
+      const tie = easeInOut(clampT(t, T.tie[0], T.tie[1]));
+      const pull = easeInOut(clampT(t, T.pull[0], T.pull[1]));
+      // One knottedness value carries both tying and untying: up to 1, back to 0.
+      const k = tie * (1 - pull);
+
+      if (converge < 0.995) {
+        for (const band of BANDS) {
+          const enter = clamp01((sweep - band.delay) / Math.max(0.001, 1 - band.delay));
+          if (enter <= 0) continue;
+          /* Each band converges on its own clock, and its THICKNESS trails its
+             POSITION — bands stay full-height while they gather and only thin
+             once nearly in place. Shrinking in lockstep is what turned the merge
+             into a tidy row of tiles. */
+          const cv = clamp01((converge - band.cDelay * 0.45) / Math.max(0.001, 1 - band.cDelay * 0.45));
+          const cvThick = clamp01((cv - 0.35) / 0.65);
+          const n = 64;
+          const line: Pt[] = [];
+          const hw: number[] = [];
+          for (let i = 0; i < n; i++) {
+            const u = i / (n - 1);
+            line.push(bandPoint(band, CTRL, u, enter, cv, k, W, H, project));
+            hw.push(lerp(band.thickness * H, halfW, cvThick));
+          }
+          fillPoly(ribbonOutline(line, hw), mixHex(PALETTE[band.colour], RESOLVE, resolve));
+        }
+      } else {
+        // One strand. Sampled once and reused for the ribbon and the crossings.
+        const n = 300;
+        const pts: Pt[] = [];
+        for (let i = 0; i < n; i++) pts.push(project(strand(CTRL, i / (n - 1), k)));
+        // Quarter-ellipse ends, matching the landing div's scaled corners. u maps
+        // linearly to x along the straightened strand, so the window in curve
+        // parameter is just the radius ratio.
+        const amp = RY_RATIO * halfW * 2 * pull;
+        const endTaper = (u: number) => {
+          const d = Math.min(u, 1 - u) / RX_RATIO;
+          if (d >= 1 || amp <= 0) return halfW;
+          return halfW - amp + amp * Math.sqrt(Math.max(0, 1 - (1 - d) * (1 - d)));
+        };
+        fillPoly(
+          ribbonOutline(
+            pts,
+            pts.map((_, i) => endTaper(i / (n - 1))),
+          ),
+          mixHex(PALETTE[0], RESOLVE, resolve),
+        );
+        // Crossings are FOUND, never assumed — which is also why the gaps stop
+        // on their own as the knot opens and the strands genuinely separate.
+        for (const c of selfCrossings(pts)) occlude(c.over, k, () => mixHex(PALETTE[0], RESOLVE, resolve));
+      }
+    }
+
+    // --- phase 5: FLIP onto the strike --------------------------------------
+
+    function handover() {
+      /* Measured HERE, not at init: fonts and layout have settled by now, and
+         the wordmark is fluid so the target moves with the viewport. A constants
+         table drifts from the asset — that already went wrong once, landing 16
+         units low on a cream glyph. */
+      const s = strike!.getBoundingClientRect();
+      if (!s.width || !s.height) {
+        teardown();
+        return;
+      }
+
+      // The canvas's final bar, at k = 0: a horizontal strand of known extent.
+      const left = project([CTRL[0][0], 0])[0];
+      const right = project([CTRL[CTRL.length - 1][0], 0])[0];
+      const midY = project([0, 0])[1];
+      const B = { x: left, y: midY - halfW, w: right - left, h: halfW * 2 };
+
+      // Corner radius from the asset's own ratio, scaled to the rendered size,
+      // so it matches whatever the strike currently measures.
+      const rx = Number(strike!.getAttribute('rx') || 0);
+      const rw = Number(strike!.getAttribute('width') || 1);
+
+      bar!.style.left = `${s.left}px`;
+      bar!.style.top = `${s.top}px`;
+      bar!.style.width = `${s.width}px`;
+      bar!.style.height = `${s.height}px`;
+      bar!.style.borderRadius = `${(rx / rw) * s.width}px`;
+
+      // Inverse transform, origin top-left: puts the div exactly on the bar.
+      const dx = B.x - s.left;
+      const dy = B.y - s.top;
+      const sx = B.w / s.width;
+      const sy = B.h / s.height;
+
+      bar!.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+      bar!.style.opacity = '1';
+      // Same frame: the two are pixel-identical, so the swap is invisible.
+      ctx!.clearRect(0, 0, W, H);
+      canvas!.style.display = 'none';
+      root!.setAttribute('data-intro-phase', '5');
+
+      const ease = 'cubic-bezier(0.22, 1, 0.36, 1)';
+      /* transform -> none. Identity IS the strike position, so the landing is
+         exact by construction; there is no number here to tune. The non-uniform
+         scale distorts the radius in flight, which reads as the bar compressing,
+         and is exactly right at landing because landing is identity. */
+      const flight = bar!.animate([{ transform: bar!.style.transform }, { transform: 'none' }], {
+        duration: T.fly,
+        easing: ease,
+        fill: 'forwards',
+      });
+      // Ember -> the strike's literal #A04A2C, by opacity alone.
+      ember!.animate([{ opacity: 1 }, { opacity: 0 }], {
+        duration: T.fly * 0.8,
+        easing: 'linear',
+        fill: 'forwards',
+      });
+      // The hero comes up underneath while the bar is still travelling to it,
+      // so the bar reads as delivering itself into a mark that is already there.
+      const bg = root!.querySelector<HTMLElement>('.intro__bg');
+      bg?.animate([{ opacity: 1 }, { opacity: 0 }], {
+        duration: T.bgOut,
+        easing: 'ease-out',
+        fill: 'forwards',
+      });
+
+      flight.finished
+        .then(() => {
+          /* Test hook. Landing accuracy is the number that decides whether this
+             phase works, and it can only be read in the one frame between the
+             bar arriving and the node being removed. Same affordance as /lab/'s
+             `lab:set`. */
+          document.dispatchEvent(new CustomEvent('knot:landed'));
+        })
+        .then(() =>
+          bar!.animate([{ opacity: 1 }, { opacity: 0 }], {
+            duration: T.fade,
+            easing: 'linear',
+            fill: 'forwards',
+          }).finished,
+        )
+        .then(teardown)
+        .catch(() => teardown()); // an aborted animation rejects; teardown is idempotent
+    }
+
+    // --- loop ---------------------------------------------------------------
+
+    /* -1, not 0, and tested with `< 0` rather than falsily. A rAF timestamp of
+       exactly 0 is legal, and `!start` reads it as "not started yet" — which
+       re-zeroes the clock on every frame, pins t at 0, and leaves the sequence
+       frozen on its first frame until the failsafe clears it. */
+    let start = -1;
+    const frame = (now: number) => {
+      if (done) return;
+      if (start < 0) start = now;
+      const t = (now - start) / 1000;
+      if (t >= T.hand) {
+        handover();
+        return;
+      }
+      draw(t);
+      raf = requestAnimationFrame(frame);
+    };
+
+    clearTimeout(window.__knotIntroFailsafe);
+    raf = requestAnimationFrame(frame);
+  }
+
+  /* The whole controller is guarded. Anything unexpected in here must leave the
+     reader with a working hero, never a black rectangle. */
+  try {
+    run();
+  } catch (e) {
+    document.documentElement.removeAttribute('data-intro');
+    document.querySelector('[data-intro-root]')?.remove();
+  }
+</script>
+
+<style>
+  /* Hidden by default and opted IN by the gate script above, so no JS, an
+     exception, reduced motion or a repeat visit all fall through to the hero
+     with nothing in front of it. */
+  .intro {
+    display: none;
+  }
+  :global(html[data-intro='play']) .intro {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    /* Never intercepts a click. The hero's CTA is live underneath from the
+       first paint, and a reader who goes straight for it gets it. */
+    pointer-events: none;
+    contain: strict;
+  }
+
+  .intro__bg,
+  .intro__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .intro__bg {
+    background-color: var(--color-ink);
+  }
+  .intro__canvas {
+    display: block;
+  }
+
+  .intro__bar {
+    position: absolute;
+    opacity: 0;
+    transform-origin: 0 0;
+    background-color: #a04a2c; /* the strike's literal value, from the asset */
+    will-change: transform, opacity;
+  }
+  .intro__bar-ember {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: var(--color-ember);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .intro,
+    :global(html[data-intro='play']) .intro {
+      display: none !important;
+    }
+  }
+</style>

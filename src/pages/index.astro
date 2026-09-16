@@ -27,6 +27,7 @@
  * one line below, with the rhythm becoming 144/96/96/144.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import KnotIntro from '../components/KnotIntro.astro';
 import HeroSection from '../components/home/HeroSection.astro';
 import WhatYouGetSection from '../components/home/WhatYouGetSection.astro';
 import FoundersSection from '../components/home/FoundersSection.astro';
@@ -53,6 +54,10 @@ const schema = graph([
      the nav's flanks stay empty until the hero's button scrolls under the bar.
      See Nav.astro. -->
 <BaseLayout title={title} description={description} schema={schema} navReveal bleed>
+  {/* First in the slot on purpose: its gate script is synchronous, so it must
+      run while the parser is still ABOVE the hero. Revealing the overlay any
+      later would show the hero and then cover it. */}
+  <KnotIntro />
   <HeroSection />
   <WhatYouGetSection />
   <FoundersSection />
