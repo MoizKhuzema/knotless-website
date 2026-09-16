@@ -25,7 +25,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <header class="lab__head">
       <h1>Hero intro — pieces in isolation</h1>
       <p>
-        Not a site page. Pick <code>field</code> for phase 1 full-viewport, or the knot modes to
+        Not a site page. Pick the field mode for phases 1-2 full-viewport, or the knot modes to
         judge whether the shape reads as tied at every <code>k</code> and every width.
       </p>
     </header>
@@ -38,8 +38,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <div class="field__hud">
         <button type="button" data-field-play>play</button>
         <label>
-          t <output data-out="ft">0.00</output>
-          <input type="range" data-ft min="0" max="1" step="0.002" value="0" />
+          t <output data-out="ft">0ms</output>
+          <input type="range" data-ft min="0" max="1400" step="5" value="0" />
         </label>
         <label>
           rows <output data-out="rows">13</output>
@@ -59,7 +59,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <select data-mode>
           <option value="knot" selected>knot only</option>
           <option value="seq">phases 1-3</option>
-          <option value="field">phase 1 — ribbon field (full viewport)</option>
+          <option value="field">phases 1-2 — field + collapse (full viewport)</option>
         </select>
       </label>
       <label>
@@ -264,7 +264,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     BANDS, bandPoint,
   } from '../lib/knot';
   import type { Pt, ShapeName } from '../lib/knot';
-  import { buildField, edgeY, rowSpans, FIELD, FIELD_PALETTE, FIELD_GROUND } from '../lib/ribbons';
+  import {
+    buildField, edgeY, rowSpans, frontAt, collapseX, collapseY,
+    FIELD, FIELD_PALETTE, FIELD_GROUND,
+  } from '../lib/ribbons';
 
   const $ = <T extends Element>(s: string) => document.querySelector(s) as T;
   const canvases = [...document.querySelectorAll<HTMLCanvasElement>('[data-canvas]')];
@@ -498,6 +501,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   /** Phase 1 runs for one second. Slower than anything that follows, on
    *  purpose: it is the only part the reader is meant to simply watch. */
   const FIELD_MS = 1000;
+  /** Phase 2, the collapse. Fast — it is a transition, not a thing to look at,
+   *  and at much over this it stops reading as being pulled in. */
+  const COLLAPSE_MS = 400;
+  const TOTAL_MS = FIELD_MS + COLLAPSE_MS;
   let field = buildField(Number(rowsIn.value));
   let fraf = 0;
   let fstart = -1;
@@ -506,7 +513,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   // stops being visible on a 1440 swell under one cycle wide.
   const FS = 56;
 
-  function drawField(t: number) {
+  /**
+   * `ms` is absolute time through the whole sequence.
+   *
+   * The field's own clock keeps running past phase 1 and through the collapse —
+   * the ribbons are still scrolling and the wave is still travelling while they
+   * are being drawn in, which is what stops phase 2 reading as a still image
+   * being transformed.
+   */
+  function drawField(ms: number) {
+    const t = ms / FIELD_MS;
+    // Linear: the acceleration lives in frontAt, per column, so every column
+    // gets the same motion instead of the left half being crushed into the end.
+    const p = clamp01((ms - FIELD_MS) / COLLAPSE_MS);
     const ctx = fcv.getContext('2d');
     if (!ctx) return;
     const W = stage.clientWidth;
@@ -526,8 +545,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
        is invisible. Cheaper and more robust than tuning overlaps until the
        artefact happens to vanish — it was down to one pixel per frame, which is
        exactly the kind of number that comes back on a different DPR. */
-    ctx.fillStyle = FIELD_GROUND;
-    ctx.fillRect(0, 0, W, H);
+    /* The ground has to retreat with the front, or phase 2 ends on a brown
+       screen instead of an empty one. Filled in columns whose alpha tracks
+       `frontAt` exactly, rather than as one rect clipped at the front: a rect
+       leaves a hard vertical edge sweeping across the screen, which was clearly
+       visible mid-collapse and read as a wipe rather than as a collapse. */
+    if (p <= 0) {
+      ctx.fillStyle = FIELD_GROUND;
+      ctx.fillRect(0, 0, W, H);
+    } else {
+      const cols = 72;
+      ctx.fillStyle = FIELD_GROUND;
+      for (let s = 0; s < cols; s++) {
+        const a = 1 - frontAt((s + 0.5) / cols, p);
+        if (a <= 0.002) continue;
+        ctx.globalAlpha = a;
+        ctx.fillRect((s * W) / cols, 0, W / cols + 1, H);
+      }
+      ctx.globalAlpha = 1;
+    }
 
     const amp = Number(ampIn.value);
     // Every boundary sampled ONCE, then shared by the row above and the row
@@ -546,10 +582,33 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       return lerp(curves[i][a], curves[i][b], f - a);
     };
 
-    for (let i = 0; i < field.rows.length; i++) {
+    const rowCount = field.rows.length;
+    const [lineTop, lineBottom] = collapseY(H);
+
+    for (let i = 0; i < rowCount; i++) {
       /* The joint leans by a fraction of THIS row's thickness, so thick and
          thin rows are cut at the same angle rather than the same distance. */
       const skew = ((field.edges[i + 1] - field.edges[i]) * H * FIELD.SKEW) / W;
+
+      /**
+       * One vertex, from field position to collapsed position.
+       *
+       * `uRef` is the TOP edge's column for both edges of a quad, so the two
+       * sides of a segment are drawn into the same place and the segment stays
+       * coherent as it goes. Using each vertex's own column would shear the
+       * quad apart on the way in — and it also means the skew collapses with
+       * everything else, which is why the finished line has square joints
+       * rather than the leaning ones phase 1 uses.
+       */
+      const warp = (u: number, uRef: number, y: number, top: boolean): [number, number] => {
+        if (p <= 0) return [u * W, y];
+        const c = frontAt(clamp01(uRef), p);
+        if (c <= 0) return [u * W, y];
+        const tx = collapseX(i, rowCount, uRef, W);
+        const ty = top ? lineTop : lineBottom;
+        return [lerp(u * W, tx, c), lerp(y, ty, c)];
+      };
+
       for (const span of rowSpans(field, i, t)) {
         const x0 = span.x0;
         const x1 = span.x1;
@@ -560,18 +619,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
            which here would be the ground, i.e. the one thing this phase must
            never show. Overlapping costs nothing and removes the seam. */
         const bleed = 1.5 / W;
-        const n = Math.max(2, Math.ceil((x1 - x0) * 26));
+        /* More samples once the collapse is on: u^6 compresses most of a row
+           into the left sliver of its slot, so a coarse polygon there turns a
+           curve into a visible corner. */
+        const n = Math.max(2, Math.ceil((x1 - x0) * (p > 0 ? 64 : 26)));
         ctx.beginPath();
         // Top edge, left to right.
         for (let s = 0; s <= n; s++) {
           const u = x0 + ((x1 - x0 + bleed) * s) / n;
-          s ? ctx.lineTo(u * W, yAt(i, u)) : ctx.moveTo(u * W, yAt(i, u));
+          const [px, py] = warp(u, u, yAt(i, u), true);
+          s ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
         }
         // Bottom edge, right to left, shifted back by the skew — so the cut at
         // each end is a slanted line and the next segment's slant matches it.
         for (let s = n; s >= 0; s--) {
-          const u = x0 - skew + ((x1 - x0 + bleed) * s) / n;
-          ctx.lineTo(u * W, yAt(i + 1, u) + 0.5);
+          const uRef = x0 + ((x1 - x0 + bleed) * s) / n;
+          const u = uRef - skew;
+          const [px, py] = warp(u, uRef, yAt(i + 1, u) + 0.5, false);
+          ctx.lineTo(px, py);
         }
         ctx.closePath();
         ctx.fillStyle = FIELD_PALETTE[span.c];
@@ -582,10 +647,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   function fieldFrame(now: number) {
     if (fstart < 0) fstart = now;
-    const t = ((now - fstart) % FIELD_MS) / FIELD_MS;
-    ftIn.value = String(t);
-    ftOut.value = t.toFixed(2);
-    drawField(t);
+    // Loop with a beat on the finished line, so it can be judged before the
+    // sequence restarts.
+    const ms = (now - fstart) % (TOTAL_MS + 700);
+    const shown = Math.min(ms, TOTAL_MS);
+    ftIn.value = String(shown);
+    ftOut.value = `${Math.round(shown)}ms`;
+    drawField(shown);
     fraf = requestAnimationFrame(fieldFrame);
   }
 
@@ -603,7 +671,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   });
   ftIn.addEventListener('input', () => {
     stopField();
-    ftOut.value = Number(ftIn.value).toFixed(2);
+    ftOut.value = `${Math.round(Number(ftIn.value))}ms`;
     drawField(Number(ftIn.value));
   });
   rowsIn.addEventListener('input', () => {

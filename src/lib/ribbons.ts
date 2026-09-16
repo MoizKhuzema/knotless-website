@@ -286,6 +286,85 @@ export function edgeY(field: Field, i: number, u: number, t: number, amp: number
  * one bare. It showed up as a single uncovered column at x = W-1, in the
  * coverage scan rather than by eye.
  */
+/* ---------------------------------------------------------------------------
+ * Phase 2: the collapse.
+ *
+ * The field is the wordmark under a microscope. Pulling back, everything is
+ * drawn into a point at the CENTRE OF THE RIGHT EDGE and stretched into a
+ * single line that reaches from there back to the middle of the screen.
+ *
+ * THE END STATE IS THE SPECIFICATION, and the mapping is chosen to produce it
+ * exactly rather than to simulate gravity and hope. A literal radial pull —
+ * every point toward the attractor, distance preserved as length along the line
+ * — is the physical model, and it does not work: rows far from the attractor's
+ * y land at different lengths from rows near it, so the line comes out ragged
+ * at both ends with the ground showing between stripes.
+ *
+ * So each ROW claims a SLOT: row i lands in the i-th thirteenth of the line,
+ * occupying its full thickness. Slots abut exactly, so the line is continuous
+ * and every joint is a hard vertical edge — no stripes, no ragged ends, and the
+ * segment-after-segment reading the brief asks for falls out of the structure.
+ *
+ * The stretch is what makes it read as a collapse rather than a slide: within a
+ * row, position maps through u^POW, so the last tenth of a row fills half its
+ * slot and everything behind it is crushed into the remainder. That is also why
+ * a slot ends up showing one or two colours — the content nearest the hole is
+ * the content that survives, which is the right story as well as the right
+ * picture.
+ * ------------------------------------------------------------------------- */
+
+export const COLLAPSE = {
+  /**
+   * How much of the phase is spent staggering the start across the width. The
+   * right edge begins at once; the left edge begins this far in. Whatever is
+   * left over is how long any single column takes to go, which is the same for
+   * all of them.
+   *
+   * That decoupling matters. A moving front whose width is fixed in SCREEN
+   * space gives every column a different collapse duration: the left edge can
+   * only finish when the front has fully passed it, which is at the very last
+   * instant, so the entire left half went in the final 68ms of a 400ms phase
+   * and read as a snap. Staggering the START instead gives every column the
+   * same motion and keeps the right-to-left reading.
+   */
+  SPREAD: 0.55,
+  /** Stretch exponent. At 6, the rightmost tenth of a row fills half its slot.
+   *  Lower and the row slides in whole rather than stretching; higher and
+   *  everything but the last segment vanishes too abruptly to read. */
+  POW: 6,
+  /** Thickness of the resulting line, as a fraction of viewport height. */
+  THICK: 0.055,
+} as const;
+
+const clamp01n = (n: number) => (n < 0 ? 0 : n > 1 ? 1 : n);
+
+/**
+ * How far column `u` has been drawn in, 0..1, at collapse progress `p`.
+ *
+ * Squared on the way out, so a column accelerates as it goes rather than
+ * sliding in at a constant rate — the pull belongs on the column, not on the
+ * phase. `p` itself is linear, which is what keeps the front sweeping evenly.
+ */
+export function frontAt(u: number, p: number): number {
+  const delay = (1 - clamp01n(u)) * COLLAPSE.SPREAD;
+  const c = clamp01n((p - delay) / (1 - COLLAPSE.SPREAD));
+  return c * c;
+}
+
+/** The x a vertex of row `i` lands on once fully collapsed, in pixels. */
+export function collapseX(i: number, rowCount: number, u: number, W: number): number {
+  const half = W / 2;
+  const s = Math.pow(clamp01n(u), COLLAPSE.POW);
+  return half + ((i + s) / rowCount) * half;
+}
+
+/** Top and bottom of the finished line, in pixels. Every row collapses to the
+ *  FULL thickness — they do not stack, because each owns its own length. */
+export function collapseY(H: number): [number, number] {
+  const h = (COLLAPSE.THICK * H) / 2;
+  return [H / 2 - h, H / 2 + h];
+}
+
 export function rowSpans(field: Field, i: number, t: number): { x0: number; x1: number; c: number }[] {
   const row = field.rows[i];
   const out: { x0: number; x1: number; c: number }[] = [];
