@@ -66,7 +66,7 @@ const year = new Date().getFullYear();
       </div>
     </div>
 
-    <p class="foot__legal meta">© {year} {SITE.legalEntityName} · ABN {SITE.abn}</p>
+    <p class="foot__legal">© {year} {SITE.legalEntityName} · ABN {SITE.abn}</p>
   </div>
 </footer>
 
@@ -166,9 +166,16 @@ const year = new Date().getFullYear();
     color: var(--color-ember);
   }
 
+  /* Sentence case, in the sans. It carried .meta, so the copyright and the ABN
+     were set in MONOSPACED UPPERCASE with 0.16em tracking — a line that exists
+     to be read once, set in the hardest possible way to read it. Nothing about
+     "© 2026 Knotless AI Pty Ltd · ABN 74 …" is data that wants tabular figures
+     or a label that wants caps. */
   .foot__legal {
     margin: clamp(3rem, 6vw, 5rem) 0 0;
+    font-size: var(--text-sm);
+    line-height: 1.5;
     color: var(--color-cream-dim);
-    opacity: 0.7;
+    opacity: 0.8;
   }
 </style>

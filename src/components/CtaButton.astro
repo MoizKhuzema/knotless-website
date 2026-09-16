@@ -50,7 +50,9 @@ const { href, variant = 'primary' } = Astro.props;
     border-radius: 999px;
     border: 1px solid transparent;
     font-family: var(--font-sans);
-    font-size: var(--text-meta);
+    /* The caps stay — an action set in caps reads as a button — but at 12px
+       rather than 11, and the tracking now comes from the calmed token. */
+    font-size: var(--text-label);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: var(--tracking-meta);

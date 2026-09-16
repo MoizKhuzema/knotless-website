@@ -266,10 +266,14 @@ const isActive = (path: string) => here.startsWith(href(path));
     min-height: 2.75rem;
     color: var(--color-cream-dim);
     text-decoration: none;
-    font-size: var(--text-meta);
+    /* Sentence case. The navigation was 11px uppercase at 0.16em tracking —
+       the primary way through the site, set like a machine readout. It is the
+       single biggest contributor to the technical feel (12 of the 27 instances)
+       and the one place where legibility and warmth point the same way:
+       navigation is meant to be READ, not decoded. */
+    font-size: var(--text-sm);
     font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-meta);
+    letter-spacing: 0.01em;
     transition: color var(--dur-fast) var(--ease-out);
   }
   .nav__link::after {

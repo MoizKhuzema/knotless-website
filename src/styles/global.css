@@ -112,7 +112,7 @@
   --text-h3--line-height: 1.3;
   /* Fixed steps, still used by the pages not yet rebuilt around the fluid
    * display sizes below. */
-  --text-label: 0.6875rem;
+  --text-label: 0.75rem; /* 12px — was 11px, too small to carry a phrase */
   --text-label--line-height: 1.4;
   --text-lg: 1.3125rem;
   --text-lg--line-height: 1.55;
@@ -136,9 +136,13 @@
   --tracking-display: -0.045em;
   --tracking-tight: -0.015em;
   --tracking-normal: 0em;
-  --tracking-meta: 0.16em;
-  --tracking-label: 0.16em; /* alias used by the not-yet-rebuilt pages */
-  --tracking-tagline: 0.2em;
+  /* 0.085em, down from 0.16em. At 0.16 a label stops reading as a word and
+     starts reading as a readout — which, applied to 27 places on the homepage
+     alone including the whole navigation, is most of what made the site feel
+     like a terminal rather than a firm. Still open enough to mark a label;
+     no longer wide enough to spell it out letter by letter. */
+  --tracking-meta: 0.085em;
+  --tracking-label: 0.085em; /* alias used by the not-yet-rebuilt pages */
 
   /* --- Rhythm --------------------------------------------------------- */
   --spacing-gutter: 1.5rem;
@@ -402,17 +406,31 @@
     font-weight: 620;
   }
 
-  /* Eyebrow / index / label. Open tracking, small, always uppercase. */
-  /* Every label, index, figure and unit. Mono with tabular figures, because a
-     firm that quantifies should set its numbers like one. */
+  /* Eyebrow / label. WORDS, so the sans — the mono was carrying "Get in touch",
+     "Co-Founder & CEO" and the copyright line, none of which are data, and a
+     monospaced face on running words is the loudest technical signal a page can
+     make. 13px rather than 11: a label smaller than the text it introduces is a
+     label nobody reads. */
   .meta {
-    font-family: var(--font-mono);
-    font-size: var(--text-meta);
-    font-weight: 400;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 500;
     line-height: 1.4;
     text-transform: uppercase;
     letter-spacing: var(--tracking-meta);
+  }
+
+  /* NUMBERS keep the mono, and are the only thing that does. An index, a figure
+     or a unit is data, tabular figures are the right tool for it, and a firm
+     that quantifies should set its numbers like one — that was always the
+     argument, it was just being applied to words as well. */
+  .meta--num,
+  .index > span {
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    font-weight: 400;
     font-variant-numeric: tabular-nums;
+    letter-spacing: var(--tracking-meta);
   }
 
   /* A section's index marker: 01 / 02 / 03, ember, with a hairline running

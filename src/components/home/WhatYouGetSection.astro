@@ -57,7 +57,7 @@ import { WHAT_YOU_GET } from '../../data/homepage';
         {
           WHAT_YOU_GET.verticals.map((v, i) => (
             <li class="vlist__row r" style={`--i: ${i + 1}`}>
-              <span class="vlist__n meta">{String(i + 1).padStart(2, '0')}</span>
+              <span class="vlist__n meta meta--num">{String(i + 1).padStart(2, '0')}</span>
               <h3 class="vlist__name">{v.name}</h3>
               <p class="vlist__members">
                 {v.members.map((m, j) => (
@@ -134,11 +134,15 @@ import { WHAT_YOU_GET } from '../../data/homepage';
      the smallest text in the section. It is the sentence that frames the whole
      block, so it is set at 13px, in cream, with the tracking that marks it as a
      label rather than prose. */
+  /* A sentence, so the sans — it was in the mono, which set "We specialise in
+     two verticals" as though it were a readout. Tracking comes from the token
+     now rather than a local 0.14em. */
   .wyg__vlead {
     margin: 0 0 1.75rem;
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     font-size: var(--text-sm);
-    letter-spacing: 0.14em;
+    font-weight: 500;
+    letter-spacing: var(--tracking-meta);
     text-transform: uppercase;
     color: var(--color-cream);
   }
