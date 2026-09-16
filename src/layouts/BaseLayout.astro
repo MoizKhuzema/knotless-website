@@ -134,8 +134,10 @@ const fontFace = [
             <span></span>
           </div>
 
-          {/* The sweep candidate's travelling band. Inert unless ?grid=sweep. */}
+          {/* Candidate layers. Inert unless the matching ?grid= is set. */}
           <div class="grid-sweep" aria-hidden="true"></div>
+          <div class="grid-beat grid-beat--1" aria-hidden="true"></div>
+          <div class="grid-beat grid-beat--2" aria-hidden="true"></div>
 
           <Nav navReveal={navReveal} />
           <main id="main" tabindex="-1" class={bleed ? undefined : 'main--contained'}>
@@ -155,6 +157,20 @@ const fontFace = [
         const m = /(?:^|[?&])grid=([a-z]+)/.exec(window.location.search);
         if (!m) return;
         document.documentElement.setAttribute('data-grid', m[1]);
+        /* The ripple beats FROM THE MARK. Measured, not guessed — the lockup
+           is fluid, so the strike moves with the viewport. */
+        if (m[1] === 'ripple') {
+          const place = () => {
+            const st = document.querySelector('[data-strike]');
+            if (!st) return;
+            const r = st.getBoundingClientRect();
+            document.documentElement.style.setProperty('--beat-x', `${r.left + r.width / 2}px`);
+            document.documentElement.style.setProperty('--beat-y', `${r.top + r.height / 2}px`);
+          };
+          place();
+          addEventListener('resize', place, { passive: true });
+          return;
+        }
         if (m[1] !== 'parallax') return;
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         /* Scroll-driven, so it costs nothing while the page is still — which is
