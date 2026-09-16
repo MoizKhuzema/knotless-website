@@ -167,20 +167,65 @@ const fontFace = [
         if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-        let x = 0, y = 0, queued = false, lit = false;
-        const paint = () => {
-          queued = false;
-          dot.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-          if (!lit) { lit = true; glow.setAttribute('data-lit', ''); }
+        /* The light does not follow the pointer, it CHASES it — closing a
+         * fraction of the remaining gap each frame. Snapping to the cursor is
+         * what makes a glow read as a CSS property being assigned; trailing a
+         * little is what makes it read as a thing with mass.
+         *
+         * EASE is per 60Hz frame, corrected by dt so the same glide plays on a
+         * 120Hz panel. Without that correction a ProMotion Mac runs it at
+         * double speed and loses the trail entirely — which is most of this
+         * audience.
+         *
+         * The loop PARKS when the light arrives. A rAF that never stops costs a
+         * wake-up every frame for a still pointer, all day, on battery. */
+        const EASE = 0.12;
+        let tx = 0, ty = 0;      // where the pointer is
+        let px = 0, py = 0;      // where the light is
+        let running = false, seeded = false, lit = false, last = 0;
+
+        const place = () => { dot.style.transform = `translate3d(${px}px, ${py}px, 0)`; };
+
+        const frame = (now) => {
+          const dt = last ? Math.min(now - last, 64) : 16.67;
+          last = now;
+          const k = 1 - Math.pow(1 - EASE, dt / 16.67);
+          px += (tx - px) * k;
+          py += (ty - py) * k;
+          place();
+          /* Half a pixel, not a tenth. An exponential approach never actually
+             arrives, so the threshold decides how long the tail runs: 0.1px
+             took 68 frames to clear a 600px jump, the last twenty of them
+             moving the light by less than a pixel in total. It snaps to the
+             exact target on park, so the only thing those frames bought was
+             battery. */
+          if (Math.abs(tx - px) < 0.5 && Math.abs(ty - py) < 0.5) {
+            px = tx; py = ty; place();
+            running = false; last = 0;
+            return;
+          }
+          requestAnimationFrame(frame);
         };
+
         addEventListener('pointermove', (e) => {
-          x = e.clientX; y = e.clientY;
-          if (!queued) { queued = true; requestAnimationFrame(paint); }
+          tx = e.clientX; ty = e.clientY;
+          if (!seeded) {
+            /* The first sample snaps. Easing in from the 0,0 origin would swipe
+               the light diagonally across the whole page the moment the pointer
+               arrives, which is the opposite of subtle. Same on re-entry after
+               the pointer has left: the light appears where the cursor is and
+               fades up, rather than sliding in from wherever it was abandoned. */
+            seeded = true; px = tx; py = ty; place();
+          }
+          if (!lit) { lit = true; glow.setAttribute('data-lit', ''); }
+          if (!running) { running = true; last = 0; requestAnimationFrame(frame); }
         }, { passive: true });
-        addEventListener('pointerleave', () => { lit = false; glow.removeAttribute('data-lit'); });
+
+        const leave = () => { lit = false; seeded = false; glow.removeAttribute('data-lit'); };
+        addEventListener('pointerleave', leave);
         // A pointer that leaves through the document edge does not always fire
         // pointerleave on window; the document one does.
-        document.addEventListener('mouseleave', () => { lit = false; glow.removeAttribute('data-lit'); });
+        document.addEventListener('mouseleave', leave);
       })();
     </script>
 
