@@ -71,15 +71,13 @@ export const SEQ_DEFAULTS: SeqOpts = {
 };
 
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
-const easeInOut = (t: number) =>
-  t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
 let field: Field | null = null;
 let fieldRows = -1;
 
-/** Phase 1 runs for one second. Slower than anything that follows, on
- *  purpose: it is the only part the reader is meant to simply watch. */
-const FIELD_MS = 1000;
+/** Phase 1. Still the slowest thing per unit of motion, but half what it was —
+ *  the field reads in the first few frames and the rest was dwell. */
+const FIELD_MS = 500;
 /** Phase 2, the collapse. Fast — it is a transition, not a thing to look at,
  *  and at much over this it stops reading as being pulled in. */
 const COLLAPSE_MS = 280;
@@ -97,19 +95,34 @@ const SLIDE_MS = 130;
 const PART2_MS = SLIDE_FROM + SLIDE_MS;
 const P2_END = FIELD_MS + PART2_MS;
 /** Phase 3: the line draws itself into a figure-eight knot. */
-const KNOT_MS = 1800;
-/** The head finishes before the phase does, leaving a beat on the knot. */
 const HEAD_MS = 1540;
-/** The colour has to be gone by the time the knot settles. */
-const FLOW_MS = 1660;
+/** The colour has to be gone before the cinch starts. */
+const FLOW_MS = 1400;
 /** How long the half-width line phase 2 hands over takes to pull its slack
  *  into the knot. Short: it runs while the head is still in the first loop,
  *  so almost none of the body is on screen while it is sliding. */
 const PULL_MS = 240;
-/** Phase 4: the ends are pulled and the knot cinches down into the line. */
+/**
+ * Phase 4 STARTS BEFORE PHASE 3 FINISHES. The head reaches the end of the path
+ * at HEAD_MS; the cinch begins 180ms before that, so the last of the strand is
+ * still being laid down while the knot is already tightening — which is what
+ * pulling a rope through a knot looks like, and what stops the two reading as
+ * separate moves. There is no beat between them to remove, because there is no
+ * moment when neither is happening.
+ */
+const CINCH_FROM = HEAD_MS - 180;
 const CINCH_MS = 760;
-const P3_END = P2_END + KNOT_MS;
+const P3_END = P2_END + CINCH_FROM;
 const TOTAL_MS = P3_END + CINCH_MS;
+
+/**
+ * The cinch's own curve. NOT an ease-in-out: that starts at zero slope, and the
+ * head arrives on an ease-out which ENDS at zero slope, so the two stalled
+ * against each other and produced exactly the pause the overlap exists to
+ * remove. This leaves at a little over a third of full speed and accelerates,
+ * like a knot pulling tight.
+ */
+const cinchCurve = (t: number) => 0.38 * t + 0.62 * t * t;
 
 /* Thickness is tied to the KNOT's scale, not the viewport's height. A line
    sized as a fraction of height is a reasonable bar on a desktop and a third
@@ -403,7 +416,7 @@ function drawKnot(
    * The ends are re-extended to the edges each frame, so the tails lengthen
    * by exactly what the knot gives up — which is what pulling a rope through
    * a knot actually does. */
-  const cinch = 1 - easeInOut(clamp01((ms - P3_END) / CINCH_MS));
+  const cinch = 1 - cinchCurve(clamp01((ms - P3_END) / CINCH_MS));
 
   const tailEndX = project(onCurveArc(g, g.tailArc))[0];
   const off = (W / 2 - tailEndX) * (1 - pull);
@@ -412,9 +425,25 @@ function drawKnot(
   const N = 620;
   const pts: Pt[] = [];
   const cols: string[] = [];
+  /* The extensions are sampled, not a single point each.
+   *
+   * They used to be one vertex apiece, and at full cinch the dedupe left the
+   * whole strand about three vertices long: one at each edge and a cluster at
+   * the collapsed middle. The end taper is a curve 82px long, but with no
+   * vertices inside that span it was interpolated straight from the edge to the
+   * centre — a bar 14px thick at the ends and 72px in the middle. A DIAMOND,
+   * and not a taper bug at all: the taper had nowhere to be drawn.
+   *
+   * Sampled with a bias toward the outer end, where the taper lives and where
+   * the vertices are therefore worth spending. */
+  const EXT = 28;
   if (cinch < 1) {
-    pts.push(project([FIG8_X0, 0]));
-    cols.push(knotColour(0, flowAt(ms)));
+    const inner = project([FIG8_X0 * cinch, 0])[0];
+    for (let j = 0; j < EXT; j++) {
+      const f = Math.pow(j / EXT, 1.6);
+      pts.push([lerp(project([FIG8_X0, 0])[0], inner, f), H / 2]);
+      cols.push(knotColour(0, flowAt(ms)));
+    }
   }
   for (let i = 0; i < N; i++) {
     const sArc = (head * i) / (N - 1);
@@ -425,8 +454,12 @@ function drawKnot(
     cols.push(knotColour(sArc, flowAt(ms)));
   }
   if (cinch < 1) {
-    pts.push(project([FIG8_X1, 0]));
-    cols.push(knotColour(1, flowAt(ms)));
+    const inner = project([FIG8_X1 * cinch, 0])[0];
+    for (let j = 1; j <= EXT; j++) {
+      const f = 1 - Math.pow(1 - j / EXT, 1.6);
+      pts.push([lerp(inner, project([FIG8_X1, 0])[0], f), H / 2]);
+      cols.push(knotColour(1, flowAt(ms)));
+    }
   }
 
   /* Drop coincident points before meshing. As the cinch closes, hundreds of
@@ -448,8 +481,14 @@ function drawKnot(
   /* Quarter-ellipse ends, matching the corners the landing div will have once
      the FLIP scale magnifies its border-radius. Ramped in with the cinch, so
      they appear exactly as the bar becomes a bar. */
+  /* Ramped over the last 220ms, NOT with the cinch. Tied to the cinch it
+     started thinning the ends while the knot's remnant was still a lump in the
+     middle — thin ends and a fat centre, which reads as a diamond rather than
+     as a bar. By the time this ramp opens the lump has gone and the strand is
+     a rectangle, so the taper is the only thing changing. */
   const tp = opts.taper;
-  const amp = tp ? (tp.rx / tp.rh) * halfW * 2 * (1 - cinch) : 0;
+  const taperT = clamp01((ms - (TOTAL_MS - 220)) / 220);
+  const amp = tp ? (tp.rx / tp.rh) * halfW * 2 * taperT : 0;
   const rxU = tp ? tp.rx / tp.rw : 0;
   const halfAt = (x: number) => {
     if (amp <= 0) return halfW;
