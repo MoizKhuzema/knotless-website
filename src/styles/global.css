@@ -319,9 +319,18 @@
   body::before {
     content: '';
     position: fixed;
-    inset: 0;
+    /* Oversized so it has somewhere to move. The parallax shift is a fraction
+       of half the viewport — ~32px at 2560 — and at inset:0 that would drag a
+       bare strip in at one edge. */
+    inset: -5rem;
     z-index: 0;
     pointer-events: none;
+    /* The surface moves a fraction of what the light does. That mismatch is
+       the whole depth cue: the light is in front, the ground is behind. Driven
+       from the same eased pointer as the glow, so the grid inherits the trail
+       rather than snapping while the light glides. */
+    transform: translate3d(var(--gx, 0px), var(--gy, 0px), 0);
+    will-change: transform;
     background-image:
       repeating-linear-gradient(to right, var(--color-grid) 0 1px, transparent 1px 160px),
       repeating-linear-gradient(to bottom, var(--color-grid) 0 1px, transparent 1px 160px);

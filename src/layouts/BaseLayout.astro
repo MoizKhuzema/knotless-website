@@ -180,11 +180,26 @@ const fontFace = [
          * The loop PARKS when the light arrives. A rAF that never stops costs a
          * wake-up every frame for a still pointer, all day, on battery. */
         const EASE = 0.12;
+        /* How far the ground moves for every pixel the light does. The number
+           is small on purpose: at 1440 it is 18px of travel against a 160px
+           grid, about a tenth of a cell. Any more and the surface stops
+           reading as a surface and starts reading as a thing being dragged. */
+        const GRID_GAIN = 0.025;
+        const root = document.documentElement;
+
         let tx = 0, ty = 0;      // where the pointer is
         let px = 0, py = 0;      // where the light is
         let running = false, seeded = false, lit = false, last = 0;
 
-        const place = () => { dot.style.transform = `translate3d(${px}px, ${py}px, 0)`; };
+        const place = () => {
+          dot.style.transform = `translate3d(${px}px, ${py}px, 0)`;
+          if (!seeded) return;
+
+          /* The ground, trailing at a fraction of the light's travel. */
+          root.style.setProperty('--gx', ((px - innerWidth / 2) * GRID_GAIN).toFixed(2) + 'px');
+          root.style.setProperty('--gy', ((py - innerHeight / 2) * GRID_GAIN).toFixed(2) + 'px');
+
+        };
 
         const frame = (now) => {
           const dt = last ? Math.min(now - last, 64) : 16.67;
