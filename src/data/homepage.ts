@@ -53,10 +53,10 @@ export const WHAT_YOU_GET = {
     {
       title: 'The Assessment',
       points: [
-        'Find where AI saves money in your workflows',
-        'Assess readiness and surface blockers before you spend',
-        'Ground every opportunity in evidence, with the working shown',
-        'Leave with a list of safe AI investments',
+        'A map of where AI saves money in your workflows',
+        'Readiness assessed and blockers surfaced before you spend',
+        'Every opportunity grounded in evidence, with the working shown',
+        'A list of safe AI investments to take away',
       ],
     },
     {
