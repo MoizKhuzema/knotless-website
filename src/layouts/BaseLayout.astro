@@ -3,8 +3,8 @@
  * The base layout every page uses.
  *
  * Owns: the shared <head>, the self-hosted faces, the nav and footer chrome,
- * the scroll-progress thread, and the one IntersectionObserver that drives
- * every [data-reveal] block on the site.
+ * and the one IntersectionObserver that drives every [data-reveal] block on
+ * the site.
  */
 import { SITE } from '../config/site';
 import { href } from '../lib/href';
@@ -132,12 +132,6 @@ const fontFace = [
               grid's layer, so it illuminates the surface and passes BEHIND the
               content rather than washing over the type. */}
           <div class="glow" aria-hidden="true"><span></span></div>
-
-          {/* Scroll progress, drawn as a thread down the left edge of the
-              viewport — the hero's bundle, resolved into a single line. */}
-          <div class="progress" aria-hidden="true">
-            <span></span>
-          </div>
 
           <Nav navReveal={navReveal} />
           <main id="main" tabindex="-1" class={bleed ? undefined : 'main--contained'}>
@@ -359,30 +353,6 @@ const fontFace = [
       })();
     </script>
 
-    <script is:inline>
-      // Scroll progress thread.
-      (() => {
-        const bar = document.querySelector('.progress span');
-        if (!bar) return;
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        let queued = false;
-        const update = () => {
-          queued = false;
-          const max = document.documentElement.scrollHeight - window.innerHeight;
-          bar.style.transform = `scaleY(${max > 0 ? window.scrollY / max : 0})`;
-        };
-        addEventListener(
-          'scroll',
-          () => {
-            if (queued) return;
-            queued = true;
-            requestAnimationFrame(update);
-          },
-          { passive: true },
-        );
-        update();
-      })();
-    </script>
 
     <style>
       .skip {
@@ -489,33 +459,6 @@ const fontFace = [
         }
       }
 
-      .progress {
-        position: fixed;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        z-index: 65;
-        pointer-events: none;
-        background-color: var(--color-line);
-      }
-      .progress span {
-        display: block;
-        height: 100%;
-        background: linear-gradient(to bottom, var(--color-ember), var(--color-progress-end));
-        transform: scaleY(0);
-        transform-origin: top;
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .progress {
-          display: none;
-        }
-      }
-      @media (max-width: 639px) {
-        .progress {
-          width: 1px;
-        }
-      }
     </style>
   </body>
 </html>

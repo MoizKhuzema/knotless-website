@@ -101,7 +101,6 @@
      all. This is a delta of 12. The SPACING stays at 160px: the graph-paper
      problem was density, not contrast, and that fix is not being undone. */
   --color-grid: rgba(239, 233, 221, 0.055); /* a rhythm, not a grid   */
-  --color-progress-end: #8f3a1d;
   --color-body-2: #b9b2a8; /* the quieter second paragraph          */
 
   /* The ONE panel that contrasts with the page. On the dark ground it is
@@ -238,7 +237,6 @@
   --color-glass-soft-edge: rgba(31, 31, 29, 0.08);
   --color-glass-soft-spec: rgba(255, 255, 255, 0.28);
   --color-grid: rgba(31, 31, 29, 0.05);
-  --color-progress-end: #6d3119;
   --color-body-2: #5c554c;
 
   /* The contrast panel inverts with the page: ink on a cream site. */
