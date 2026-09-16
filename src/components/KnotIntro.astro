@@ -102,8 +102,7 @@
 </script>
 
 <script>
-  import { SHAPES, selfCrossings, strand, ribbonOutline, clamp01, lerp, BANDS, bandPoint } from '../lib/knot';
-  import type { Pt } from '../lib/knot';
+  import { drawSequence, SEQ_MS, finalBar } from '../lib/intro-render';
 
   declare global {
     interface Window {
@@ -113,70 +112,17 @@
   }
 
   /**
-   * Seconds. One continuous motion; every window overlaps its neighbour.
-   *
-   * THE BANDS CONVERGE ONTO THE KNOT, not onto a straight strand. There is no
-   * separate tying phase, because there was nothing left to tie: converging on
-   * a straight line and then bending it put a flat bar on screen at ~1.1s, and
-   * the sequence became line, knot, line. The reader saw the same straight bar
-   * twice and the knot read as an interruption between them rather than as what
-   * the ribbons had become.
-   *
-   * Each band already owns an arc of the master curve, so aiming those arcs at
-   * k=1 costs nothing and removes a whole phase: the ribbons arrive knotted,
-   * hold, and then open. The line is then something the sequence arrives at
-   * once, at the end, which is the point of it.
+   * The canvas sequence and its length both live in ../lib/intro-render, which
+   * is shared with /lab/ — what is judged there is what ships here. This file
+   * owns only the handover, the lifecycle and the guards.
    */
   const T = {
-    sweep: [0.0, 0.55],
-    converge: [0.35, 1.1],
-    /** The pull-straight. k is driven 1 -> 0, so the knot is genuinely opened.
-     *  The gap before it is a beat on the finished knot, so it registers as one
-     *  before it comes apart. */
-    pull: [1.25, 2.0],
-    /**
-     * Colour resolves EARLY — finished well before the bands finish converging.
-     *
-     * Holding six colours until the merge completed made the last stretch read
-     * as a segmented progress bar: the bands stayed individually countable
-     * right up to the moment they were a line. Landing on one ember while they
-     * are still ~35% from home turns that stretch into one ribbon assembling
-     * rather than six tiles queueing.
-     */
-    resolve: [0.3, 0.75],
     /** Canvas out, div in — the same frame. */
-    hand: 2.0,
-    fly: 600,
-    bgOut: 450,
+    hand: SEQ_MS / 1000,
+    fly: 620,
+    bgOut: 420,
     fade: 200,
   } as const;
-
-  const GROUND = '#0d0c0a';
-  const RESOLVE = '#cf5b30';
-  const PALETTE = ['#cf5b30', '#efe9dd', '#8b7f72', '#cf5b30', '#a29b91', '#4c4640'];
-  const WIDTH_RATIO = 0.085;
-
-  const clampT = (t: number, a: number, b: number) => clamp01((t - a) / (b - a));
-  const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
-  const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-  /**
-   * For the pull-straight only. Untying passes through a band around k 0.25-0.5
-   * where the trefoil's loops have shrunk to roughly the ribbon's own width and
-   * read as a pinch rather than a loop. The geometry is right — it is a real
-   * knot closing — so the answer is to cross that band faster rather than to
-   * reshape it. Quintic peaks at 5x the average rate against the cubic's 3x,
-   * which roughly halves the pinch's time on screen: ~67ms to ~35ms, four
-   * frames to two.
-   */
-  const easeInOutQuint = (t: number) => (t < 0.5 ? 16 * t ** 5 : 1 - Math.pow(-2 * t + 2, 5) / 2);
-
-  const mixHex = (a: string, b: string, t: number) => {
-    const h = (c: string) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
-    const [r1, g1, b1] = h(a);
-    const [r2, g2, b2] = h(b);
-    const m = (x: number, y: number) => Math.round(x + (y - x) * t);
-    return `rgb(${m(r1, r2)},${m(g1, g2)},${m(b1, b2)})`;
-  };
 
   function run() {
     const root = document.querySelector<HTMLElement>('[data-intro-root]');
@@ -237,23 +183,15 @@
       { signal: ac.signal },
     );
 
-    // --- projection ---------------------------------------------------------
-
-    const CTRL = SHAPES.trefoil;
-    const b = CTRL.reduce(
-      (a, p) => [Math.min(a[0], p[0]), Math.max(a[1], p[0]), Math.min(a[2], p[1]), Math.max(a[3], p[1])],
-      [Infinity, -Infinity, Infinity, -Infinity],
-    );
-    const spanX = b[1] - b[0];
-    const spanY = Math.max(b[3] - b[2], 0.001);
-    const midX = (b[0] + b[1]) / 2;
-    const midY = (b[2] + b[3]) / 2;
+    /* The strike's own proportions, read from the asset's attributes (not its
+       layout, so this is safe before fonts settle). The sequence needs them to
+       grow ends that match the corners the landing div will have. */
+    const rxA = Number(strike.getAttribute('rx') || 0);
+    const rwA = Number(strike.getAttribute('width') || 1);
+    const rhA = Number(strike.getAttribute('height') || 1);
 
     let W = 0;
     let H = 0;
-    let scale = 0;
-    let halfW = 0;
-
     const size = () => {
       W = root.clientWidth;
       H = root.clientHeight;
@@ -263,140 +201,18 @@
       canvas.width = Math.round(W * dpr);
       canvas.height = Math.round(H * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      /* UNIFORM. Fitting x and y independently squashes the shape until its
-         strands stop actually intersecting — a non-uniform fit silently took the
-         knot to zero crossings once already, while still looking roughly right.
-         The topology is the entire point, so it must not depend on the aspect of
-         whatever viewport it lands in. */
-      const pad = 1.18; // room for the ribbon's own width
-      scale = Math.min(W / (spanX * pad), H / (spanY * pad));
-      halfW = scale * WIDTH_RATIO;
     };
-    const project = (p: Pt): Pt => [W / 2 + (p[0] - midX) * scale, H / 2 + (p[1] - midY) * scale];
-
-    /* THE SEAM. The landing div carries the strike's border-radius, and the
-     * FLIP scale blows it up with everything else: at handover the horizontal
-     * corner radius is (rx/width) of the bar's whole length — about 70px at
-     * 1440 — so each end tapers to a fifth of its thickness. A square-cut canvas
-     * bar swapped for that pops, measurably: 4839 pixels changed by more than
-     * 8/255 across the two frames, the worst going ember to ink at the very end
-     * of the bar.
-     *
-     * So the canvas grows the same ends. Ramped by `pull`, so the taper appears
-     * as the knot straightens rather than switching on.
-     *
-     *   Rx = (rx / width) · barLength     Ry = (rx / height) · barThickness
-     *
-     * both derived from the asset's own attribute ratios, which is why this
-     * stays correct if the artwork's rounding ever changes.
-     */
-    const rxA = Number(strike.getAttribute('rx') || 0);
-    const rwA = Number(strike.getAttribute('width') || 1);
-    const rhA = Number(strike.getAttribute('height') || 1);
-    const RX_RATIO = rxA / rwA;
-    const RY_RATIO = rxA / rhA;
-
     size();
     addEventListener('resize', size, { passive: true, signal: ac.signal });
 
-    const fillPoly = (poly: Pt[], fill: string) => {
-      ctx.beginPath();
-      poly.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
-      ctx.closePath();
-      ctx.fillStyle = fill;
-      ctx.fill();
-    };
-
-    /** The over-strand's occlusion window: gap punched in the ground, strand
-     *  colour back over it, tapered at both ends so it blends rather than
-     *  notching. Without this the crossings merge and it reads as a squiggle. */
-    const occlude = (u0: number, k: number, colour: (u: number) => string) => {
-      const half = 0.028;
-      const n = 30;
-      const win: Pt[] = [];
-      const gap: number[] = [];
-      const core: number[] = [];
-      for (let i = 0; i < n; i++) {
-        const u = clamp01(u0 - half + (2 * half * i) / (n - 1));
-        win.push(project(strand(CTRL, u, k)));
-        gap.push(halfW + halfW * 0.55 * Math.sin((i / (n - 1)) * Math.PI));
-        core.push(halfW);
-      }
-      fillPoly(ribbonOutline(win, gap), GROUND);
-      fillPoly(ribbonOutline(win, core), colour(u0));
-    };
-
-    // --- phases 1-4 ---------------------------------------------------------
-
     function draw(t: number) {
-      ctx!.clearRect(0, 0, W, H);
-
-      const sweep = easeOut(clampT(t, T.sweep[0], T.sweep[1]));
-      const converge = easeInOut(clampT(t, T.converge[0], T.converge[1]));
-      const resolve = easeInOut(clampT(t, T.resolve[0], T.resolve[1]));
-      const pull = easeInOutQuint(clampT(t, T.pull[0], T.pull[1]));
-      /* Knotted from the start. The bands fly onto the knot's arcs already
-         tied, hold through T.hold, and only then open. */
-      const k = 1 - pull;
-
-      // 0.9 matches ARRIVE below: at that point the bands ARE the arcs.
-      if (converge < 0.9) {
-        for (const band of BANDS) {
-          const enter = clamp01((sweep - band.delay) / Math.max(0.001, 1 - band.delay));
-          if (enter <= 0) continue;
-          /* Each band converges on its own clock, and its THICKNESS LEADS its
-             POSITION — it is ribbon-width by the time it is halfway home.
-             This was the other way round while the bands converged on a
-             straight line, where staying full-height through the gather read
-             well. Aimed at a knot it does not: a band still at full thickness
-             once it is following a curved arc is a fat slab with square ends,
-             and seven of them crossing the same region pile into a blob rather
-             than weaving. Thinning first means they arrive as ribbons. */
-          /* Home at converge 0.9, not 1.0. Consecutive arcs only share their
-             endpoint once both bands have fully arrived; a few percent short
-             and each join is a visible break, so the knot spends the end of the
-             merge looking dashed. Saturating early closes it while the window
-             still has room, and the last stretch is then drawn by the
-             single-strand branch below — which is identical geometry at this
-             point, so the changeover shows nothing. */
-          const ARRIVE = 0.9;
-          const cv = clamp01((converge - band.cDelay * 0.45) / Math.max(0.001, ARRIVE - band.cDelay * 0.45));
-          const cvThick = clamp01(cv / 0.5);
-          const n = 64;
-          const line: Pt[] = [];
-          const hw: number[] = [];
-          for (let i = 0; i < n; i++) {
-            const u = i / (n - 1);
-            line.push(bandPoint(band, CTRL, u, enter, cv, k, W, H, project));
-            hw.push(lerp(band.thickness * H, halfW, cvThick));
-          }
-          fillPoly(ribbonOutline(line, hw), mixHex(PALETTE[band.colour], RESOLVE, resolve));
-        }
-      } else {
-        // One strand. Sampled once and reused for the ribbon and the crossings.
-        const n = 300;
-        const pts: Pt[] = [];
-        for (let i = 0; i < n; i++) pts.push(project(strand(CTRL, i / (n - 1), k)));
-        // Quarter-ellipse ends, matching the landing div's scaled corners. u maps
-        // linearly to x along the straightened strand, so the window in curve
-        // parameter is just the radius ratio.
-        const amp = RY_RATIO * halfW * 2 * pull;
-        const endTaper = (u: number) => {
-          const d = Math.min(u, 1 - u) / RX_RATIO;
-          if (d >= 1 || amp <= 0) return halfW;
-          return halfW - amp + amp * Math.sqrt(Math.max(0, 1 - (1 - d) * (1 - d)));
-        };
-        fillPoly(
-          ribbonOutline(
-            pts,
-            pts.map((_, i) => endTaper(i / (n - 1))),
-          ),
-          mixHex(PALETTE[0], RESOLVE, resolve),
-        );
-        // Crossings are FOUND, never assumed — which is also why the gaps stop
-        // on their own as the knot opens and the strands genuinely separate.
-        for (const c of selfCrossings(pts)) occlude(c.over, k, () => mixHex(PALETTE[0], RESOLVE, resolve));
-      }
+      drawSequence(ctx!, W, H, t * 1000, {
+        cover: 0.6,
+        wave: 0.038,
+        briefOverUnder: false,
+        rows: 13,
+        taper: { rx: rxA, rw: rwA, rh: rhA },
+      });
     }
 
     // --- phase 5: FLIP onto the strike --------------------------------------
@@ -412,16 +228,10 @@
         return;
       }
 
-      // The canvas's final bar, at k = 0: a horizontal strand of known extent.
-      const left = project([CTRL[0][0], 0])[0];
-      const right = project([CTRL[CTRL.length - 1][0], 0])[0];
-      const midY = project([0, 0])[1];
-      const B = { x: left, y: midY - halfW, w: right - left, h: halfW * 2 };
-
-      // Corner radius from the asset's own ratio, scaled to the rendered size,
-      // so it matches whatever the strike currently measures.
-      const rx = Number(strike!.getAttribute('rx') || 0);
-      const rw = Number(strike!.getAttribute('width') || 1);
+      // The bar the sequence ends on: full width, mid height.
+      const B = finalBar(W, H);
+      const rx = rxA;
+      const rw = rwA;
 
       bar!.style.left = `${s.left}px`;
       bar!.style.top = `${s.top}px`;
