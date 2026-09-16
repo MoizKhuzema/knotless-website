@@ -37,16 +37,18 @@ import { WHAT_YOU_GET } from '../../data/homepage';
       <h2 class="h-section wyg__h r" style="--i: 1">{WHAT_YOU_GET.heading}</h2>
     </div>
 
-    {/* Two stages, side by side and identical — each one a pane of glass, and
-        numbered, because they ARE ordered: the Assessment first, then the
-        Implementation that only happens if the Assessment makes the case.
-        Equal weight is not the same as interchangeable. */}
+    {/* Two stages in glass, each one named and set out as what it delivers. */}
     <div class="wyg__stages" data-reveal>
       {
-        WHAT_YOU_GET.body.map((para, i) => (
+        WHAT_YOU_GET.stages.map((stage, i) => (
           <div class="stage r" style={`--i: ${i}`}>
             <p class="stage__n meta meta--num">{String(i + 1).padStart(2, '0')}</p>
-            <p class="stage__p">{para}</p>
+            <h3 class="stage__h">{stage.title}</h3>
+            <ul class="stage__list">
+              {stage.points.map((point) => (
+                <li class="stage__item">{point}</li>
+              ))}
+            </ul>
           </div>
         ))
       }
@@ -97,9 +99,9 @@ import { WHAT_YOU_GET } from '../../data/homepage';
   }
   @media (min-width: 48rem) {
     .wyg__stages {
-      /* Equal fractions, not auto: the two paragraphs differ in length by 173
-         characters, and anything that sizes to content would hand the longer one
-         more width and undo the point. */
+      /* Equal fractions, not auto. Sizing to content would hand the stage with
+         the longer bullets more width, and these are two steps of one
+         engagement, not a comparison. */
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: clamp(3rem, 5vw, 5rem);
     }
@@ -138,13 +140,37 @@ import { WHAT_YOU_GET } from '../../data/homepage';
     color: var(--color-ember);
   }
 
-  .stage__p {
-    margin: 0;
-    font-size: var(--text-lg);
-    line-height: 1.65;
+  /* The stage's name. It sits under the ordinal and over the list, so it is
+     the only thing in the pane that has to carry weight — but it is a third
+     level heading inside a section, not a rival to the section's own. */
+  .stage__h {
+    margin: 0.35rem 0 1.25rem;
+    font-size: var(--text-xl);
+    line-height: 1.2;
+    letter-spacing: var(--tracking-display);
+    font-weight: 600;
     color: var(--color-cream);
-    /* Both stages are cream. The second was --color-body-2 and a size down,
-       which is what made it read as an aside. */
+  }
+
+  /* Deliverables, so a list. As prose the reader had to extract the list
+     themselves; this is the same content with the extraction already done.
+     Hairline rules between items rather than bullet glyphs — the page already
+     separates things with rules everywhere else, and a disc would be a new
+     kind of mark for no gain. */
+  .stage__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .stage__item {
+    padding: 0.85rem 0;
+    border-top: 1px solid var(--color-line);
+    font-size: var(--text-base);
+    line-height: 1.5;
+    color: var(--color-cream);
+  }
+  .stage__item:last-child {
+    padding-bottom: 0;
   }
 
   /* --- Verticals ----------------------------------------------------- */
