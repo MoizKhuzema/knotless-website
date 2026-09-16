@@ -371,20 +371,40 @@ const fontFace = [
         position: absolute;
         top: 0;
         left: 0;
-        width: 34rem;
-        height: 34rem;
-        margin: -17rem 0 0 -17rem;
+        width: 46rem;
+        height: 46rem;
+        margin: -23rem 0 0 -23rem;
         border-radius: 50%;
-        /* Warm, and weak. Two stops rather than one so it falls off before the
-           edge — a single stop to transparent leaves a visible disc rim.
-           Lifted from 0.1/0.045: the core composited to a delta of 19 in 8 bits
-           against the ground, which a dim display swallows entirely. This is
-           31, still well short of anything that reads as a light source. */
+        /* A falloff, not a disc.
+         *
+         * Two evenly spaced stops describe a linear ramp, and nothing in the
+         * world falls off linearly — it reads as a flat plate with a soft edge.
+         * These five stops trace 1/(1+(r/0.25)^2), the inverse-square curve
+         * light actually follows: most of the intensity spent inside the first
+         * fifth of the radius, then a long thin tail.
+         *
+         * Integrated against the old two-stop ramp: peak alpha rises 0.16 ->
+         * 0.20, MEAN alpha over the disc falls to 0.89x, and total emitted
+         * light rises to 1.63x — because the disc itself is larger. So it is
+         * brighter where you are looking, softer everywhere else, and reaches
+         * further. That is the whole point of the curve.
+         *
+         * The radius grows 34rem -> 46rem because the tail needs somewhere to
+         * go; at the old size the curve was still at 0.018 when it hit the
+         * edge, which is exactly the rim the stops exist to avoid.
+         *
+         * One hue throughout. A second colour in the halo is the obvious way to
+         * make it read cooler at the edges, and it is also a sixth colour —
+         * DESIGN.md 11.1. The falloff does that work instead: thin ember over
+         * ink desaturates toward the ground on its own. */
         background: radial-gradient(
           circle closest-side,
-          rgba(207, 91, 48, 0.16),
-          rgba(207, 91, 48, 0.08) 45%,
-          transparent 78%
+          rgba(207, 91, 48, 0.2) 0%,
+          rgba(207, 91, 48, 0.122) 20%,
+          rgba(207, 91, 48, 0.056) 40%,
+          rgba(207, 91, 48, 0.03) 60%,
+          rgba(207, 91, 48, 0.012) 80%,
+          transparent 100%
         );
         opacity: 0;
         transition: opacity 420ms var(--ease-out);
