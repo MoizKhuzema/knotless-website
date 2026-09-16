@@ -45,16 +45,19 @@ import { WHAT_YOU_GET } from '../../data/homepage';
       {
         WHAT_YOU_GET.stages.map((stage, i) => (
           <li class="stage r" data-catch="ring" style={`--i: ${i}`}>
-            {/* A real element, not a pseudo: the card's ::after is spoken for by
-                the catch ring, and the connector has to register as a catcher in
-                its own right to know how close the cursor is to IT rather than
-                to the card. */}
+            {/* A real element, not a pseudo: the card's ::before is spoken for
+                by nothing and its ::after by the catch ring, and the connector
+                has to register as a catcher in its own right to know how close
+                the cursor is to IT rather than to the card. */}
             {i > 0 && <span class="stage__link" data-catch="line" aria-hidden="true" />}
             <p class="stage__n meta meta--num">{String(i + 1).padStart(2, '0')}</p>
             <h3 class="stage__h">{stage.title}</h3>
             <ul class="stage__list">
               {stage.points.map((point) => (
-                <li class="stage__item">{point}</li>
+                <li class="stage__item">
+                  <span class="stage__dot" data-catch="dot" aria-hidden="true" />
+                  <span>{point}</span>
+                </li>
               ))}
             </ul>
           </li>
@@ -225,10 +228,32 @@ import { WHAT_YOU_GET } from '../../data/homepage';
     margin-top: 1.1rem;
   }
   .stage__item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 0 0.75rem;
     padding: 0.5rem 0;
     font-size: var(--text-md);
     line-height: 1.55;
     color: var(--color-cream-dim);
+  }
+
+  /* The marker. Glass, like the pane it sits in, at the smallest weight the
+     material has — a bead rather than a disc. It replaces a list-style glyph,
+     so it carries no meaning a screen reader needs: the <ul> already says
+     these are items. */
+  .stage__dot {
+    /* Optical centring on the first line rather than the box: half the line
+       box, less half the dot, less a hair for the cap height. */
+    margin-top: calc((1.55em - 0.5rem) / 2 - 0.04em);
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: var(--color-glass-soft);
+    border: 1px solid var(--color-glass-soft-edge);
+    box-shadow: inset 0 1px 0 var(--color-glass-soft-spec);
+    backdrop-filter: blur(6px) saturate(140%);
+    -webkit-backdrop-filter: blur(6px) saturate(140%);
   }
 
   /* --- Verticals ----------------------------------------------------- */
