@@ -93,12 +93,27 @@ for (const route of routes.length ? routes : ROUTES) {
     await page.addStyleTag({ content: 'astro-dev-toolbar{display:none!important}' });
 
     if (motion) {
-      // Scroll far enough that the hero brand mark clears the fixed nav. Routes
-      // with no sentinel still get a useful "scrolled" frame from the fallback.
+      /* The intro overlay plays on the homepage under --motion (reduced motion
+         is off here, and each route gets a fresh context so the session gate has
+         not fired). Let it finish, or the "top" frame photographs a knot rather
+         than the hero. Aborting it would also do, but waiting captures the state
+         a reader actually lands on. */
+      await page
+        .waitForFunction(() => !document.querySelector('[data-intro-root]'), null, { timeout: 6000 })
+        .catch(() => {});
+
+      /* Scroll far enough that the hero's own call to action clears the fixed
+         bar, which is what the nav reveal keys on. Routes with no sentinel still
+         get a useful "scrolled" frame from the fallback.
+
+         These two selectors were stale — `[data-brand-sentinel]` and `.site-nav`
+         from before the nav was rebuilt — so the lookup always missed and every
+         --motion capture silently fell back to innerHeight * 1.5, which is not
+         the reveal threshold. */
       const past = await page.evaluate(() => {
-        const mark = document.querySelector('[data-brand-sentinel]');
+        const mark = document.querySelector('[data-nav-sentinel]');
         if (!mark) return window.innerHeight * 1.5;
-        const nav = document.querySelector('.site-nav');
+        const nav = document.querySelector('.nav');
         return window.scrollY + mark.getBoundingClientRect().bottom + (nav?.offsetHeight ?? 96) + 40;
       });
 
