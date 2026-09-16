@@ -42,7 +42,7 @@ export const META = {
 export const WHAT_YOU_GET = {
   heading: 'What you get',
   body: [
-    'Knotless is built to make AI adoption simple and safe for you. We calculate money saving opportunities in your workflows, assess readiness, and surface blockers beforehand. In practice it’s usually the repetitive work like extracting data from documents, chasing handoffs between people, or assembling the same reports every month. Every opportunity we find is grounded in evidence and every number comes with the working shown. You leave with a list of safe AI investment opportunities.',
+    'Knotless is built to make AI adoption simple and safe for you. We calculate money saving opportunities in your workflows, assess readiness, and surface blockers beforehand. Every opportunity we find is grounded in evidence and every number comes with the working shown. You leave with a list of safe AI investment opportunities.',
     'If the case is there, we provide a complete implementation roadmap to adopt each safe opportunity in order. We show you the ROI on each build before any work starts. We carefully design each AI solution to be responsible and scalable with robust governance frameworks that ensure compliance with all relevant laws.',
   ],
   /**
