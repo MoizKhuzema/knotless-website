@@ -536,6 +536,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const HEAD_MS = 1540;
   /** The colour has to be gone by the time the knot settles. */
   const FLOW_MS = 1660;
+  /** How long the half-width line phase 2 hands over takes to pull its slack
+   *  into the knot. Short: it runs while the head is still in the first loop,
+   *  so almost none of the body is on screen while it is sliding. */
+  const PULL_MS = 240;
   const TOTAL_MS = P2_END + KNOT_MS;
 
   /* Thickness is tied to the KNOT's scale, not the viewport's height. A line
@@ -727,6 +731,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     key: string;
     pts: Pt[];
     arc: number[];
+    tailArc: number;
     cross: ReturnType<typeof fig8Crossings>;
   } | null = null;
 
@@ -735,7 +740,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     if (knotCache && knotCache.key === key) return knotCache;
     const ctrl = fig8Ctrl(knotStretch(W, H, frac));
     const pts = fig8Points(ctrl);
-    knotCache = { key, pts, arc: arcTable(pts), cross: fig8Crossings(pts, alternate) };
+    const arc = arcTable(pts);
+    /* Where the flat left tail ends and the knot body begins — found from the
+       geometry rather than hardcoded, so it follows the shape if the control
+       points change. */
+    let tailArc = 0;
+    for (let i = 0; i < pts.length; i++) {
+      if (Math.abs(pts[i][1]) > 0.06) {
+        tailArc = arc[i];
+        break;
+      }
+    }
+    knotCache = { key, pts, arc, tailArc, cross: fig8Crossings(pts, alternate) };
     return knotCache;
   }
 
@@ -777,25 +793,38 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const project = (p: Pt): Pt => [(p[0] - FIG8_X0) * scale, H / 2 + p[1] * scale];
     const halfW = lineHalf(W);
 
-    /* A MORPH, not a draw-on. The line is full length in every frame and BENDS
-       into the knot; a growing head made two separate motions out of one, and
-       it is not what tying a knot looks like — the rope does not appear, it
-       moves. Starting fast (ease-OUT) is what joins this to phase 2's slide. */
+    /* A DRAW-ON: the head travels the path and the strand grows behind it.
+     *
+     * One thing has to be reconciled. Phase 2 hands over a line spanning the
+     * left HALF of the screen, but the centred knot's left tail is only about a
+     * sixth of it — so a head starting at the tail's end would make the line
+     * jump shorter by a third of the screen.
+     *
+     * So the slack is PULLED IN rather than cut. For the first fraction of the
+     * phase the tail is stretched to the half-width it arrived at and the knot
+     * body is pushed right by the excess; as `pull` runs, the tail compresses
+     * and the body slides back to centre. The two are tied together at the
+     * junction by construction — the tail's scale is derived from where the
+     * body starts — so the strand is continuous at every value of pull, not
+     * merely at the ends.
+     *
+     * Ease-OUT on both, so the head leaves at full speed and joins phase 2's
+     * slide rather than starting from a standstill. */
     const k = easeOut(clamp01((ms - P2_END) / HEAD_MS));
-    /* Staggered along the strand so the shape forms rather than inflating: the
-       near end commits first and the far end is still travelling. */
-    const SPREAD = 0.42;
+    const pull = easeOut(clamp01((ms - P2_END) / PULL_MS));
+    const head = lerp(g.tailArc, 1, k);
+
+    const tailEndX = project(onCurveArc(g, g.tailArc))[0];
+    const off = (W / 2 - tailEndX) * (1 - pull);
+    const tailScale = tailEndX > 0 ? (tailEndX + off) / tailEndX : 1;
 
     const N = 620;
     const pts: Pt[] = [];
     const cols: string[] = [];
     for (let i = 0; i < N; i++) {
-      const sArc = i / (N - 1);
-      const ku = clamp01(k * (1 + SPREAD) - sArc * SPREAD);
-      const kp = project(onCurveArc(g, sArc));
-      // k=0 is EXACTLY phase 2's line: left edge to centre, at mid height.
-      const fp: Pt = [sArc * (W / 2), H / 2];
-      pts.push([lerp(fp[0], kp[0], ku), lerp(fp[1], kp[1], ku)]);
+      const sArc = (head * i) / (N - 1);
+      const q = project(onCurveArc(g, sArc));
+      pts.push([sArc <= g.tailArc ? q[0] * tailScale : q[0] + off, q[1]]);
       cols.push(knotColour(sArc, flowAt(ms)));
     }
 
