@@ -383,11 +383,16 @@ const fontFace = [
          * light actually follows: most of the intensity spent inside the first
          * fifth of the radius, then a long thin tail.
          *
-         * Integrated against the old two-stop ramp: peak alpha rises 0.16 ->
-         * 0.20, MEAN alpha over the disc falls to 0.89x, and total emitted
-         * light rises to 1.63x — because the disc itself is larger. So it is
-         * brighter where you are looking, softer everywhere else, and reaches
-         * further. That is the whole point of the curve.
+         * The curve is scaled so the PEAK sits at 0.16, the same core the two-
+         * stop version had — the shape was the point of the change, not the
+         * brightness, and 0.20 took the core from a delta of 31 in 8 bits to
+         * 39, which is where it started reading as a light rather than a warm
+         * patch of ground.
+         *
+         * Integrated against that old ramp: mean alpha over the disc 0.72x,
+         * total emitted light 1.31x. Dimmer everywhere, spread wider. The extra
+         * total is all tail — the outer stops are alpha 0.010 to 0.024, deltas
+         * of 2 to 5 in 8 bits, which is reach rather than brightness.
          *
          * The radius grows 34rem -> 46rem because the tail needs somewhere to
          * go; at the old size the curve was still at 0.018 when it hit the
@@ -399,11 +404,11 @@ const fontFace = [
          * ink desaturates toward the ground on its own. */
         background: radial-gradient(
           circle closest-side,
-          rgba(207, 91, 48, 0.2) 0%,
-          rgba(207, 91, 48, 0.122) 20%,
-          rgba(207, 91, 48, 0.056) 40%,
-          rgba(207, 91, 48, 0.03) 60%,
-          rgba(207, 91, 48, 0.012) 80%,
+          rgba(207, 91, 48, 0.16) 0%,
+          rgba(207, 91, 48, 0.098) 20%,
+          rgba(207, 91, 48, 0.045) 40%,
+          rgba(207, 91, 48, 0.024) 60%,
+          rgba(207, 91, 48, 0.01) 80%,
           transparent 100%
         );
         opacity: 0;
