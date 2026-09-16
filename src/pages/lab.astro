@@ -39,7 +39,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <button type="button" data-field-play>play</button>
         <label>
           t <output data-out="ft">0ms</output>
-          <input type="range" data-ft min="0" max="1520" step="5" value="0" />
+          <input type="range" data-ft min="0" max="3160" step="10" value="0" />
         </label>
         <label>
           rows <output data-out="rows">13</output>
@@ -48,6 +48,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <label>
           wave <output data-out="amp">0.038</output>
           <input type="range" data-amp min="0" max="0.09" step="0.002" value="0.038" />
+        </label>
+        <label>
+          knot <output data-out="cover">0.60</output>
+          <input type="range" data-cover min="0.3" max="0.9" step="0.02" value="0.60" />
+        </label>
+        <label class="lab__check">
+          <input type="checkbox" data-alt /> brief's O,U,U,O
         </label>
         <button type="button" data-field-exit>close</button>
       </div>
@@ -59,7 +66,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <select data-mode>
           <option value="knot" selected>knot only</option>
           <option value="seq">phases 1-3</option>
-          <option value="field">phases 1-2 — field + collapse (full viewport)</option>
+          <option value="field">phases 1-3 — field, collapse, knot (full viewport)</option>
         </select>
       </label>
       <label>
@@ -260,14 +267,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <script>
   import {
-    SHAPES, selfCrossings, strand, ribbonOutline, clamp01, lerp, trefoilWithTails,
+    SHAPES, selfCrossings, strand, ribbonOutline, clamp01, lerp, trefoilWithTails, onCurve,
     BANDS, bandPoint,
   } from '../lib/knot';
   import type { Pt, ShapeName } from '../lib/knot';
   import {
-    buildField, edgeY, rowSpans, frontAt, collapseX, collapseY,
+    buildField, edgeY, rowSpans, frontAt, collapseX,
     FIELD, FIELD_PALETTE, FIELD_GROUND,
   } from '../lib/ribbons';
+  import {
+    fig8Ctrl, fig8Points, fig8Crossings, arcTable, uAtArc, FIG8_X0, FIG8_X1,
+  } from '../lib/fig8';
 
   const $ = <T extends Element>(s: string) => document.querySelector(s) as T;
   const canvases = [...document.querySelectorAll<HTMLCanvasElement>('[data-canvas]')];
@@ -497,13 +507,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const rowsOut = $<HTMLOutputElement>('[data-out="rows"]');
   const ampIn = $<HTMLInputElement>('[data-amp]');
   const ampOut = $<HTMLOutputElement>('[data-out="amp"]');
+  const coverIn = $<HTMLInputElement>('[data-cover]');
+  const coverOut = $<HTMLOutputElement>('[data-out="cover"]');
+  const altIn = $<HTMLInputElement>('[data-alt]');
 
   /** Phase 1 runs for one second. Slower than anything that follows, on
    *  purpose: it is the only part the reader is meant to simply watch. */
   const FIELD_MS = 1000;
   /** Phase 2, the collapse. Fast — it is a transition, not a thing to look at,
    *  and at much over this it stops reading as being pulled in. */
-  const COLLAPSE_MS = 400;
+  const COLLAPSE_MS = 280;
   /* The line forms anchored at the hole, across the right half, then travels
      left to sit across the LEFT half — from the left edge to the centre.
      Overlapped with the tail of the collapse rather than queued after it, so
@@ -513,10 +526,42 @@ import BaseLayout from '../layouts/BaseLayout.astro';
      whose target had already moved left, and the frames in between stopped
      reading as falling into anything. 70ms keeps the join fluid without
      contradicting the direction. */
-  const SLIDE_FROM = 330;
-  const SLIDE_MS = 190;
+  const SLIDE_FROM = 230;
+  const SLIDE_MS = 130;
   const PART2_MS = SLIDE_FROM + SLIDE_MS;
-  const TOTAL_MS = FIELD_MS + PART2_MS;
+  const P2_END = FIELD_MS + PART2_MS;
+  /** Phase 3: the line draws itself into a figure-eight knot. */
+  const KNOT_MS = 1800;
+  /** The head finishes before the phase does, leaving a beat on the knot. */
+  const HEAD_MS = 1540;
+  /** The colour has to be gone by the time the knot settles. */
+  const FLOW_MS = 1660;
+  const TOTAL_MS = P2_END + KNOT_MS;
+
+  /* Thickness is tied to the KNOT's scale, not the viewport's height. A line
+     sized as a fraction of height is a reasonable bar on a desktop and a third
+     of the knot's total height on a phone, where the knot is short because it
+     has to span the width. Phase 2 uses the same number so the handover does
+     not step. */
+  const lineHalf = (W: number) => (0.05 * W) / 2;
+
+  /** Vertical stretch needed for the knot to cover `frac` of the viewport
+   *  height while spanning its full width. Capped: past 2 the lobes turn into
+   *  vertical slots and it stops reading as rope. */
+  const knotStretch = (W: number, H: number, frac: number) =>
+    Math.max(1, Math.min(2, (frac * H * (FIG8_X1 - FIG8_X0)) / (2.05 * W)));
+
+  /* Minimal, as asked: six segments, six colours, widths deliberately uneven so
+     the eye has something to measure the speed against. */
+  const KNOT_SEGS = [
+    { len: 0.20, c: 13 },
+    { len: 0.10, c: 18 },
+    { len: 0.24, c: 10 },
+    { len: 0.14, c: 16 },
+    { len: 0.20, c: 12 },
+    { len: 0.12, c: 8 },
+  ];
+  const TERRACOTTA = '#a04a2c';
   let field = buildField(Number(rowsIn.value));
   let fraf = 0;
   let fstart = -1;
@@ -534,6 +579,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
    * being transformed.
    */
   function drawField(ms: number) {
+    if (ms > P2_END) return drawKnot(ms);
     const t = ms / FIELD_MS;
     // Linear: the acceleration lives in frontAt, per column, so every column
     // gets the same motion instead of the left half being crushed into the end.
@@ -597,7 +643,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     };
 
     const rowCount = field.rows.length;
-    const [lineTop, lineBottom] = collapseY(H);
+    const half = lineHalf(W);
+    const [lineTop, lineBottom] = [H / 2 - half, H / 2 + half];
 
     for (let i = 0; i < rowCount; i++) {
       /* The joint leans by a fraction of THIS row's thickness, so thick and
@@ -659,11 +706,179 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
   }
 
+
+  /* ---------------------------------------------------------------------
+   * Phase 3 — the line draws itself into a figure-eight knot.
+   *
+   * Two motions at once. The HEAD advances along the knot's path, laying the
+   * strand down; the COLOUR flows forward along whatever has been laid, running
+   * off the end and leaving terracotta behind it. Both are driven in ARC LENGTH
+   * rather than curve parameter, because the same step in u covers a very
+   * different distance through a tight lobe than along the straight tail — a
+   * head driven by u races the straights and crawls the curves.
+   * ------------------------------------------------------------------- */
+
+  /** Rebuilt only when the viewport or the coverage target changes. */
+  let knotCache: {
+    key: string;
+    pts: Pt[];
+    arc: number[];
+    cross: ReturnType<typeof fig8Crossings>;
+  } | null = null;
+
+  function knotGeom(W: number, H: number, frac: number, alternate: boolean) {
+    const key = `${W}x${H}:${frac}:${alternate}`;
+    if (knotCache && knotCache.key === key) return knotCache;
+    const ctrl = fig8Ctrl(knotStretch(W, H, frac));
+    const pts = fig8Points(ctrl);
+    knotCache = { key, pts, arc: arcTable(pts), cross: fig8Crossings(pts, alternate) };
+    return knotCache;
+  }
+
+  /** Colour at normalised arc `s`, given how far the colour band has flowed. */
+  const knotColour = (s: number, flow: number) => {
+    let p = s - flow;
+    if (p < 0) return TERRACOTTA; // the band has already passed: resolved
+    for (const seg of KNOT_SEGS) {
+      if (p < seg.len) return FIELD_PALETTE[seg.c];
+      p -= seg.len;
+    }
+    return TERRACOTTA; // ahead of the band, not yet reached
+  };
+
+  function drawKnot(ms: number) {
+    const ctx = fcv.getContext('2d');
+    if (!ctx) return;
+    const W = stage.clientWidth;
+    const H = stage.clientHeight;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (fcv.width !== Math.round(W * dpr) || fcv.height !== Math.round(H * dpr)) {
+      fcv.width = Math.round(W * dpr);
+      fcv.height = Math.round(H * dpr);
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    const frac = Number(coverIn.value);
+    const g = knotGeom(W, H, frac, !altIn.checked);
+    const scale = W / (FIG8_X1 - FIG8_X0);
+    const project = (p: Pt): Pt => [(p[0] - FIG8_X0) * scale, H / 2 + p[1] * scale];
+    const halfW = lineHalf(W);
+
+    // Where the head starts: the end of phase 2's line, at screen centre.
+    const startArc = arcAtX(g, 0);
+    const head = lerp(startArc, 1, easeInOut(clamp01((ms - P2_END) / HEAD_MS)));
+    /* The flow is deliberately NOT a constant rate. Speeding it up and easing
+       it off is the only cue the eye has for how fast the line itself is
+       travelling, since the strand's own shape gives none. */
+    const fr = clamp01((ms - P2_END) / FLOW_MS);
+    const flow = (fr < 0.55 ? 1.45 * fr * fr : 0.439 + 1.12 * (fr - 0.55) + 0.9 * (fr - 0.55) ** 2) * 1.0;
+
+    // --- the strand, in runs of one colour ---------------------------------
+    const N = 760;
+    const pts: Pt[] = [];
+    const cols: string[] = [];
+    for (let i = 0; i < N; i++) {
+      const sArc = (head * i) / (N - 1);
+      pts.push(project(onCurveArc(g, sArc)));
+      cols.push(knotColour(sArc, flow));
+    }
+    let runStart = 0;
+    for (let i = 1; i <= N; i++) {
+      if (i < N && cols[i] === cols[runStart]) continue;
+      // One extra sample of overlap, so the hard joint has no hairline in it.
+      const seg = pts.slice(runStart, Math.min(N, i + 1));
+      if (seg.length > 1) {
+        ctx.beginPath();
+        const poly = ribbonOutline(seg, seg.map(() => halfW));
+        poly.forEach((p, j) => (j ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
+        ctx.closePath();
+        ctx.fillStyle = cols[runStart];
+        ctx.fill();
+      }
+      runStart = i;
+    }
+
+    // --- over and under ----------------------------------------------------
+    /* Only once BOTH passes exist. A gap punched around a crossing whose other
+       strand has not been drawn yet is a notch in open air. */
+    const uHead = uAtArc(g.arc, head);
+    for (const c of g.cross) {
+      if (c.second > uHead) continue;
+      const over = c.overIsFirst ? c.first : c.second;
+      const halfWin = 0.02;
+      const n = 26;
+      const win: Pt[] = [];
+      const gap: number[] = [];
+      const core: number[] = [];
+      for (let i = 0; i < n; i++) {
+        const u = clamp01(over - halfWin + (2 * halfWin * i) / (n - 1));
+        win.push(project(onCurve(fig8Ctrl(knotStretch(W, H, frac)), u)));
+        gap.push(halfW + halfW * 0.5 * Math.sin((i / (n - 1)) * Math.PI));
+        core.push(halfW);
+      }
+      const fill = (poly: Pt[], c2: string) => {
+        ctx.beginPath();
+        poly.forEach((p, j) => (j ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
+        ctx.closePath();
+        ctx.fillStyle = c2;
+        ctx.fill();
+      };
+      fill(ribbonOutline(win, gap), '#0d0c0a');
+      // Redraw the over-strand in its own colours, so the gap pass cannot flatten
+      // a coloured segment back to terracotta.
+      let rs = 0;
+      const wCols = win.map((_, i) => knotColour(arcAtU(g, clamp01(over - halfWin + (2 * halfWin * i) / (n - 1))), flow));
+      for (let i = 1; i <= n; i++) {
+        if (i < n && wCols[i] === wCols[rs]) continue;
+        const sub = win.slice(rs, Math.min(n, i + 1));
+        if (sub.length > 1) fill(ribbonOutline(sub, sub.map(() => halfW)), wCols[rs]);
+        rs = i;
+      }
+    }
+
+    if (marksIn.checked) {
+      ctx.fillStyle = '#5ad1a0';
+      ctx.font = '13px monospace';
+      ctx.fillText(`${g.cross.length} crossings  head ${head.toFixed(2)}  flow ${flow.toFixed(2)}`, 14, 24);
+      g.cross.forEach((c, i) => {
+        const p = project(c.at);
+        ctx.beginPath();
+        ctx.arc(p[0], p[1], 11, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#0d0c0a';
+        ctx.fillText(`${i + 1}${c.overIsFirst ? 'O' : 'U'}`, p[0] - 9, p[1] + 4);
+        ctx.fillStyle = '#5ad1a0';
+      });
+    }
+  }
+
+  /** Point on the knot at normalised ARC length. */
+  function onCurveArc(g: { pts: Pt[]; arc: number[] }, s: number): Pt {
+    const u = uAtArc(g.arc, s);
+    const f = clamp01(u) * (g.pts.length - 1);
+    const a = Math.floor(f);
+    const b = Math.min(g.pts.length - 1, a + 1);
+    return [lerp(g.pts[a][0], g.pts[b][0], f - a), lerp(g.pts[a][1], g.pts[b][1], f - a)];
+  }
+  /** Normalised arc length at curve parameter u. */
+  function arcAtU(g: { arc: number[] }, u: number): number {
+    const f = clamp01(u) * (g.arc.length - 1);
+    const a = Math.floor(f);
+    const b = Math.min(g.arc.length - 1, a + 1);
+    return lerp(g.arc[a], g.arc[b], f - a);
+  }
+  /** Arc length at which the strand first reaches shape-space x. */
+  function arcAtX(g: { pts: Pt[]; arc: number[] }, x: number): number {
+    for (let i = 0; i < g.pts.length; i++) if (g.pts[i][0] >= x) return g.arc[i];
+    return 0;
+  }
+
   function fieldFrame(now: number) {
     if (fstart < 0) fstart = now;
     // Loop with a beat on the finished line, so it can be judged before the
     // sequence restarts.
-    const ms = (now - fstart) % (TOTAL_MS + 700);
+    const ms = (now - fstart) % (TOTAL_MS + 900);
     const shown = Math.min(ms, TOTAL_MS);
     ftIn.value = String(shown);
     ftOut.value = `${Math.round(shown)}ms`;
@@ -691,6 +906,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   rowsIn.addEventListener('input', () => {
     rowsOut.value = rowsIn.value;
     field = buildField(Number(rowsIn.value));
+    drawField(Number(ftIn.value));
+  });
+  coverIn.addEventListener('input', () => {
+    coverOut.value = Number(coverIn.value).toFixed(2);
+    knotCache = null;
+    drawField(Number(ftIn.value));
+  });
+  altIn.addEventListener('change', () => {
+    knotCache = null;
     drawField(Number(ftIn.value));
   });
   ampIn.addEventListener('input', () => {
