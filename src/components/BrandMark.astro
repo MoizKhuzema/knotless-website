@@ -2,58 +2,97 @@
 /**
  * The wordmark, in whichever variant the active theme needs.
  *
- * The logo ships as two files per lockup — one drawn in ink for light grounds,
- * one drawn in cream for dark. Both are emitted and the theme hides one, rather
- * than recolouring a single file: the mark's terracotta strike must stay
- * terracotta in both, so a CSS filter or a currentColor swap would break it.
+ * TWO RENDERING MODES, on purpose:
  *
- * Two <img> tags cost one extra request of a file that is ~4KB and cached
- * either way, which is cheaper than shipping a wrong-coloured logo.
+ * `wordmark` ships two <img> tags and hides one by class. Cheap, and nothing
+ * needs to reach inside it.
+ *
+ * `lockup` is INLINED as SVG, because the hero intro has to land a flying bar
+ * exactly on the terracotta strike through the `o`, and an <img> cannot be
+ * measured from the outside. Inlining lets the strike carry `data-strike` and
+ * be measured with getBoundingClientRect, which is the difference between
+ * measuring the real thing and maintaining a table of viewBox constants that
+ * drifts from the asset. That drift already bit once: the strike's y is 69.5454
+ * in the primary lockup and 85.5454 in the secondary wordmark, and using the
+ * wrong one puts the target 16 units off, on a cream glyph.
+ *
+ * Only ONE lockup file is inlined rather than a light and a dark copy: the ink
+ * glyphs become `currentColor`, so the theme recolours them through the same
+ * token the rest of the page uses. The terracotta stays literal in both — the
+ * mark's strike is #A04A2C whatever the ground, and that exact value is what
+ * the intro has to match.
  */
 import wordmarkLight from '../assets/logo/wordmark_secondary/Wordmark_Secondary.svg';
 import wordmarkDark from '../assets/logo/wordmark_secondary/Reverse_Wordmark_Secondary.svg';
-import lockupLight from '../assets/logo/wordmark_primary/Wordmark_Flush.svg';
-import lockupDark from '../assets/logo/wordmark_primary/Reverse_Wordmark_Flush.svg';
+import lockupRaw from '../assets/logo/wordmark_primary/Wordmark_Flush.svg?raw';
 
 interface Props {
   /** "wordmark" = the name alone. "lockup" = the name with the tagline under it. */
   variant?: 'wordmark' | 'lockup';
-  /** Alt text. Empty string marks it decorative. */
+  /** Alt text, or an accessible name for the inlined lockup. Empty = decorative. */
   alt?: string;
   class?: string;
   /**
-   * Mark this as the brand-reveal sentinel. It goes on the WRAPPER, never on
-   * the images: one of the two is always display:none, and querySelector would
-   * happily return the hidden one, whose zero-size box makes the
-   * IntersectionObserver fire nonsense.
+   * Mark this as the nav-reveal sentinel. It goes on the WRAPPER, never on the
+   * images: one of the two <img> copies is always display:none, and
+   * querySelector would happily return the hidden one, whose zero-size box
+   * makes an IntersectionObserver fire nonsense.
    */
   sentinel?: boolean;
 }
 const { variant = 'wordmark', alt = '', class: className = '', sentinel = false } = Astro.props;
 
-const light = variant === 'lockup' ? lockupLight : wordmarkLight;
-const dark = variant === 'lockup' ? lockupDark : wordmarkDark;
-const h = variant === 'lockup' ? 76 : 48;
+/* Prepare the inline lockup once, at build time:
+ *  - ink glyphs -> currentColor, so the theme drives them
+ *  - the terracotta RECT gets data-strike (the tagline PATH must not, and is
+ *    the only other #A04A2C element in the file)
+ *  - strip the fixed width/height so CSS sizes it; keep the viewBox
+ *  - drop the XML comment the _Flush derivation added                          */
+const lockupSvg = lockupRaw
+  .replace(/<!--[\s\S]*?-->/g, '')
+  /* Scoped to the OPENING TAG, not the whole file. A global strip also eats
+   * width="35" height="5" off the strike <rect> and collapses the one element
+   * this whole exercise exists to measure. */
+  .replace(/<svg[^>]*>/, (tag) => tag.replace(/\s(width|height)="[\d.]+"/g, ''))
+  .replace(/fill="#1F1F1D"/g, 'fill="currentColor"')
+  .replace(/<rect([^>]*?)fill="#A04A2C"/, '<rect data-strike$1fill="#A04A2C"')
+  .replace('<svg', '<svg class="brand__svg" preserveAspectRatio="xMidYMid meet"');
+
+const light = wordmarkLight;
+const dark = wordmarkDark;
 ---
 
-<span class={`brand ${className}`} data-brand-sentinel={sentinel ? '' : undefined}>
-  <img
-    class="brand__img brand__img--light"
-    src={light.src}
-    alt={alt}
-    aria-hidden={alt ? undefined : 'true'}
-    width="266"
-    height={h}
-  />
-  <img
-    class="brand__img brand__img--dark"
-    src={dark.src}
-    alt={alt}
-    aria-hidden={alt ? undefined : 'true'}
-    width="266"
-    height={h}
-  />
-</span>
+{
+  variant === 'lockup' ? (
+    <span
+      class={`brand brand--inline ${className}`}
+      data-brand-sentinel={sentinel ? '' : undefined}
+      role={alt ? 'img' : undefined}
+      aria-label={alt || undefined}
+      aria-hidden={alt ? undefined : 'true'}
+      set:html={lockupSvg}
+    />
+  ) : (
+    <span class={`brand ${className}`} data-brand-sentinel={sentinel ? '' : undefined}>
+      <img
+        class="brand__img brand__img--light"
+        src={light.src}
+        alt={alt}
+        aria-hidden={alt ? undefined : 'true'}
+        width="266"
+        height="48"
+      />
+      <img
+        class="brand__img brand__img--dark"
+        src={dark.src}
+        alt={alt}
+        aria-hidden={alt ? undefined : 'true'}
+        width="266"
+        height="48"
+      />
+    </span>
+  )
+}
 
 <style>
   .brand {
@@ -66,7 +105,7 @@ const h = variant === 'lockup' ? 76 : 48;
   }
   /* Dark is the default ground, so the light-ground artwork is the one hidden
      unless the light theme is on. display:none keeps the hidden copy out of the
-     accessibility tree, so the alt text is never read twice. */
+     accessibility tree, so alt text is never announced twice. */
   .brand__img--light {
     display: none;
   }
@@ -75,5 +114,16 @@ const h = variant === 'lockup' ? 76 : 48;
   }
   :global([data-theme='light']) .brand__img--dark {
     display: none;
+  }
+
+  /* The inlined lockup. currentColor carries the glyphs, so one file serves
+     both grounds. */
+  .brand--inline {
+    color: var(--color-cream);
+  }
+  .brand--inline :global(.brand__svg) {
+    display: block;
+    width: 100%;
+    height: auto;
   }
 </style>
