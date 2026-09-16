@@ -73,8 +73,13 @@
   --color-accent-hover-bg: #efe9dd;
   --color-accent-hover-fg: #16150f;
   --color-nav-bg: rgba(13, 12, 10, 0.72); /* the stuck bar          */
-  --color-grid: rgba(239, 233, 221, 0.055); /* blueprint, major     */
-  --color-grid-fine: rgba(239, 233, 221, 0.022); /* blueprint, minor */
+  /* Halved, and the 32px FINE grid is gone entirely. A 32px grid over the
+     whole viewport is graph paper, and graph paper is the single most literal
+     "engineering drawing" signal a page can carry — it was doing more to make
+     this read as a blueprint than any other element. What is left is a 160px
+     rhythm at half strength: enough to feel measured, not enough to be drawn
+     on. */
+  --color-grid: rgba(239, 233, 221, 0.028); /* a rhythm, not a grid   */
   --color-progress-end: #8f3a1d;
   --color-body-2: #b9b2a8; /* the quieter second paragraph          */
 
@@ -132,6 +137,18 @@
    * Display type sets tight; small caps set open. The wordmark value is
    * measured from the shipping SVG (+1.9%, open — not the -3% the old brand
    * guidelines claimed). */
+  /* --- Corners --------------------------------------------------------
+   * Panels were at 2-4px, which on a dark ground reads as a cut rather than a
+   * corner — the sharpness the brief describes as cyberpunk. 10px is still
+   * architectural; it is simply made rather than sliced. Pills are untouched:
+   * a fully round action is already the softest shape on the page.
+   *
+   * --radius-sm is Tailwind's token, so the five `rounded-sm` call sites on the
+   * not-yet-rebuilt pages soften with everything else instead of staying at 4px
+   * beside a 10px panel. */
+  --radius-sm: 0.625rem; /* 10px — cards, panels, inputs            */
+  --radius-lg: 0.875rem; /* 14px — the one large close panel        */
+
   --tracking-wordmark: 0.019em;
   --tracking-display: -0.045em;
   --tracking-tight: -0.015em;
@@ -193,8 +210,7 @@
   --color-accent-hover-bg: #16150f;
   --color-accent-hover-fg: #efe9dd;
   --color-nav-bg: rgba(239, 233, 221, 0.78);
-  --color-grid: rgba(31, 31, 29, 0.055);
-  --color-grid-fine: rgba(31, 31, 29, 0.028);
+  --color-grid: rgba(31, 31, 29, 0.028);
   --color-progress-end: #6d3119;
   --color-body-2: #5c554c;
 
@@ -291,9 +307,7 @@
     pointer-events: none;
     background-image:
       repeating-linear-gradient(to right, var(--color-grid) 0 1px, transparent 1px 160px),
-      repeating-linear-gradient(to bottom, var(--color-grid) 0 1px, transparent 1px 160px),
-      repeating-linear-gradient(to right, var(--color-grid-fine) 0 1px, transparent 1px 32px),
-      repeating-linear-gradient(to bottom, var(--color-grid-fine) 0 1px, transparent 1px 32px);
+      repeating-linear-gradient(to bottom, var(--color-grid) 0 1px, transparent 1px 160px);
     mask-image: radial-gradient(150% 100% at 50% 0%, #000 14%, transparent 84%);
     -webkit-mask-image: radial-gradient(150% 100% at 50% 0%, #000 14%, transparent 84%);
   }
@@ -334,7 +348,9 @@
   :focus-visible {
     outline: 2px solid var(--color-ember);
     outline-offset: 3px;
-    border-radius: 2px;
+    /* Stays tight: the ring traces whatever it is on, and a soft ring around a
+       sharp element reads as a mistake rather than a style. */
+    border-radius: 4px;
   }
 
   main[tabindex='-1']:focus {
@@ -506,7 +522,7 @@
   .on-ink {
     background-color: var(--color-ink-panel);
     border: 1px solid var(--color-line);
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     color: var(--color-cream);
   }
 
@@ -564,7 +580,7 @@
   .panel {
     background-color: var(--color-ink-panel);
     border: 1px solid var(--color-line);
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
   }
 
   /* Registration marks at the corners, the way a component is called out on a
