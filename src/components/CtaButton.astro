@@ -106,16 +106,16 @@ const { href, variant = 'primary' } = Astro.props;
     background-color: var(--color-terracotta);
     color: var(--color-on-accent);
   }
-  /* Deepens rather than flashing pale. The wipe used to go to cream, which
-     the comment above already called "deepening" — it was not. Deepening also
-     raises the contrast on hover instead of lowering it, and keeps the button
-     terracotta throughout rather than blinking to the page's text colour. */
+  /* Inverts on hover: cream ground, near-black type, wiped in from the left in
+     the same gesture as the logo's strike. The type colour rides the same
+     duration as the wipe, so the label is dark by the time the fill reaches
+     it. */
   .btn--primary::before {
     content: '';
     position: absolute;
     inset: 0;
     z-index: -1;
-    background-color: var(--color-terracotta-deep);
+    background-color: var(--color-accent-hover-bg);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform var(--dur-fast) var(--ease-out);
@@ -123,6 +123,10 @@ const { href, variant = 'primary' } = Astro.props;
   .btn--primary:hover::before,
   .btn--primary:focus-visible::before {
     transform: scaleX(1);
+  }
+  .btn--primary:hover,
+  .btn--primary:focus-visible {
+    color: var(--color-accent-hover-fg);
   }
 
   /* --- ghost: hairline on dark ---------------------------------------- */
@@ -175,8 +179,8 @@ const { href, variant = 'primary' } = Astro.props;
     }
     .btn--primary:hover,
     .btn--primary:focus-visible {
-      background-color: var(--color-terracotta-deep);
-      color: var(--color-on-accent);
+      background-color: var(--color-accent-hover-bg);
+      color: var(--color-accent-hover-fg);
     }
     .btn--inverse:hover,
     .btn--inverse:focus-visible {

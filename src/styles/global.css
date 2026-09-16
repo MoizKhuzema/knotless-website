@@ -39,8 +39,11 @@
      lifted so a 1px rule and an 11px index stay legible on the near-black
      ground, and that lift is precisely what made the button read as orange.
      Marks need the lift; a fill the size of a button does not. */
-  --color-terracotta: #a04a2c;
-  --color-terracotta-deep: #8a3f25; /* the fill, deepened on hover   */
+  /* Lifted a step off the logo's #a04a2c — as far as it can go and still carry
+     CREAM type at AA. #a84e2f is 4.58:1; two steps further (#ad5030) is 4.38
+     and fails. Past this point the type has to go near-black, which is exactly
+     how the button ended up orange in the first place. */
+  --color-terracotta: #a84e2f;
   --color-paper: #efe9dd; /* the one light panel                   */
   --color-line: #262320; /* hairlines                              */
   --color-wire: #4c4640; /* inert diagram: the manual process       */
@@ -50,10 +53,16 @@
    * makes the ground swappable — see the light theme below. */
   --color-figure: #0a0907; /* inside the diagram frame; node fills   */
   /* Cream, not near-black. The logo's terracotta carries dark type at only
-     3.18:1 — under AA — which is why the button was lifted to ember in the
-     first place. Cream on the same fill is 4.95:1 and passes, so the fill can
-     go back to the brand value. */
+     3.18:1 — under AA — which is why the button was lifted to orange in the
+     first place. Cream on terracotta passes, so the fill can sit on the brand
+     value instead. */
   --color-on-accent: #efe9dd; /* type on a terracotta fill          */
+  /* The hover inversion: cream ground, near-black type. Safe on this theme
+     because the page is ink — on the light theme the page IS cream, so the
+     override below flips it the other way rather than dissolving the button
+     into the page. */
+  --color-accent-hover-bg: #efe9dd;
+  --color-accent-hover-fg: #16150f;
   --color-nav-bg: rgba(13, 12, 10, 0.72); /* the stuck bar          */
   --color-grid: rgba(239, 233, 221, 0.055); /* blueprint, major     */
   --color-grid-fine: rgba(239, 233, 221, 0.022); /* blueprint, minor */
@@ -168,6 +177,8 @@
 
   --color-figure: #f4f0e7; /* the diagram sits on lighter paper      */
   --color-on-accent: #fbf8f2;
+  --color-accent-hover-bg: #16150f;
+  --color-accent-hover-fg: #efe9dd;
   --color-nav-bg: rgba(239, 233, 221, 0.78);
   --color-grid: rgba(31, 31, 29, 0.055);
   --color-grid-fine: rgba(31, 31, 29, 0.028);
