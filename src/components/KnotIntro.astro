@@ -112,8 +112,16 @@
     tie: [0.95, 1.85],
     /** The pull-straight. k is driven 1 -> 0, so the knot is genuinely opened. */
     pull: [1.85, 2.5],
-    /** Colours resolve to one ember while the strand is still gathering. */
-    resolve: [1.0, 1.9],
+    /**
+     * Colour resolves EARLY — finished well before the bands finish converging.
+     *
+     * Holding six colours until the merge completed made the last stretch read
+     * as a segmented progress bar: the bands stayed individually countable
+     * right up to the moment they were a line. Landing on one ember while they
+     * are still ~35% from home turns that stretch into one ribbon assembling
+     * rather than six tiles queueing.
+     */
+    resolve: [0.3, 0.75],
     /** Canvas out, div in — the same frame. */
     hand: 2.5,
     fly: 600,
@@ -129,6 +137,16 @@
   const clampT = (t: number, a: number, b: number) => clamp01((t - a) / (b - a));
   const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
   const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  /**
+   * For the pull-straight only. Untying passes through a band around k 0.25-0.5
+   * where the trefoil's loops have shrunk to roughly the ribbon's own width and
+   * read as a pinch rather than a loop. The geometry is right — it is a real
+   * knot closing — so the answer is to cross that band faster rather than to
+   * reshape it. Quintic peaks at 5x the average rate against the cubic's 3x,
+   * which roughly halves the pinch's time on screen: ~67ms to ~35ms, four
+   * frames to two.
+   */
+  const easeInOutQuint = (t: number) => (t < 0.5 ? 16 * t ** 5 : 1 - Math.pow(-2 * t + 2, 5) / 2);
 
   const mixHex = (a: string, b: string, t: number) => {
     const h = (c: string) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
@@ -295,7 +313,7 @@
       const converge = easeInOut(clampT(t, T.converge[0], T.converge[1]));
       const resolve = easeInOut(clampT(t, T.resolve[0], T.resolve[1]));
       const tie = easeInOut(clampT(t, T.tie[0], T.tie[1]));
-      const pull = easeInOut(clampT(t, T.pull[0], T.pull[1]));
+      const pull = easeInOutQuint(clampT(t, T.pull[0], T.pull[1]));
       // One knottedness value carries both tying and untying: up to 1, back to 0.
       const k = tie * (1 - pull);
 
