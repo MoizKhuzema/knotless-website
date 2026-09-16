@@ -331,11 +331,14 @@ const fontFace = [
         margin: -17rem 0 0 -17rem;
         border-radius: 50%;
         /* Warm, and weak. Two stops rather than one so it falls off before the
-           edge — a single stop to transparent leaves a visible disc rim. */
+           edge — a single stop to transparent leaves a visible disc rim.
+           Lifted from 0.1/0.045: the core composited to a delta of 19 in 8 bits
+           against the ground, which a dim display swallows entirely. This is
+           31, still well short of anything that reads as a light source. */
         background: radial-gradient(
           circle closest-side,
-          rgba(207, 91, 48, 0.1),
-          rgba(207, 91, 48, 0.045) 45%,
+          rgba(207, 91, 48, 0.16),
+          rgba(207, 91, 48, 0.08) 45%,
           transparent 78%
         );
         opacity: 0;
