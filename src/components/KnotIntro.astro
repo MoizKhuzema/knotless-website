@@ -75,7 +75,13 @@
       } catch (e) {
         seen = false;
       }
-      if (seen) return;
+      /* ?intro on the URL replays it regardless. The gate is deliberately
+         once-per-session, which makes the thing almost impossible to look at
+         while you are working on it — a reload is not a new session. This is
+         the escape hatch, and it is safe in production: a reader has to type it
+         to get it, and it neither clears nor corrupts the stored flag. */
+      const force = /(^|[?&])intro(=|&|$)/.test(window.location.search);
+      if (seen && !force) return;
       try {
         // Set BEFORE the animation, not after: a reload halfway through must not
         // replay it.
