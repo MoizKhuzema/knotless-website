@@ -56,107 +56,21 @@ const { class: className = '' } = Astro.props;
 </style>
 
 <script>
-  type Pt = [number, number];
 
-  /* ---------------------------------------------------------------------
-   * The knot, as control points in a normalised space: x and y both run
-   * -1..1, y positive downward to match the canvas.
-   *
-   * It traces an overhand knot: in from the left, up and over into the first
-   * loop, back down across its own incoming strand, round into the second
-   * loop, and out to the right. Two crossings, which is the least that still
-   * reads as tied rather than merely curly.
-   * ------------------------------------------------------------------- */
-  const KNOT: Pt[] = [
-    [-1.3, 0.0],
-    [-0.86, 0.0],
-    [-0.52, 0.03],
-    [-0.24, -0.28],
-    [-0.02, -0.62],
-    [0.3, -0.62],
-    [0.48, -0.3],
-    [0.3, 0.02],
-    [-0.02, 0.18],
-    [-0.32, 0.34],
-    [-0.48, 0.62],
-    [-0.16, 0.74],
-    [0.2, 0.58],
-    [0.38, 0.22],
-    [0.6, 0.04],
-    [1.3, 0.0],
-  ];
+  import { SHAPES, selfCrossings, strand, clamp01, lerp } from '../lib/knot';
+  import type { Pt } from '../lib/knot';
 
-  /* Segment colours, read off the page so the ribbon is never a second
-   * palette. Filled at runtime from the live custom properties. */
+  /* The shape this component used to carry had NO self-intersections — the
+   * harness at /lab/ counts them and reported 0. It was an S-curve, not a knot,
+   * and it shipped that way. Geometry now comes from src/lib/knot.ts, where the
+   * trefoil-derived shape is verified at three crossings. */
+  const KNOT = SHAPES.trefoil;
   const SEGMENTS = 6;
 
-  const clamp01 = (n: number) => (n < 0 ? 0 : n > 1 ? 1 : n);
-  const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-  /** Maps global time onto a phase's own 0..1, eased. */
+  /** Maps global time onto a phase's own 0..1. */
   const phase = (t: number, a: number, b: number) => clamp01((t - a) / (b - a));
   const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
-
-  /** Catmull-Rom through the control points — one smooth strand, no corners. */
-  function onCurve(ctrl: Pt[], u: number): Pt {
-    const n = ctrl.length - 1;
-    const f = clamp01(u) * n;
-    const i = Math.min(Math.floor(f), n - 1);
-    const t = f - i;
-    const p0 = ctrl[Math.max(0, i - 1)];
-    const p1 = ctrl[i];
-    const p2 = ctrl[i + 1];
-    const p3 = ctrl[Math.min(n, i + 2)];
-    const t2 = t * t;
-    const t3 = t2 * t;
-    const at = (a: number, b: number, c: number, d: number) =>
-      0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3);
-    return [at(p0[0], p1[0], p2[0], p3[0]), at(p0[1], p1[1], p2[1], p3[1])];
-  }
-
-  /**
-   * The strand at knottedness k. k=1 is the full knot; k=0 is a straight line.
-   * Every point slides toward the position it would hold on a straight strand
-   * of the same length, so the untie IS the knot being pulled open rather than
-   * a crossfade between two pictures.
-   */
-  function strand(u: number, k: number): Pt {
-    const [kx, ky] = onCurve(KNOT, u);
-    return [lerp(lerp(-1.25, 1.25, u), kx, k), lerp(0, ky, k)];
-  }
-
-  /**
-   * Where the strand passes over itself, found rather than assumed.
-   *
-   * The first version hardcoded two guessed parameters, which put the gaps on
-   * straight stretches where they did nothing — so the knot read as a flat
-   * squiggle. Walking the polyline for genuine self-intersections costs a few
-   * thousand cheap tests a frame and is always right, including while the knot
-   * unties and the crossings move and then vanish.
-   *
-   * The later parameter of each pair is the strand drawn second, which is the
-   * one in front — so that is the one whose gap gets redrawn.
-   */
-  function selfCrossings(pts: Pt[]): number[] {
-    const out: number[] = [];
-    const n = pts.length;
-    for (let i = 0; i < n - 1; i++) {
-      // Skip immediate neighbours: they share a point and always "intersect".
-      for (let j = i + 3; j < n - 1; j++) {
-        const [x1, y1] = pts[i];
-        const [x2, y2] = pts[i + 1];
-        const [x3, y3] = pts[j];
-        const [x4, y4] = pts[j + 1];
-        const d = (x2 - x1) * (y4 - y3) - (y2 - y1) * (x4 - x3);
-        if (Math.abs(d) < 1e-9) continue;
-        const t = ((x3 - x1) * (y4 - y3) - (y3 - y1) * (x4 - x3)) / d;
-        const u = ((x3 - x1) * (y2 - y1) - (y3 - y1) * (x2 - x1)) / d;
-        if (t < 0 || t > 1 || u < 0 || u > 1) continue;
-        out.push((j + u) / (n - 1));
-      }
-    }
-    return out;
-  }
 
   function hexToRgb(hex: string): [number, number, number] {
     const h = hex.trim().replace('#', '');
@@ -202,15 +116,19 @@ const { class: className = '' } = Astro.props;
     };
 
     /**
-     * Normalised space -> canvas. x and y scale independently, because the
-     * frame is a wide 1200x620 and a single uniform scale left the resting
-     * line as a short dash floating in a large empty box. The ribbon's own
-     * width is taken from the vertical scale only, so the strand stays an even
-     * thickness whichever way it happens to be running.
+     * Normalised space -> canvas, UNIFORMLY.
+     *
+     * This used to scale x and y independently to fill the wide frame. That
+     * squashed the shape until its strands no longer actually met: the same
+     * control points cross under a uniform fit and do not under a squashed one,
+     * so the projection was silently destroying the topology. A knot that is
+     * not a knot is the one thing this component cannot ship.
      */
-    const scaleX = () => W / 2.75;
-    const scaleY = () => Math.min(W / 2.75, H / 1.95);
-    const project = (p: Pt): Pt => [W / 2 + p[0] * scaleX(), H / 2 + p[1] * scaleY()];
+    // Fitted to the shape's real extent (x spans 4.3 units, y about 1.7 with
+    // the rise) plus room for the ribbon's own width, so the knot sits inside
+    // the frame instead of being cropped by it.
+    const scaleY = () => Math.min(W / 5.0, H / 2.6);
+    const project = (p: Pt): Pt => [W / 2 + p[0] * scaleY(), H / 2 + p[1] * scaleY() + H * 0.16];
 
     const SAMPLES = 260;
 
@@ -276,7 +194,7 @@ const { class: className = '' } = Astro.props;
         const halfW: number[] = [];
         for (let i = 0; i < n; i++) {
           const local = i / (n - 1);
-          const target = project(strand(lerp(u0, u1, local), k));
+          const target = project(strand(KNOT, lerp(u0, u1, local), k));
           const startX = lerp(-W * 0.15, W * 1.15, local) - (1 - enter) * W * 1.25;
           pts.push([lerp(startX, target[0], converge), lerp(bandY, target[1], converge)]);
           halfW.push(lerp(bandHalf, ribbonHalf, converge));
@@ -293,7 +211,7 @@ const { class: className = '' } = Astro.props;
       if (k > 0.04 && converge > 0.98) {
         // Coarse polyline of the whole strand, purely to locate crossings.
         const probe: Pt[] = [];
-        for (let i = 0; i < 90; i++) probe.push(project(strand(i / 89, k)));
+        for (let i = 0; i < 90; i++) probe.push(project(strand(KNOT, i / 89, k)));
         for (const c of selfCrossings(probe)) {
           const half = 0.03;
           const n = 26;
@@ -301,15 +219,15 @@ const { class: className = '' } = Astro.props;
           const hw: number[] = [];
           const hwGap: number[] = [];
           for (let i = 0; i < n; i++) {
-            const u = clamp01(c - half + (2 * half * i) / (n - 1));
-            pts.push(project(strand(u, k)));
+            const u = clamp01(c.over - half + (2 * half * i) / (n - 1));
+            pts.push(project(strand(KNOT, u, k)));
             // Taper the gap at both ends so it blends into the strand.
             const edge = Math.sin((i / (n - 1)) * Math.PI);
             hw.push(ribbonHalf);
             hwGap.push(ribbonHalf + ribbonHalf * 0.5 * edge * Math.min(1, k * 3));
           }
           band(pts, hwGap, GROUND);
-          const seg = Math.min(SEGMENTS - 1, Math.floor(c * SEGMENTS));
+          const seg = Math.min(SEGMENTS - 1, Math.floor(c.over * SEGMENTS));
           band(pts, hw, mixRgb(PALETTE[seg % PALETTE.length], EMBER, resolve));
         }
       }
@@ -323,7 +241,7 @@ const { class: className = '' } = Astro.props;
       const pts: Pt[] = [];
       const hw: number[] = [];
       for (let i = 0; i < n; i++) {
-        pts.push(project(strand(i / (n - 1), 0)));
+        pts.push(project(strand(KNOT, i / (n - 1), 0)));
         hw.push(half);
       }
       band(pts, hw, `rgb(${EMBER[0]},${EMBER[1]},${EMBER[2]})`);

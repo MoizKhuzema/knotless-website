@@ -125,7 +125,7 @@ const CINCHED: Pt[] = [
  * anywhere else leaves both ends on the same side, which is why hand-authored
  * attempts kept coming out as spirals.
  */
-export function trefoilWithTails(D = 0.95): Pt[] {
+export function trefoilWithTails(D = 0.95, rise = 0.34): Pt[] {
   // D: how far past the lobe tip to cut. It decides where the cut ends sit, and
   // therefore how far the tails must travel vertically to reach them — the
   // single most important number in the shape. Swept on /lab/ at 0.36 through
@@ -134,12 +134,19 @@ export function trefoilWithTails(D = 0.95): Pt[] {
   // stops reading as tied. 0.95 puts the tails horizontal through the middle
   // with the knot bulging above and below, which is what a loose overhand knot
   // in a horizontal rope actually looks like.
+  //
+  // `rise` lifts the knot body above the tail line. Symmetric about the tails
+  // the shape reads as decoration; sitting proud of them it reads as a knot
+  // tied IN a strand, which is the whole point.
   const N = 26;
   const pts: Pt[] = [];
   for (let i = 0; i < N; i++) {
     const t = lerp(Math.PI + D, 3 * Math.PI - D, i / (N - 1));
     // y negated: the parametrisation is y-up, canvas is y-down.
-    pts.push([(Math.sin(t) + 2 * Math.sin(2 * t)) / 2.7, -(Math.cos(t) - 2 * Math.cos(2 * t)) / 2.7]);
+    pts.push([
+      (Math.sin(t) + 2 * Math.sin(2 * t)) / 2.7,
+      -(Math.cos(t) - 2 * Math.cos(2 * t)) / 2.7 - rise,
+    ]);
   }
   // Lead the tails in at whatever height the cut actually landed, rather than a
   // fixed dip: the approach stays smooth for any D.
