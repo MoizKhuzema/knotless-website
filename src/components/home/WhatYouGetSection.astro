@@ -207,12 +207,17 @@ import { WHAT_YOU_GET } from '../../data/homepage';
     margin: 0;
     padding: 0;
   }
+  /* 16px, not the page's 18px, and cream-dim rather than cream. A card is a
+     denser context than running text: at body size and full strength the four
+     points competed with the stage's own name, and the pane read as a wall.
+     Cream-dim on the pane measures 6.94:1 — comfortably past AA, so the step
+     down is hierarchy, not a concession. */
   .stage__item {
     padding: 0.85rem 0;
     border-top: 1px solid var(--color-line);
-    font-size: var(--text-base);
-    line-height: 1.5;
-    color: var(--color-cream);
+    font-size: var(--text-md);
+    line-height: 1.55;
+    color: var(--color-cream-dim);
   }
   .stage__item:last-child {
     padding-bottom: 0;

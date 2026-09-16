@@ -129,6 +129,8 @@
   --text-meta--line-height: 1.4;
   --text-sm: 0.8125rem; /* 13px — captions, fine print             */
   --text-sm--line-height: 1.6;
+  --text-md: 1rem; /* 16px — body inside a card, one step down       */
+  --text-md--line-height: 1.6;
   --text-base: 1.125rem; /* 18px — body                            */
   --text-base--line-height: 1.7;
   --text-lead: clamp(1.25rem, 1.15rem + 0.55vw, 1.625rem); /* standfirst */
