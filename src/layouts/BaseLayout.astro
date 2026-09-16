@@ -34,6 +34,13 @@ interface Props {
    * under the bar. The page must mark that element `data-nav-sentinel`.
    */
   navReveal?: boolean;
+  /**
+   * Emit <meta name="robots" content="noindex, nofollow">. For dev harnesses
+   * like /lab/ — sitemap and robots.txt exclusion only discourage crawling,
+   * whereas this is what actually keeps the page out of an index if the URL is
+   * ever discovered or linked from outside.
+   */
+  noindex?: boolean;
 }
 
 const {
@@ -44,6 +51,7 @@ const {
   bare = false,
   bleed = false,
   navReveal = false,
+  noindex = false,
 } = Astro.props;
 
 /**
@@ -80,6 +88,7 @@ const fontFace = [
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
 
     <style set:html={fontFace}></style>
     <link rel="preload" href={interFont} as="font" type="font/woff2" crossorigin />

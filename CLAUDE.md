@@ -96,6 +96,21 @@ is probably right. A change that adds one carries the burden of proof. When a se
 weak, the first question is what to cut, not what to add. "Adding an element where removing one
 would work" is forbidden (§11.20).
 
+## /lab/ is not a site page
+
+`src/pages/lab.astro` is a **motion harness**, not part of the website. It exists so a
+piece of motion can be built and judged on its own before it is wired into a real page.
+
+- Never linked from anywhere, and it must stay that way.
+- Excluded from indexing three ways: `noindex` meta (via BaseLayout's `noindex` prop),
+  `Disallow: /lab/` in `robots.txt`, and a sitemap filter in `astro.config.mjs`. If you
+  add another harness route, do all three.
+- **Not governed by `DESIGN.md`.** Its controls, labels and layout are developer
+  furniture. Do not "fix" it to match the design system, do not count its colours against
+  the palette, and do not screenshot it as evidence of anything about the site.
+- `trailingSlash: 'always'`, so it is `/lab/`. `/lab` 404s.
+- Geometry it exercises lives in `src/lib/knot.ts`, which is real source and IS reviewed.
+
 ## Known trap
 
 `--container-prose` is **declared but never emitted**. `max-w-prose` resolves to Tailwind v4's

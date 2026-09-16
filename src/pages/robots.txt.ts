@@ -10,13 +10,18 @@ export const GET: APIRoute = ({ site }) => {
   const body = [
     'User-agent: *',
     'Allow: /',
+    // /lab/ is a motion harness, not a site page. Also excluded from the
+    // sitemap and carrying its own noindex meta.
+    'Disallow: /lab/',
     '',
     '# AdsBot ignores the wildcard group above, so allow it explicitly.',
     'User-agent: AdsBot-Google',
     'Allow: /',
+    'Disallow: /lab/',
     '',
     'User-agent: AdsBot-Google-Mobile',
     'Allow: /',
+    'Disallow: /lab/',
     '',
     `Sitemap: ${sitemap}`,
     '',

@@ -1,0 +1,290 @@
+---
+/**
+ * /lab/ — motion harness. NOT a site page.
+ *
+ * Never linked, noindex + robots-disallowed + sitemap-excluded, and explicitly
+ * outside DESIGN.md. It exists so a motion piece can be built and judged on its
+ * own before anything is wired into the hero.
+ *
+ * Currently: phase 3 of the hero intro — the knot, alone. The question this
+ * page exists to answer is whether the shape reads as a KNOT rather than a
+ * squiggle, at every knottedness value and at phone size. Nothing else gets
+ * built until it does.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Lab" bare noindex>
+  <div class="lab">
+    <header class="lab__head">
+      <h1>Knot — phase 3 in isolation</h1>
+      <p>
+        Not a site page. Judge the shape: does it read as tied, at every <code>k</code>, at
+        every width?
+      </p>
+    </header>
+
+    <div class="lab__controls">
+      <label>
+        shape
+        <select data-shape>
+          <option value="trefoil" selected>D trefoil</option>
+          <option value="overhand">B overhand</option>
+          <option value="cinched">C cinched</option>
+          <option value="pretzel">A pretzel (current)</option>
+        </select>
+      </label>
+      <label>
+        k <output data-out="k">1.00</output>
+        <input type="range" data-k min="0" max="1" step="0.01" value="1" />
+      </label>
+      <label>
+        width <output data-out="w">0.085</output>
+        <input type="range" data-w min="0.03" max="0.14" step="0.005" value="0.085" />
+      </label>
+      <label>
+        cut D <output data-out="d">0.95</output>
+        <input type="range" data-d min="0.2" max="1.3" step="0.02" value="0.95" />
+      </label>
+      <label class="lab__check">
+        <input type="checkbox" data-gaps checked /> over/under gaps
+      </label>
+      <label class="lab__check">
+        <input type="checkbox" data-marks /> mark crossings
+      </label>
+    </div>
+
+    <!-- Three real widths, not one canvas scaled. A knot that reads at 1440 can
+         collapse into a blob at 390, and 390 is where most readers meet it. -->
+    <div class="lab__stage">
+      <figure><figcaption>1440 × 620</figcaption><canvas data-canvas width="1440" height="620"></canvas></figure>
+      <figure><figcaption>768 × 500</figcaption><canvas data-canvas width="768" height="500"></canvas></figure>
+      <figure><figcaption>390 × 420</figcaption><canvas data-canvas width="390" height="420"></canvas></figure>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .lab {
+    min-height: 100vh;
+    padding: 2rem clamp(1rem, 3vw, 2.5rem) 5rem;
+    background: var(--color-ink);
+    color: var(--color-cream);
+  }
+  .lab__head h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .lab__head p {
+    margin: 0.35rem 0 0;
+    font-size: 0.875rem;
+    color: var(--color-cream-dim);
+  }
+  .lab__head code {
+    font-family: var(--font-mono);
+  }
+  .lab__controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem 2rem;
+    align-items: center;
+    margin: 1.5rem 0 2rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--color-line);
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .lab__controls label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--color-cream-dim);
+  }
+  .lab__controls input[type='range'] {
+    width: 12rem;
+    accent-color: var(--color-ember);
+  }
+  .lab__controls select {
+    background: var(--color-ink-panel);
+    color: var(--color-cream);
+    border: 1px solid var(--color-line);
+    padding: 0.3rem 0.5rem;
+    font: inherit;
+  }
+  .lab__controls output {
+    color: var(--color-ember);
+    min-width: 3.2em;
+  }
+  .lab__check {
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .lab__stage {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    align-items: flex-start;
+  }
+  .lab__stage figure {
+    margin: 0;
+    max-width: 100%;
+  }
+  .lab__stage figcaption {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-cream-dim);
+    margin-bottom: 0.5rem;
+  }
+  .lab__stage canvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    background: var(--color-figure);
+    border: 1px solid var(--color-line);
+  }
+</style>
+
+<script>
+  import { SHAPES, selfCrossings, strand, ribbonOutline, clamp01, trefoilWithTails } from '../lib/knot';
+  import type { Pt, ShapeName } from '../lib/knot';
+
+  const $ = <T extends Element>(s: string) => document.querySelector(s) as T;
+  const canvases = [...document.querySelectorAll<HTMLCanvasElement>('[data-canvas]')];
+  const shapeSel = $<HTMLSelectElement>('[data-shape]');
+  const kIn = $<HTMLInputElement>('[data-k]');
+  const wIn = $<HTMLInputElement>('[data-w]');
+  const dIn = $<HTMLInputElement>('[data-d]');
+  const gapsIn = $<HTMLInputElement>('[data-gaps]');
+  const marksIn = $<HTMLInputElement>('[data-marks]');
+  const kOut = $<HTMLOutputElement>('[data-out="k"]');
+  const wOut = $<HTMLOutputElement>('[data-out="w"]');
+  const dOut = $<HTMLOutputElement>('[data-out="d"]');
+
+  const css = getComputedStyle(document.documentElement);
+  const v = (n: string, f: string) => css.getPropertyValue(n).trim() || f;
+  const EMBER = v('--color-ember', '#cf5b30');
+  const GROUND = v('--color-figure', '#0a0907');
+
+  const SAMPLES = 300;
+
+  function render(canvas: HTMLCanvasElement) {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const W = canvas.width;
+    const H = canvas.height;
+    // The trefoil is rebuilt live so the cut depth can be swept; the hand-authored
+    // candidates ignore D.
+    const ctrl =
+      shapeSel.value === 'trefoil' ? trefoilWithTails(Number(dIn.value)) : SHAPES[shapeSel.value as ShapeName];
+    const k = Number(kIn.value);
+    const widthRatio = Number(wIn.value);
+
+    // UNIFORM scale, fitted to the box. Scaling x and y independently squashes
+    // the shape until its strands stop actually intersecting — the pretzel
+    // reported 0 crossings under a non-uniform fit while looking superficially
+    // similar. The topology is the whole point, so it must not depend on the
+    // aspect of whatever box the knot is handed.
+    const bounds = ctrl.reduce(
+      (b, p) => [Math.min(b[0], p[0]), Math.max(b[1], p[0]), Math.min(b[2], p[1]), Math.max(b[3], p[1])],
+      [Infinity, -Infinity, Infinity, -Infinity],
+    );
+    const spanX = bounds[1] - bounds[0];
+    const spanY = Math.max(bounds[3] - bounds[2], 0.001);
+    const pad = 1.18; // room for the ribbon's own width
+    const scale = Math.min(W / (spanX * pad), H / (spanY * pad));
+    const midX = (bounds[0] + bounds[1]) / 2;
+    const midY = (bounds[2] + bounds[3]) / 2;
+    const project = (p: Pt): Pt => [W / 2 + (p[0] - midX) * scale, H / 2 + (p[1] - midY) * scale];
+    const halfW = scale * widthRatio;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = GROUND;
+    ctx.fillRect(0, 0, W, H);
+
+    // Centre line, sampled once and reused for the ribbon and the crossings.
+    const pts: Pt[] = [];
+    for (let i = 0; i < SAMPLES; i++) pts.push(project(strand(ctrl, i / (SAMPLES - 1), k)));
+
+    const fillPoly = (poly: Pt[], fill: string) => {
+      ctx.beginPath();
+      poly.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+    };
+
+    // The whole strand, in curve order.
+    fillPoly(ribbonOutline(pts, pts.map(() => halfW)), EMBER);
+
+    // Over/under. For each crossing, redraw a short window around the LATER
+    // parameter — the strand drawn second, therefore the one in front — as a
+    // wider gap in the ground colour, then the strand colour back over it.
+    // Without this the crossings merge and the knot reads as a flat squiggle.
+    const crossings = selfCrossings(pts);
+    if (gapsIn.checked) {
+      for (const c of crossings) {
+        const half = 0.028;
+        const n = 30;
+        const win: Pt[] = [];
+        const gap: number[] = [];
+        const core: number[] = [];
+        for (let i = 0; i < n; i++) {
+          const u = clamp01(c.over - half + (2 * half * i) / (n - 1));
+          win.push(project(strand(ctrl, u, k)));
+          // Taper the gap at both ends so it blends back into the strand
+          // instead of leaving a notch.
+          const edge = Math.sin((i / (n - 1)) * Math.PI);
+          gap.push(halfW + halfW * 0.55 * edge);
+          core.push(halfW);
+        }
+        fillPoly(ribbonOutline(win, gap), GROUND);
+        fillPoly(ribbonOutline(win, core), EMBER);
+      }
+    }
+
+    if (marksIn.checked) {
+      ctx.fillStyle = '#5ad1a0';
+      for (const c of crossings) {
+        ctx.beginPath();
+        ctx.arc(c.at[0], c.at[1], 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = '#5ad1a0';
+      ctx.font = '12px monospace';
+      ctx.fillText(`${crossings.length} crossings`, 12, 20);
+    }
+  }
+
+  function renderAll() {
+    kOut.value = Number(kIn.value).toFixed(2);
+    wOut.value = Number(wIn.value).toFixed(3);
+    dOut.value = Number(dIn.value).toFixed(2);
+    canvases.forEach(render);
+  }
+
+  [shapeSel, kIn, wIn, dIn, gapsIn, marksIn].forEach((el) =>
+    el.addEventListener('input', renderAll),
+  );
+
+  // Lets a screenshot script hold an exact state instead of racing the UI.
+  document.addEventListener('lab:set', (e) => {
+    const d = (e as CustomEvent).detail ?? {};
+    if (d.shape) shapeSel.value = d.shape;
+    if (d.k !== undefined) kIn.value = String(d.k);
+    if (d.w !== undefined) wIn.value = String(d.w);
+    if (d.d !== undefined) dIn.value = String(d.d);
+    if (d.gaps !== undefined) gapsIn.checked = !!d.gaps;
+    if (d.marks !== undefined) marksIn.checked = !!d.marks;
+    renderAll();
+  });
+
+  renderAll();
+</script>
