@@ -19,7 +19,13 @@ import CtaButton from '../CtaButton.astro';
 // The PRIMARY lockup: wordmark with the tagline set beneath it. It carries
 // "AI Untangled." itself, so the hero no longer sets that line as type — the
 // brand says it once, in its own lettering.
-import lockup from '../../assets/logo/wordmark_primary/Reverse_Wordmark.svg';
+//
+// The _Flush variant sets the tagline flush left to the wordmark rather than
+// centred under it, so the lockup shares the left edge every other element in
+// this column is aligned to. It is a derived file: the only difference is a
+// translate on the tagline path, and the canonical Reverse_Wordmark.svg is
+// left untouched.
+import lockup from '../../assets/logo/wordmark_primary/Reverse_Wordmark_Flush.svg';
 ---
 
 <section class="hero" data-reveal>
