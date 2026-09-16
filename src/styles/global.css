@@ -82,8 +82,161 @@
   --color-glass-lift: rgba(239, 233, 221, 0.085);
   --color-glass-edge: rgba(239, 233, 221, 0.12);
   --color-glass-spec: rgba(255, 255, 255, 0.14);
+  /* The same material a weight lighter, for glass that sits IN the page rather
+     than over it. The nav capsule floats and has to hold its own edge against
+     whatever scrolls under it; these panes only have to catch the light. Fill
+     is a third of the nav's and the edge little more than half. */
+  --color-glass-soft: rgba(239, 233, 221, 0.022);
+  --color-glass-soft-edge: rgba(239, 233, 221, 0.07);
+  --color-glass-soft-spec: rgba(255, 255, 255, 0.06);
+  /* Halved, and the 32px FINE grid is gone entirely. A 32px grid over the
+     whole viewport is graph paper, and graph paper is the single most literal
+     "engineering drawing" signal a page can carry — it was doing more to make
+     this read as a blueprint than any other element. What is left is a 160px
+     rhythm at half strength: enough to feel measured, not enough to be drawn
+     on. */
+  /* Doubled from 0.028. At that value the line composited to (19,18,16)
+     against a (13,12,10) ground — a delta of 6 in 8 bits, which is at the
+     threshold of what an eye resolves and below what a dim display shows at
+     all. This is a delta of 12. The SPACING stays at 160px: the graph-paper
+     problem was density, not contrast, and that fix is not being undone. */
+  --color-grid: rgba(239, 233, 221, 0.055); /* a rhythm, not a grid   */
+  --color-progress-end: #8f3a1d;
+  --color-body-2: #b9b2a8; /* the quieter second paragraph          */
+
+  /* The ONE panel that contrasts with the page. On the dark ground it is
+   * paper; on the light ground it inverts to ink. Everything inside it reads
+   * off these, so the panel flips wholesale with the theme. */
+  --color-invert-bg: #efe9dd;
+  --color-invert-fg: #16150f;
+  --color-invert-fg-dim: #2c2a22;
+  --color-invert-accent: #b4491f;
+  --color-invert-line: rgba(22, 21, 15, 0.2);
+  --color-invert-texture: rgba(22, 21, 15, 0.055);
+
+  /* --- Type families -------------------------------------------------
+   * Instrument Serif carries display only — hero, section headings, pull
+   * moments. Inter carries everything a reader actually reads, plus all UI,
+   * which keeps it adjacent to the wordmark it matches. */
+  --font-sans: 'Inter Variable', 'Inter Fallback', system-ui, -apple-system,
+    'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'Mono Fallback', ui-monospace,
+    'SF Mono', Menlo, monospace;
+
+  /* --- Type scale ----------------------------------------------------
+   * Deliberately wide dynamic range. The display sizes are fluid and go far
+   * larger than an ordinary page would dare; the reading sizes stay quiet. */
+  --text-meta: 0.6875rem; /* 11px — eyebrows, indices, labels      */
+  --text-meta--line-height: 1.4;
+  --text-sm: 0.8125rem; /* 13px — captions, fine print             */
+  --text-sm--line-height: 1.6;
+  --text-base: 1.125rem; /* 18px — body                            */
+  --text-base--line-height: 1.7;
+  --text-lead: clamp(1.25rem, 1.15rem + 0.55vw, 1.625rem); /* standfirst */
+  --text-lead--line-height: 1.5;
+  --text-h3: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+  --text-h3--line-height: 1.3;
+  /* Fixed steps, still used by the pages not yet rebuilt around the fluid
+   * display sizes below. */
+  --text-label: 0.75rem; /* 12px — was 11px, too small to carry a phrase */
+  --text-label--line-height: 1.4;
+  --text-lg: 1.3125rem;
+  --text-lg--line-height: 1.55;
+  --text-xl: 1.625rem;
+  --text-xl--line-height: 1.35;
+  --text-2xl: 2.125rem;
+  --text-2xl--line-height: 1.15;
+  --text-3xl: 3rem;
+  --text-3xl--line-height: 1.08;
+
+  --text-h2: clamp(2.125rem, 1.3rem + 3.2vw, 3.75rem); /* section display */
+  --text-h2--line-height: 0.98;
+  --text-display: clamp(2.75rem, 1rem + 6vw, 6.5rem); /* hero             */
+  --text-display--line-height: 0.9;
+
+  /* --- Tracking -------------------------------------------------------
+   * Display type sets tight; small caps set open. The wordmark value is
+   * measured from the shipping SVG (+1.9%, open — not the -3% the old brand
+   * guidelines claimed). */
+  /* --- Corners --------------------------------------------------------
+   * Panels were at 2-4px, which on a dark ground reads as a cut rather than a
+   * corner — the sharpness the brief describes as cyberpunk. 10px is still
+   * architectural; it is simply made rather than sliced. Pills are untouched:
+   * a fully round action is already the softest shape on the page.
+   *
+   * --radius-sm is Tailwind's token, so the five `rounded-sm` call sites on the
+   * not-yet-rebuilt pages soften with everything else instead of staying at 4px
+   * beside a 10px panel. */
+  --radius-sm: 0.625rem; /* 10px — cards, panels, inputs            */
+  --radius-lg: 0.875rem; /* 14px — the one large close panel        */
+
+  --tracking-wordmark: 0.019em;
+  --tracking-display: -0.045em;
+  --tracking-tight: -0.015em;
+  --tracking-normal: 0em;
+  /* 0.085em, down from 0.16em. At 0.16 a label stops reading as a word and
+     starts reading as a readout — which, applied to 27 places on the homepage
+     alone including the whole navigation, is most of what made the site feel
+     like a terminal rather than a firm. Still open enough to mark a label;
+     no longer wide enough to spell it out letter by letter. */
+  --tracking-meta: 0.085em;
+  --tracking-label: 0.085em; /* alias used by the not-yet-rebuilt pages */
+
+  /* --- Rhythm --------------------------------------------------------- */
+  --spacing-gutter: 1.5rem;
+  --spacing-section: 6rem;
+  --spacing-section-lg: 9.5rem;
+
+  /* --- Containers ------------------------------------------------------ */
+  --container-prose: 36rem; /* reading measure, ~68ch at Inter 18px  */
+  --container-text: 46rem;
+  --container-page: 80rem; /* wider shell — the design needs the air  */
+
+  /* --- Motion ---------------------------------------------------------
+   * One easing curve for everything, so the whole site moves with a single
+   * hand. Durations are named rather than sprinkled. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 260ms;
+  --dur-mid: 620ms;
+  --dur-slow: 1100ms;
+}
+
+/* =====================================================================
+ * LIGHT GROUND — set data-theme="light" on <html>.
+ *
+ * Grounded in the logo rather than invented: the page takes the brand cream
+ * #EFE9DD exactly, type takes the brand ink #1F1F1D exactly, and the accent
+ * returns to the brand terracotta #A04A2C exactly. The dark ground cannot use
+ * that terracotta — it sits too close to the background to read, which is why
+ * the dark theme lifts it to #CF5B30. So the light ground is the only one that
+ * ships the mark's real colours.
+ *
+ * Token NAMES stay dark-derived (--color-ink is the page, --color-cream is the
+ * type) because they are referenced in a hundred places; only the values move.
+ * If light wins, they should be renamed to roles — bg / fg / accent.
+ * ===================================================================== */
+[data-theme='light'] {
+  --color-ink: #efe9dd; /* the brand cream, as the page              */
+  --color-ink-raised: #e9e1d1;
+  --color-ink-panel: #e4dbc8; /* cards sit deeper than the page      */
+  --color-cream: #1f1f1d; /* the brand ink, as the type              */
+  --color-cream-dim: #6b645a;
+  --color-ember: #a04a2c; /* the brand terracotta, unlifted          */
+  --color-line: #cfc4ae;
+  --color-wire: #b3a893; /* hairlines need more bite on paper than on ink */
+  --color-wire-lit: #7d7263;
+
+  --color-figure: #f4f0e7; /* the diagram sits on lighter paper      */
+  --color-on-accent: #fbf8f2;
+  --color-accent-hover-bg: #16150f;
+  --color-accent-hover-fg: #efe9dd;
+  --color-glass: rgba(31, 31, 29, 0.05);
+  --color-glass-lift: rgba(31, 31, 29, 0.075);
   --color-glass-edge: rgba(31, 31, 29, 0.12);
   --color-glass-spec: rgba(255, 255, 255, 0.5);
+  --color-glass-soft: rgba(31, 31, 29, 0.02);
+  --color-glass-soft-edge: rgba(31, 31, 29, 0.08);
+  --color-glass-soft-spec: rgba(255, 255, 255, 0.28);
   --color-grid: rgba(31, 31, 29, 0.05);
   --color-progress-end: #6d3119;
   --color-body-2: #5c554c;
