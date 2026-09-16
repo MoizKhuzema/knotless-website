@@ -37,11 +37,14 @@ import { WHAT_YOU_GET } from '../../data/homepage';
       <h2 class="h-section wyg__h r" style="--i: 1">{WHAT_YOU_GET.heading}</h2>
     </div>
 
-    {/* Two stages in glass, each one named and set out as what it delivers. */}
-    <div class="wyg__stages" data-reveal>
+    {/* Two stages in glass, read as a SEQUENCE rather than a pair. The number
+        said they were ordered; nothing showed it. An ordered list carries the
+        order in the markup, and the connector in the gap carries it for the
+        eye. */}
+    <ol class="wyg__stages" data-reveal>
       {
         WHAT_YOU_GET.stages.map((stage, i) => (
-          <div class="stage r" style={`--i: ${i}`}>
+          <li class="stage r" style={`--i: ${i}`}>
             <p class="stage__n meta meta--num">{String(i + 1).padStart(2, '0')}</p>
             <h3 class="stage__h">{stage.title}</h3>
             <ul class="stage__list">
@@ -49,10 +52,10 @@ import { WHAT_YOU_GET } from '../../data/homepage';
                 <li class="stage__item">{point}</li>
               ))}
             </ul>
-          </div>
+          </li>
         ))
       }
-    </div>
+    </ol>
 
     <div class="wyg__verticals" data-reveal>
       <p class="wyg__vlead r" style="--i: 0">{WHAT_YOU_GET.verticalsLead}</p>
@@ -91,8 +94,13 @@ import { WHAT_YOU_GET } from '../../data/homepage';
   /* --- The two stages ------------------------------------------------- */
 
   .wyg__stages {
+    /* One name for the gap, because the connector has to span exactly it. Two
+       copies of this number would drift the first time either changed. */
+    --stage-gap: clamp(2.5rem, 5vw, 4rem);
+    list-style: none;
+    padding: 0;
     display: grid;
-    gap: clamp(2.5rem, 5vw, 4rem);
+    gap: var(--stage-gap);
     /* Was clamp(3rem, 5vw, 4.5rem) — 72px at 1440, which read as a break
        between two sections rather than a heading over its own content. */
     margin-top: clamp(1.75rem, 2.6vw, 2.5rem);
@@ -102,8 +110,8 @@ import { WHAT_YOU_GET } from '../../data/homepage';
       /* Equal fractions, not auto. Sizing to content would hand the stage with
          the longer bullets more width, and these are two steps of one
          engagement, not a comparison. */
+      --stage-gap: clamp(3rem, 5vw, 5rem);
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: clamp(3rem, 5vw, 5rem);
     }
   }
 
@@ -124,6 +132,7 @@ import { WHAT_YOU_GET } from '../../data/homepage';
    * light pass behind these and come through softened, so the pane reads as a
    * material with something behind it rather than as a tinted rectangle. */
   .stage {
+    position: relative;
     padding: clamp(1.5rem, 2.6vw, 2.25rem);
     border-radius: var(--radius-lg);
     background-color: var(--color-glass-soft);
@@ -131,6 +140,39 @@ import { WHAT_YOU_GET } from '../../data/homepage';
     -webkit-backdrop-filter: blur(14px) saturate(140%);
     border: 1px solid var(--color-glass-soft-edge);
     box-shadow: inset 0 1px 0 var(--color-glass-soft-spec);
+  }
+
+  /* The connector. What makes two boxes read as a sequence rather than a pair
+   * is a line drawn between them, and it has to live in the GAP — a border on
+   * either card would read as decoration on that card.
+   *
+   * It is drawn from the second stage backwards, not from the first forwards,
+   * so a third stage would connect itself without touching anything else.
+   *
+   * Neutral, not ember. Orange is reserved for the ordinals and the call to
+   * action; a connector is structure, and structure is a hairline.
+   *
+   * Stacked, it runs down from the card above, aligned to the left padding so
+   * it lands under the ordinal. Side by side it runs across the gap at the
+   * cards' shared middle — which only holds because they are equal-height grid
+   * items. */
+  .stage + .stage::before {
+    content: '';
+    position: absolute;
+    left: clamp(1.5rem, 2.6vw, 2.25rem);
+    top: calc(-1 * var(--stage-gap));
+    width: 1px;
+    height: var(--stage-gap);
+    background-image: linear-gradient(to bottom, transparent, var(--color-line) 35%);
+  }
+  @media (min-width: 48rem) {
+    .stage + .stage::before {
+      left: calc(-1 * var(--stage-gap) - 1px);
+      top: 50%;
+      width: var(--stage-gap);
+      height: 1px;
+      background-image: linear-gradient(to right, var(--color-line), var(--color-line));
+    }
   }
 
   /* Ember mono, the same numbering idiom as the verticals list below, so the
