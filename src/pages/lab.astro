@@ -264,7 +264,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     BANDS, bandPoint,
   } from '../lib/knot';
   import type { Pt, ShapeName } from '../lib/knot';
-  import { buildField, edgeY, rowSpans, FIELD, FIELD_PALETTE } from '../lib/ribbons';
+  import { buildField, edgeY, rowSpans, FIELD, FIELD_PALETTE, FIELD_GROUND } from '../lib/ribbons';
 
   const $ = <T extends Element>(s: string) => document.querySelector(s) as T;
   const canvases = [...document.querySelectorAll<HTMLCanvasElement>('[data-canvas]')];
@@ -526,7 +526,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
        is invisible. Cheaper and more robust than tuning overlaps until the
        artefact happens to vanish — it was down to one pixel per frame, which is
        exactly the kind of number that comes back on a different DPR. */
-    ctx.fillStyle = FIELD_PALETTE[0];
+    ctx.fillStyle = FIELD_GROUND;
     ctx.fillRect(0, 0, W, H);
 
     const amp = Number(ampIn.value);
