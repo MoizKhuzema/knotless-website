@@ -185,7 +185,12 @@ const fontFace = [
            grid, about a tenth of a cell. Any more and the surface stops
            reading as a surface and starts reading as a thing being dragged. */
         const GRID_GAIN = 0.025;
+        /* How far from a panel's edge the light still reaches it. Roughly the
+           glow's own radius, so a panel lights when the pool touches it. */
+        const CATCH = 240;
+
         const root = document.documentElement;
+        const catchers = [...document.querySelectorAll('[data-catch]')];
 
         let tx = 0, ty = 0;      // where the pointer is
         let px = 0, py = 0;      // where the light is
@@ -199,6 +204,34 @@ const fontFace = [
           root.style.setProperty('--gx', ((px - innerWidth / 2) * GRID_GAIN).toFixed(2) + 'px');
           root.style.setProperty('--gy', ((py - innerHeight / 2) * GRID_GAIN).toFixed(2) + 'px');
 
+          /* Rects are read fresh every frame, not cached. Caching them and
+             invalidating on scroll and resize looked obviously cheaper and was
+             wrong: the reveal observer TRANSLATES these cards as they come into
+             view, so a rect captured on the scroll that triggered the reveal is
+             already stale by the time the card lands. Measured symptom —
+             --cnear stuck at 0 with the pointer sitting on the card.
+             There are two of these on the homepage and nine on /what-we-do/;
+             one layout read per frame per card, only while the pointer is
+             moving, is not worth a class of bug. */
+          for (const el of catchers) {
+            const r = el.getBoundingClientRect();
+            /* Distance from the pointer to the RECTANGLE, not to its centre —
+               zero anywhere inside it. A centre distance would light a wide
+               card only when the pointer reached the middle of it. */
+            const dx = Math.max(r.left - px, 0, px - r.right);
+            const dy = Math.max(r.top - py, 0, py - r.bottom);
+            const near = Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) / CATCH);
+            el.style.setProperty('--cnear', near.toFixed(3));
+            el.style.setProperty('--cx', (px - r.left).toFixed(1) + 'px');
+            el.style.setProperty('--cy', (py - r.top).toFixed(1) + 'px');
+          }
+        };
+
+        /* Scrolling moves every panel under a stationary pointer, so one frame
+           has to run even though nothing was moved by hand. It parks again
+           immediately after. */
+        const kick = () => {
+          if (seeded && !running) { running = true; last = 0; requestAnimationFrame(frame); }
         };
 
         const frame = (now) => {
@@ -232,11 +265,27 @@ const fontFace = [
                fades up, rather than sliding in from wherever it was abandoned. */
             seeded = true; px = tx; py = ty; place();
           }
-          if (!lit) { lit = true; glow.setAttribute('data-lit', ''); }
+          if (!lit) {
+            lit = true;
+            glow.setAttribute('data-lit', '');
+            /* Separate attribute on the root, because [data-catch] elements are
+               anywhere in the page and cannot key off the glow's own state. */
+            root.setAttribute('data-pointer-lit', '');
+          }
           if (!running) { running = true; last = 0; requestAnimationFrame(frame); }
         }, { passive: true });
 
-        const leave = () => { lit = false; seeded = false; glow.removeAttribute('data-lit'); };
+        /* Capture on document, not scroll on window: the vignette cards live in
+           a horizontally scrolling track, and scroll does not bubble out of it.
+           Capture sees every scrolling element on the page. */
+        document.addEventListener('scroll', kick, { passive: true, capture: true });
+        addEventListener('resize', kick, { passive: true });
+
+        const leave = () => {
+          lit = false; seeded = false;
+          glow.removeAttribute('data-lit');
+          root.removeAttribute('data-pointer-lit');
+        };
         addEventListener('pointerleave', leave);
         // A pointer that leaves through the document edge does not always fire
         // pointerleave on window; the document one does.

@@ -33,7 +33,7 @@ const dial = (phone: string) => phone.replace(/\s+/g, '');
     <div class="founders__grid" data-reveal>
       {
         SITE.founders.map((f, i) => (
-          <article class="fcard panel r" style={`--i: ${i + 1}`}>
+          <article class="fcard panel r" data-catch style={`--i: ${i + 1}`}>
             <div class="fcard__head">
               <h3 class="fcard__name display">{f.name}</h3>
               <p class="meta fcard__role">{f.title}</p>

@@ -609,6 +609,66 @@
     border-radius: var(--radius-sm);
   }
 
+  /* --- Catching the light ----------------------------------------------
+   * An element marked data-catch brightens along its EDGE as the cursor light
+   * passes near it, so the page reads as one lit scene rather than a flat
+   * ground with a torch over it.
+   *
+   * Edge luminance only — no lift, no fill, no colour shift, no cursor change.
+   * That distinction is what keeps it clear of 11.8: a hover state says "this
+   * responds to you", and these cards are not all interactive. Ambient light
+   * falling on a surface says nothing about whether you can click it, and this
+   * fires on PROXIMITY, not on the pointer being over the element at all.
+   *
+   * The ring is a gradient clipped to a 1px frame by two masks composited to
+   * exclude each other — the standard way to get a gradient border without a
+   * second element or a background-clip hack that eats the radius.
+   *
+   * --cx/--cy are the pointer in the element's own coordinates and --cnear is
+   * 1 at the edge falling to 0 at the falloff distance; both are written from
+   * the one pointer rAF in BaseLayout. */
+  [data-catch] {
+    position: relative;
+  }
+  [data-catch]::after {
+    content: '';
+    position: absolute;
+    inset: -1px; /* sits exactly over the existing 1px border */
+    border-radius: inherit;
+    padding: 1px; /* the thickness of the ring */
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(
+      18rem 18rem at var(--cx, 50%) var(--cy, 50%),
+      rgba(207, 91, 48, 0.55),
+      rgba(207, 91, 48, 0.12) 45%,
+      transparent 72%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+  :root[data-pointer-lit] [data-catch]::after {
+    opacity: var(--cnear, 0);
+  }
+  /* The transition lives on the UNLIT rule only. Putting it on the lit one
+     would restart a 420ms animation on every frame that --cnear changes, which
+     leaves the ring permanently chasing a value it never reaches. Here it does
+     one job: fading the whole scene down when the pointer leaves the window. */
+  :root:not([data-pointer-lit]) [data-catch]::after {
+    transition: opacity 420ms var(--ease-out);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-catch]::after {
+      display: none;
+    }
+  }
+
   /* Registration marks at the corners, the way a component is called out on a
      technical drawing. Drawn with gradients, so no extra elements. */
   .bracket {
