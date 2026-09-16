@@ -282,11 +282,30 @@ const isActive = (path: string) => here.startsWith(href(path));
     grid-template-columns: 1fr;
     min-width: 0;
   }
+  /* The gap that separates the three groups. It was 1.75rem (28px) against the
+     2.25rem (36px) between the links themselves — the boundary BETWEEN groups
+     was tighter than the gaps inside one, which is the arrangement that makes
+     five items read as one row. At 3rem it clears the internal gap by a third,
+     which is enough to group and little enough not to look like a gutter.
+
+     Only where there are links to separate from. Below md the capsule holds the
+     mark and the toggle and nothing between them, so this is not the same
+     relationship and it stays at 28px. */
+  .nav__flank--start,
+  .nav__cta {
+    --nav-group-gap: 1.75rem;
+  }
+  @media (min-width: 48rem) {
+    .nav__flank--start,
+    .nav__cta {
+      --nav-group-gap: 3rem;
+    }
+  }
   .nav__flank--start {
-    padding-right: 1.75rem;
+    padding-right: var(--nav-group-gap);
   }
   .nav__cta {
-    padding-left: 1.75rem;
+    padding-left: var(--nav-group-gap);
   }
   .nav__flank--start > *,
   .nav__cta-in {
