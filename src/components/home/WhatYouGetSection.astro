@@ -44,7 +44,7 @@ import { WHAT_YOU_GET } from '../../data/homepage';
     <ol class="wyg__stages" data-reveal>
       {
         WHAT_YOU_GET.stages.map((stage, i) => (
-          <li class="stage r" style={`--i: ${i}`}>
+          <li class="stage r" data-catch style={`--i: ${i}`}>
             <p class="stage__n meta meta--num">{String(i + 1).padStart(2, '0')}</p>
             <h3 class="stage__h">{stage.title}</h3>
             <ul class="stage__list">
