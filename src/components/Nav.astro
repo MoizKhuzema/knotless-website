@@ -7,21 +7,23 @@
  * content later. Fixed rather than sticky: sticky ghosted page content over
  * the bar on iOS Safari.
  *
- * Layout is three tracks: the wordmark on the left, the links in the middle,
- * the call to action on the right. All three size to their content and the
- * capsule is shrink-to-fit, so it is only ever as wide as what is in it — the
- * flanks collapse their tracks rather than merely fading, and the capsule opens
- * and closes around them.
+ * The bar is the wordmark and the routes, and nothing else. It carried the
+ * call to action as well; it no longer does, so the bar asks for nothing and
+ * the page's own buttons are the only place the action is offered. The drawer
+ * below md keeps one, because there the drawer IS the page for as long as it
+ * is open.
+ *
+ * The mark and the links size to their content and the capsule is shrink-to-
+ * fit, so it is only ever as wide as what is in it — the mark collapses its
+ * track rather than merely fading, and the capsule opens around it.
  *
  * It also senses what is behind it. The bar is glass over whatever the page
  * puts under it, and the closing panel is a cream slab — so the palette is
  * chosen from the measured luminance of the ground, not from the theme.
  *
  * Reveal (opt-in via `navReveal`): pages whose hero carries its own wordmark
- * and its own call to action start with BOTH flanks hidden and bring them in
- * together once the hero's button scrolls under the bar. Until then the hero
- * holds the brand and the action, and the bar holds only navigation. Off by
- * default — every other page shows the full bar immediately.
+ * start with the mark hidden and bring it in once the hero's own lockup
+ * scrolls under the bar. Off by default — every other page shows it at once.
  */
 import { SITE } from '../config/site';
 import { href } from '../lib/href';
@@ -45,11 +47,7 @@ const here = Astro.url.pathname;
 const isActive = (path: string) => here.startsWith(href(path));
 ---
 
-<nav
-  class="nav"
-  data-nav-reveal={navReveal ? '' : undefined}
-  data-cta-hidden={navReveal ? '' : undefined}
->
+<nav class="nav" data-nav-reveal={navReveal ? '' : undefined}>
   <div class="shell nav__bar">
     <!-- LEFT: the mark. Hidden until the hero's button has gone past. -->
     <div class="nav__flank nav__flank--start">
@@ -75,18 +73,10 @@ const isActive = (path: string) => here.startsWith(href(path));
       }
     </ul>
 
-    <!-- RIGHT: the action, plus the menu toggle below md. The action sits in
-         its own collapsing track; the toggle must not collapse with it. -->
+    <!-- RIGHT: the menu toggle, below md only. The bar used to carry the call
+         to action here too; it does not any more, so above md this flank is
+         empty and the capsule closes to the mark and the links. -->
     <div class="nav__flank nav__flank--end">
-      <div class="nav__cta">
-        {/* The inner box is what gets clipped. The button cannot be, because a
-            box's own padding still counts toward the track's size even when its
-            content is clipped to nothing — measured: the collapsed flank held
-            39px of button padding open. */}
-        <div class="nav__cta-in">
-          <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
-        </div>
-      </div>
       <button
         type="button"
         class="nav__toggle"
@@ -276,93 +266,27 @@ const isActive = (path: string) => here.startsWith(href(path));
    *
    * Clipping is `clip` with a margin, not `hidden`, so the 2px focus ring at
    * 3px offset still escapes. `hidden` would have swallowed it. */
-  .nav__flank--start,
-  .nav__cta {
+  .nav__flank--start {
     display: grid;
     grid-template-columns: 1fr;
     min-width: 0;
+    padding-right: 1.75rem;
   }
-  /* The gap that separates the three groups. It was 1.75rem (28px) against the
-     2.25rem (36px) between the links themselves — the boundary BETWEEN groups
-     was tighter than the gaps inside one, which is the arrangement that makes
-     five items read as one row. At 3rem it clears the internal gap by a third,
-     which is enough to group and little enough not to look like a gutter.
-
-     Only where there are links to separate from. Below md the capsule holds the
-     mark and the toggle and nothing between them, so this is not the same
-     relationship and it stays at 28px. */
-  .nav__flank--start,
-  .nav__cta {
-    --nav-group-gap: 1.75rem;
-  }
-  @media (min-width: 48rem) {
-    .nav__flank--start,
-    .nav__cta {
-      --nav-group-gap: 3rem;
-    }
-  }
-  .nav__flank--start {
-    padding-right: var(--nav-group-gap);
-  }
-  .nav__cta {
-    padding-left: var(--nav-group-gap);
-  }
-  .nav__flank--start > *,
-  .nav__cta-in {
+  .nav__flank--start > * {
     min-width: 0;
     overflow: clip;
     overflow-clip-margin: 6px;
   }
-  .nav__toggle {
-    margin-left: 1.25rem;
-  }
   @media (prefers-reduced-motion: no-preference) {
-    .nav__flank--start,
-    .nav__cta {
+    .nav__flank--start {
       transition:
         grid-template-columns 320ms var(--ease-out),
         padding 320ms var(--ease-out);
-    }
-    .nav__cta {
-      /* Trails the mark, the same beat the opacity already uses, so the capsule
-         opens left to right rather than in both directions at once. */
-      transition-delay: 70ms;
     }
   }
   .nav[data-nav-reveal]:not([data-nav-shown]) .nav__flank--start {
     grid-template-columns: 0fr;
     padding-right: 0;
-  }
-  .nav[data-cta-hidden] .nav__cta {
-    grid-template-columns: 0fr;
-    padding-left: 0;
-  }
-  /* Below md the button is display:none, so its track is empty — the padding
-     would otherwise hold open space for something that is not there. */
-  @media (max-width: 47.99rem) {
-    .nav__cta {
-      padding-left: 0;
-    }
-  }
-  /* First frame, same reason as the button's own rule below: pages that do not
-     server-render the hidden state would otherwise play a close on load. */
-  .nav[data-cta-init] .nav__cta {
-    transition: none !important;
-  }
-
-  /* The bar's button is the compact end of the scale — the hero and the close
-     carry the full-size one. */
-  .nav__flank--end :global(.btn) {
-    min-height: 2.5rem;
-    padding-inline: 1.15rem;
-  }
-  /* Below md the bar has no room for the button, but the toggle shares this
-     flank — so hide the BUTTON, not the flank around it. The action moves into
-     the drawer. */
-  @media (max-width: 47.99rem) {
-    .nav__flank--end :global(.btn) {
-      display: none;
-    }
   }
 
   .nav__brand {
@@ -406,43 +330,6 @@ const isActive = (path: string) => here.startsWith(href(path));
         opacity 200ms var(--ease-out),
         transform 320ms var(--ease-out),
         visibility 0s;
-    }
-  }
-
-  /* --- the bar's action ------------------------------------------------
-   * Independent of the mark, and live on EVERY page rather than only the ones
-   * with a reveal. The mark answers "is the hero's lockup on screen"; the
-   * action answers "is ANY of the page's own calls to action on screen" — and
-   * those are different questions with different answers. They shared one
-   * state, which is why the bar's button sat next to the closing section's
-   * button at the bottom of the homepage. */
-  .nav[data-cta-hidden] .nav__flank--end :global(.btn) {
-    visibility: hidden;
-    opacity: 0;
-    transform: translateY(6px);
-    transition:
-      opacity 240ms var(--ease-out),
-      transform 240ms var(--ease-out),
-      visibility 0s linear 240ms;
-  }
-  .nav__flank--end :global(.btn) {
-    /* Trails the mark by a beat when both arrive, so the bar fills as one
-       gesture sweeping left to right rather than as a simultaneous pop. */
-    transition:
-      opacity 200ms var(--ease-out) 70ms,
-      transform 320ms var(--ease-out) 70ms,
-      visibility 0s;
-  }
-  /* No transition on the first frame: on pages that do not server-render the
-     hidden state, the script sets it after parse, and without this the button
-     fades out on load instead of simply not being there. */
-  .nav[data-cta-init] .nav__flank--end :global(.btn) {
-    transition: none !important;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .nav[data-cta-hidden] .nav__flank--end :global(.btn),
-    .nav__flank--end :global(.btn) {
-      transition: none;
     }
   }
 
@@ -728,53 +615,6 @@ const isActive = (path: string) => here.startsWith(href(path));
       nav.addEventListener('click', (e) => {
         if (e.target === nav) setOpen(false);
       });
-    }
-
-    /* --- the bar's action ----------------------------------------------
-     * Hidden while any of the page's OWN calls to action is on screen, so the
-     * same action is never offered twice at once. Runs on every page and under
-     * reduced motion: two identical buttons on one screen is a content problem,
-     * not a motion one, and the CSS above drops the transition rather than the
-     * behaviour.
-     *
-     * Same trigger line as the mark: the root's top edge is pushed down to the
-     * bar's own height, so a call to action counts as "on screen" exactly while
-     * it is visible BELOW the bar, not while it is sliding under it. */
-    const pageCtas = [...document.querySelectorAll<HTMLElement>('[data-cta-sentinel]')].filter(
-      (el) => !el.closest('.nav'),
-    );
-    if (pageCtas.length && 'IntersectionObserver' in window) {
-      const onScreen = new Set<Element>();
-      let cio: IntersectionObserver | undefined;
-      const armCta = () => {
-        cio?.disconnect();
-        onScreen.clear();
-        cio = new IntersectionObserver(
-          (entries) => {
-            for (const e of entries) {
-              if (e.isIntersecting) onScreen.add(e.target);
-              else onScreen.delete(e.target);
-            }
-            nav.toggleAttribute('data-cta-hidden', onScreen.size > 0);
-          },
-          { rootMargin: `-${nav.offsetHeight}px 0px 0px 0px`, threshold: 0 },
-        );
-        pageCtas.forEach((el) => cio!.observe(el));
-      };
-      // Suppress the transition for the first frame, then let it run.
-      nav.setAttribute('data-cta-init', '');
-      armCta();
-      requestAnimationFrame(() => requestAnimationFrame(() => nav.removeAttribute('data-cta-init')));
-
-      let ct: ReturnType<typeof setTimeout>;
-      window.addEventListener(
-        'resize',
-        () => {
-          clearTimeout(ct);
-          ct = setTimeout(armCta, 150);
-        },
-        { passive: true },
-      );
     }
 
     /* --- the mark ------------------------------------------------------

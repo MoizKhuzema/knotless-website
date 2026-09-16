@@ -25,10 +25,10 @@ interface Props {
 const { href, variant = 'primary' } = Astro.props;
 ---
 
-{/* Every call to action is a sentinel for the bar's own button: the bar hides
-    its action whenever one of these is on screen, so the same action is never
-    offered twice at once. Nav.astro filters out the two inside itself. */}
-<a href={withBase(href)} class:list={['btn', `btn--${variant}`]} data-cta-sentinel>
+{/* data-cta-sentinel is gone with the bar's own button. It existed so the bar
+    could hide its action whenever one of these was on screen; the bar carries
+    no action now, so nothing observed it. */}
+<a href={withBase(href)} class:list={['btn', `btn--${variant}`]}>
   <span class="btn__label" aria-hidden="true">
     <span class="btn__a"><slot /></span>
     <span class="btn__b"><slot /></span>
