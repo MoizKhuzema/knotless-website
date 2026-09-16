@@ -39,7 +39,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <button type="button" data-field-play>play</button>
         <label>
           t <output data-out="ft">0ms</output>
-          <input type="range" data-ft min="0" max="1400" step="5" value="0" />
+          <input type="range" data-ft min="0" max="1520" step="5" value="0" />
         </label>
         <label>
           rows <output data-out="rows">13</output>
@@ -504,7 +504,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   /** Phase 2, the collapse. Fast — it is a transition, not a thing to look at,
    *  and at much over this it stops reading as being pulled in. */
   const COLLAPSE_MS = 400;
-  const TOTAL_MS = FIELD_MS + COLLAPSE_MS;
+  /* The line forms anchored at the hole, across the right half, then travels
+     left to sit across the LEFT half — from the left edge to the centre.
+     Overlapped with the tail of the collapse rather than queued after it, so
+     the last material is still being drawn in while the line is already moving
+     and the two read as one gesture. But only just overlapped: at 140ms of
+     overlap the collapse was still pulling material rightwards into a hole
+     whose target had already moved left, and the frames in between stopped
+     reading as falling into anything. 70ms keeps the join fluid without
+     contradicting the direction. */
+  const SLIDE_FROM = 330;
+  const SLIDE_MS = 190;
+  const PART2_MS = SLIDE_FROM + SLIDE_MS;
+  const TOTAL_MS = FIELD_MS + PART2_MS;
   let field = buildField(Number(rowsIn.value));
   let fraf = 0;
   let fstart = -1;
@@ -526,6 +538,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     // Linear: the acceleration lives in frontAt, per column, so every column
     // gets the same motion instead of the left half being crushed into the end.
     const p = clamp01((ms - FIELD_MS) / COLLAPSE_MS);
+    // Decelerating, so the line arrives rather than overshooting past centre.
+    const slide = easeOut(clamp01((ms - FIELD_MS - SLIDE_FROM) / SLIDE_MS));
     const ctx = fcv.getContext('2d');
     if (!ctx) return;
     const W = stage.clientWidth;
@@ -604,7 +618,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         if (p <= 0) return [u * W, y];
         const c = frontAt(clamp01(uRef), p);
         if (c <= 0) return [u * W, y];
-        const tx = collapseX(i, rowCount, uRef, W);
+        const tx = collapseX(i, rowCount, uRef, W, slide);
         const ty = top ? lineTop : lineBottom;
         return [lerp(u * W, tx, c), lerp(y, ty, c)];
       };

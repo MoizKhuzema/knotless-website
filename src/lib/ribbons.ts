@@ -351,11 +351,23 @@ export function frontAt(u: number, p: number): number {
   return c * c;
 }
 
-/** The x a vertex of row `i` lands on once fully collapsed, in pixels. */
-export function collapseX(i: number, rowCount: number, u: number, W: number): number {
+/**
+ * The x a vertex of row `i` lands on, in pixels.
+ *
+ * The line FORMS anchored at the hole — spanning the right half, because that
+ * is where the material is being pulled — and then travels left. `slide` 0..1
+ * carries it, ending with the line across the LEFT half: from the left edge to
+ * the centre of the screen.
+ *
+ * Forming it in the left half directly would be incoherent: the target is what
+ * makes the field funnel toward the attractor, so a target on the left would
+ * point the whole warp away from the hole it is supposed to be falling into.
+ * It has to form on the right and then move.
+ */
+export function collapseX(i: number, rowCount: number, u: number, W: number, slide = 0): number {
   const half = W / 2;
   const s = Math.pow(clamp01n(u), COLLAPSE.POW);
-  return half + ((i + s) / rowCount) * half;
+  return half + ((i + s) / rowCount) * half - slide * half;
 }
 
 /** Top and bottom of the finished line, in pixels. Every row collapses to the
