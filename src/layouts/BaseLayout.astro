@@ -117,6 +117,28 @@ const fontFace = [
     <meta name="twitter:image:alt" content={ogImageAlt} />
 
     {schema && <script type="application/ld+json" is:inline set:html={JSON.stringify(schema)} />}
+
+    <script is:inline>
+      /* The viewport width WITHOUT the scrollbar, for the layout grid.
+       *
+       * CSS cannot express this. 100vw includes the scrollbar, so on a classic-
+       * scrollbar platform the grid would be computed from a width ~7px wider
+       * than the column it is drawn from, and every card edge would sit half
+       * that off its line. Container query units would give the right number
+       * but container-type on <body> makes it the containing block for fixed
+       * descendants, which breaks the nav and the cursor glow.
+       *
+       * In the head, before first paint, so there is no frame at the wrong
+       * offset. The CSS fallback of 100vw covers a no-JS reader — off by the
+       * scrollbar on some platforms, which is the pre-existing behaviour, not a
+       * regression. */
+      (() => {
+        const r = document.documentElement;
+        const set = () => r.style.setProperty('--vw', r.clientWidth + 'px');
+        set();
+        addEventListener('resize', set, { passive: true });
+      })();
+    </script>
   </head>
   <body>
     {
@@ -175,8 +197,8 @@ const fontFace = [
          * wake-up every frame for a still pointer, all day, on battery. */
         const EASE = 0.12;
         /* How far the ground moves for every pixel the light does. The number
-           is small on purpose: at 1440 it is 18px of travel against a 160px
-           grid, about a tenth of a cell. Any more and the surface stops
+           is small on purpose: at 1440 it is 11px of vertical travel against a
+           133px cell, under a tenth of one. Any more and the surface stops
            reading as a surface and starts reading as a thing being dragged. */
         const GRID_GAIN = 0.025;
         /* How far from a panel's edge the light still reaches it. Roughly the
@@ -194,8 +216,11 @@ const fontFace = [
           dot.style.transform = `translate3d(${px}px, ${py}px, 0)`;
           if (!seeded) return;
 
-          /* The ground, trailing at a fraction of the light's travel. */
-          root.style.setProperty('--gx', ((px - innerWidth / 2) * GRID_GAIN).toFixed(2) + 'px');
+          /* The ground, trailing at a fraction of the light's travel.
+             VERTICAL ONLY. A horizontal shift moved the grid up to 18px at
+             1440 — 13% of a cell — which took every card edge off the line it
+             is now built to sit on. Nothing aligns to the horizontal lines, so
+             that axis is free. */
           root.style.setProperty('--gy', ((py - innerHeight / 2) * GRID_GAIN).toFixed(2) + 'px');
 
           /* Rects are read fresh every frame, not cached. Caching them and

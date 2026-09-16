@@ -110,7 +110,10 @@ import { WHAT_YOU_GET } from '../../data/homepage';
       /* Equal fractions, not auto. Sizing to content would hand the stage with
          the longer bullets more width, and these are two steps of one
          engagement, not a comparison. */
-      --stage-gap: clamp(3rem, 5vw, 5rem);
+      /* Exactly one grid cell. With an odd column count, a one-cell gap
+         leaves (n-1)/2 whole cells per card — which is what puts all four
+         card edges on grid lines. See body::before in global.css. */
+      --stage-gap: var(--grid-cell);
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }

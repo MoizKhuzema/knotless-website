@@ -314,6 +314,45 @@
     overflow-x: hidden;
   }
 
+  /* --- The layout grid ------------------------------------------------
+   * The content column's own geometry, named, so the background grid and the
+   * things standing on it are computed from ONE set of numbers.
+   *
+   * --vw is the viewport EXCLUDING the scrollbar, written by a script in the
+   * head. 100vw is the obvious choice and is wrong: it includes the scrollbar,
+   * so on any platform with a classic one the whole grid would sit ~7px off
+   * the column it is supposed to be drawn from — which is precisely the
+   * misalignment this exists to remove. 100vw is the fallback for the frames
+   * before the script runs, and is exact on overlay-scrollbar platforms.
+   *
+   * --page-x is the content box's left edge: the gutter, or half the slack
+   * either side of the max-width plus the gutter, whichever is larger.
+   *
+   * The column count is odd at both side-by-side breakpoints — see body::before
+   * for why that is load-bearing rather than aesthetic. */
+  :root {
+    --vw: 100vw;
+    --page-pad: var(--spacing-gutter);
+    --grid-cols: 4;
+    --page-x: max(
+      var(--page-pad),
+      calc((var(--vw) - var(--container-page)) / 2 + var(--page-pad))
+    );
+    --content-w: calc(var(--vw) - 2 * var(--page-x));
+    --grid-cell: calc(var(--content-w) / var(--grid-cols));
+  }
+  @media (min-width: 48rem) {
+    :root {
+      --page-pad: 2.5rem;
+      --grid-cols: 5;
+    }
+  }
+  @media (min-width: 64rem) {
+    :root {
+      --grid-cols: 9;
+    }
+  }
+
   main,
   footer,
   nav {
@@ -321,30 +360,57 @@
     z-index: 1;
   }
 
-  /* Measured ground: a faint blueprint grid the whole site sits on. Fixed, so
-     it reads as the surface rather than as content, and heavier every fifth
-     line the way a real drawing grid is. */
+  /* Measured ground: a faint grid the whole site sits on.
+   *
+   * It is DERIVED FROM THE CONTENT COLUMN, not from the viewport. A fixed
+   * 160px pitch drawn from the viewport edge and a centred max-width column
+   * only agree at the handful of widths where the arithmetic happens to work
+   * — at 1440 the column's content box started at 120px against lines at 80,
+   * 240, 400, so every card edge sat 40px off a line. One of the two has to
+   * derive from the other, and the content is the thing the reader is looking
+   * at.
+   *
+   * So: the content box is divided into a whole number of columns, and the
+   * grid draws those. Lines land on the content edges by construction, at
+   * every width, with no rounding. The column count is ODD above the stacking
+   * breakpoint on purpose — two cards with a one-column gap need (n-1)/2
+   * columns each, which is only a whole number when n is odd, and that is what
+   * puts the cards' inner edges on lines too.
+   *
+   * Tiles are exactly one cell, not a repeating gradient across the whole
+   * element. A repeating gradient tiled at element width would seam wherever
+   * the element is not a whole number of cells wide, which is almost always
+   * once the background is offset to the column.
+   *
+   * Cells stay square: --grid-cell resolves to px, so the horizontal pitch can
+   * match the vertical one. The horizontal lines align to nothing — they are
+   * texture — but an unsquare cell would read as a mistake. */
   body::before {
     content: '';
     position: fixed;
-    /* Oversized so it has somewhere to move. The parallax shift is a fraction
-       of half the viewport — ~32px at 2560 — and at inset:0 that would drag a
-       bare strip in at one edge. */
+    /* Oversized so it has somewhere to move vertically. */
     inset: -5rem;
     z-index: 0;
     pointer-events: none;
-    /* The surface moves a fraction of what the light does. That mismatch is
-       the whole depth cue: the light is in front, the ground is behind. Driven
-       from the same eased pointer as the glow, so the grid inherits the trail
-       rather than snapping while the light glides. */
-    transform: translate3d(var(--gx, 0px), var(--gy, 0px), 0);
+    /* VERTICAL parallax only. A horizontal shift moved the grid up to 18px at
+       1440, which is 13% of a cell — enough to take every card edge off its
+       line and undo the alignment above. The depth cue survives on one axis;
+       exact alignment does not survive on either. */
+    transform: translate3d(0, var(--gy, 0px), 0);
     will-change: transform;
     background-image:
-      repeating-linear-gradient(to right, var(--color-grid) 0 1px, transparent 1px 160px),
-      repeating-linear-gradient(to bottom, var(--color-grid) 0 1px, transparent 1px 160px);
+      linear-gradient(to right, var(--color-grid) 0 1px, transparent 1px),
+      linear-gradient(to bottom, var(--color-grid) 0 1px, transparent 1px);
+    background-size: var(--grid-cell) 100%, 100% var(--grid-cell);
+    /* +5rem cancels the inset, so the first vertical line lands exactly on the
+       content column's left edge. */
+    background-position:
+      calc(var(--page-x) + 5rem) 0,
+      0 0;
     mask-image: radial-gradient(150% 100% at 50% 0%, #000 14%, transparent 84%);
     -webkit-mask-image: radial-gradient(150% 100% at 50% 0%, #000 14%, transparent 84%);
   }
+
   /* Graph paper, not a vignette: on the light ground the grid runs the whole
      page, because a grid that stops halfway down reads as a rendering fault
      rather than as atmosphere. */
