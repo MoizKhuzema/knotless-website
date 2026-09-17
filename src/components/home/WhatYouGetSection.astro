@@ -78,10 +78,17 @@ import { WHAT_YOU_GET } from '../../data/homepage';
               <h4 class="vlist__name">{v.name}</h4>
               <p class="vlist__members">
                 {v.members.map((m, j) => (
-                  <>
-                    {j > 0 && <span class="vlist__sep" aria-hidden="true" />}
+                  /* The stop travels WITH the member before it, inside one
+                     flex item, so a wrap can only ever fall between members.
+                     Loose in the flex row it could start a line — measured at
+                     960px, where it pushed "marketing" 34px right of the line
+                     above it. */
+                  <span class="vlist__m">
                     <span>{m}</span>
-                  </>
+                    {j < v.members.length - 1 && (
+                      <span class="vlist__stop" data-catch="dot" aria-hidden="true" />
+                    )}
+                  </span>
                 ))}
               </p>
             </li>
@@ -423,9 +430,16 @@ import { WHAT_YOU_GET } from '../../data/homepage';
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.4rem 0.9rem;
+    /* The column gap matches the gap inside .vlist__m, so the stop sits the
+       same distance from the word before it as from the word after. */
+    gap: 0.4rem 0.55rem;
     font-size: var(--text-sm);
     color: var(--color-cream-dim);
+  }
+  .vlist__m {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
   }
   @media (min-width: 48rem) {
     .vlist__members {
@@ -433,10 +447,20 @@ import { WHAT_YOU_GET } from '../../data/homepage';
     }
   }
 
-  .vlist__sep {
-    width: 1.25rem;
-    height: 1px;
-    background-color: var(--color-line);
+  /* A full stop between members, not a dash. The 1.25rem hairline read as a
+     rule — the same mark the section uses for structure — doing punctuation's
+     job, and at that length it separated the words more than it joined them.
+
+     Glass, like the beads in the cards above, at 5px rather than 8: the same
+     material, sized as punctuation rather than as a marker. */
+  .vlist__stop {
+    width: 0.3125rem;
+    height: 0.3125rem;
+    border-radius: 50%;
+    background-color: var(--color-glass-lift);
+    border: 1px solid var(--color-glass-soft-edge);
+    backdrop-filter: blur(4px) saturate(140%);
+    -webkit-backdrop-filter: blur(4px) saturate(140%);
   }
 
   /* Hovering one row lights it and dims its neighbour. Pointer-fine only: on
