@@ -77,6 +77,8 @@ export const WHAT_YOU_GET = {
    * tiles reads as a menu.
    */
   verticalsLead: 'We specialise in two verticals',
+  /** Out to the page that sets out the same engagement in full. */
+  readMore: { label: 'Read more about what we do', href: '/what-we-do' },
   verticals: [
     {
       name: 'Professional services',
