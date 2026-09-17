@@ -78,7 +78,7 @@ export const WHAT_YOU_GET = {
    */
   verticalsLead: 'We specialise in two verticals',
   /** Out to the page that sets out the same engagement in full. */
-  readMore: { label: 'Read more about what we do', href: '/what-we-do' },
+  readMore: { label: 'What we do', href: '/what-we-do' },
   verticals: [
     {
       name: 'Professional services',
