@@ -47,9 +47,6 @@ const schema = graph([
     <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
     <h1 class="whero__h r" style="--i: 1">{WWD_HERO.heading}</h1>
     <p class="whero__body r" style="--i: 2">{WWD_HERO.body}</p>
-    <div class="whero__cta r" style="--i: 3">
-      <CtaButton href={WWD_HERO.cta.href}>{WWD_HERO.cta.label}</CtaButton>
-    </div>
   </section>
 
   {/* --- Section 2 — sound familiar? ------------------------------------- */}
@@ -60,21 +57,41 @@ const schema = graph([
       <p class="sect__lead r" style="--i: 2">{WWD_QUESTIONS.lead}</p>
     </div>
 
-    {/* Six panes, two up. They were a snap-scrolling carousel with autoplay,
-        which hid four of the six behind a gesture — and the whole point of the
-        section is the RANGE, so the one thing it could not afford was showing
-        one at a time. */}
-    <ul class="vgrid" data-reveal>
-      {
-        WWD_QUESTIONS.vignettes.map((v, i) => (
-          <li class="vcard r" data-catch="ring" style={`--i: ${i}`}>
-            <p class="vcard__q">“{v.quote}”</p>
-            <span class="vcard__rule" data-catch="line" aria-hidden="true" />
-            <p class="vcard__who">{v.who}</p>
-          </li>
-        ))
-      }
-    </ul>
+    {/* One row, scrolled. The controls sit above the track rather than over the
+        cards: an arrow floating on top of a quote covers the thing it is there
+        to help you read. */}
+    <div class="vwrap" data-reveal>
+      <div class="vnav r" style="--i: 0">
+        <button type="button" class="vbtn" data-vig="-1" aria-label="Previous statements">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg>
+        </button>
+        <button type="button" class="vbtn" data-vig="1" aria-label="Next statements">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3l5 5-5 5" /></svg>
+        </button>
+      </div>
+
+      {/* tabindex + a label make the track a real keyboard stop: a scroll
+          container is only reachable by keyboard if it can be focused, and left
+          and right then step it by a card. */}
+      <ul
+        class="vtrack r"
+        data-vig-track
+        tabindex="0"
+        role="group"
+        aria-label="What clients tell us"
+        style="--i: 1"
+      >
+        {
+          WWD_QUESTIONS.vignettes.map((v) => (
+            <li class="vcard" data-catch="ring">
+              <p class="vcard__q">“{v.quote}”</p>
+              <span class="vcard__rule" data-catch="line" aria-hidden="true" />
+              <p class="vcard__who">{v.who}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
   </section>
 
   {/* --- Section 3 — the Assessment -------------------------------------- */}
@@ -148,6 +165,95 @@ const schema = graph([
   </section>
 </BaseLayout>
 
+<script>
+  /* The "Sound familiar?" row: arrows, keyboard, and a slow drift.
+   *
+   * Native overflow does the scrolling — swipe, trackpad and momentum come free
+   * and behave the way the platform's do. Everything here only moves scrollLeft.
+   *
+   * The drift PING-PONGS rather than looping to the start. A jump from the last
+   * card back to the first is the one movement a reader cannot follow, because
+   * nothing on screen explains it.
+   *
+   * It stops for: a pointer over it, focus inside it, a hidden tab, being
+   * scrolled off screen, and prefers-reduced-motion — under which it never
+   * starts at all. Motion that carries content has to be interruptible by the
+   * person reading it.
+   */
+  (() => {
+    const track = document.querySelector('[data-vig-track]');
+    if (!track) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    const step = () => {
+      const card = track.querySelector('li');
+      const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+      return card ? card.getBoundingClientRect().width + gap : track.clientWidth;
+    };
+    const maxLeft = () => track.scrollWidth - track.clientWidth;
+    const go = (dir) => {
+      const behavior = reduce.matches ? 'auto' : 'smooth';
+      const at = track.scrollLeft;
+      if (dir > 0 && at >= maxLeft() - 2) return track.scrollTo({ left: 0, behavior });
+      if (dir < 0 && at <= 2) return track.scrollTo({ left: maxLeft(), behavior });
+      track.scrollBy({ left: dir * step(), behavior });
+    };
+
+    document.querySelectorAll('[data-vig]').forEach((btn) => {
+      btn.addEventListener('click', () => go(Number(btn.dataset.vig)));
+    });
+
+    /* A focused scroll container already takes arrow keys, but it scrolls by a
+       few pixels. Stepping by a card is what makes the row usable without a
+       pointer. */
+    track.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      go(e.key === 'ArrowRight' ? 1 : -1);
+    });
+
+    let timer = null;
+    let dir = 1;
+    const tick = () => {
+      if (dir > 0 && track.scrollLeft >= maxLeft() - 2) dir = -1;
+      else if (dir < 0 && track.scrollLeft <= 2) dir = 1;
+      track.scrollBy({ left: dir * step(), behavior: 'smooth' });
+    };
+    const stop = () => {
+      clearInterval(timer);
+      timer = null;
+    };
+    const start = () => {
+      if (timer || reduce.matches || document.hidden || !onScreen) return;
+      timer = setInterval(tick, 6000);
+    };
+
+    let onScreen = false;
+    ['pointerenter', 'focusin'].forEach((ev) => track.addEventListener(ev, stop));
+    ['pointerleave', 'focusout'].forEach((ev) => track.addEventListener(ev, start));
+    document.querySelectorAll('[data-vig]').forEach((btn) => {
+      btn.addEventListener('pointerenter', stop);
+      btn.addEventListener('pointerleave', start);
+      btn.addEventListener('focus', stop);
+    });
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+    reduce.addEventListener('change', () => (reduce.matches ? stop() : start()));
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(
+        (entries) => {
+          onScreen = entries[0].isIntersecting;
+          onScreen ? start() : stop();
+        },
+        { threshold: 0.25 },
+      ).observe(track);
+    } else {
+      onScreen = true;
+      start();
+    }
+  })();
+</script>
+
 <style>
   /* --- Section rhythm, shared with the homepage --------------------------- */
   .sect {
@@ -165,10 +271,26 @@ const schema = graph([
   }
 
   /* --- Section 1 — hero -------------------------------------------------- */
+  /* A page hero, not the homepage's full-screen brand moment, so it needs the
+     clearance stated rather than inherited from main's padding. main--contained
+     now derives its own from --nav-space; this is the extra air a hero wants on
+     top of it. Measured nav-bottom to headline: 105 / 119 / 183 against the
+     homepage's 314 / 376 / 233.
+
+     Not matched exactly, and deliberately: the homepage's figure is slack from
+     a 100svh hero anchored to its bottom, and 314px on a 844px phone would put
+     the headline 40% down an inner page before a word was read. */
+  .whero {
+    padding-top: clamp(2rem, 6vw, 6rem);
+  }
   .whero__h {
     margin: 1.25rem 0 0;
-    font-size: var(--text-display);
-    line-height: 0.95;
+    /* Was --text-display: 104px at 1440, which is the size the homepage would
+       set a wordmark at, not a sentence. The scale has --text-h2 at 60 and
+       nothing between, so this is a local step — 72px, a fifth above the
+       section headings it has to lead. */
+    font-size: clamp(2.5rem, 1.4rem + 3.9vw, 4.5rem);
+    line-height: 1.02;
     letter-spacing: var(--tracking-display);
     font-weight: 600;
     color: var(--color-cream);
@@ -185,27 +307,83 @@ const schema = graph([
     /* 52ch measures about 69 characters, the target the design sets. */
     max-width: 52ch;
   }
-  .whero__cta {
-    margin-top: clamp(2rem, 3vw, 2.75rem);
+  /* --- Section 2 — the vignettes ----------------------------------------- */
+  .vwrap {
+    margin-top: clamp(2rem, 3vw, 3rem);
   }
 
-  /* --- Section 2 — the vignettes ----------------------------------------- */
-  .vgrid {
-    list-style: none;
-    margin: clamp(2rem, 3vw, 3rem) 0 0;
-    padding: 0;
-    display: grid;
-    gap: 1.25rem;
+  /* The controls. Above the track and right-aligned, so they sit where the row
+     ends rather than on top of the quotes. Glass, like everything else that is
+     a surface on this site. */
+  .vnav {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
   }
-  /* Two up from 64rem, not 48rem. At 768 two columns are 306px wide and these
-     panes carry a 21px quote — the same reasoning that moved the founder cards
-     up a breakpoint. */
+  .vbtn {
+    display: grid;
+    place-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    cursor: pointer;
+    color: var(--color-cream-dim);
+    background-color: var(--color-glass-soft);
+    border: 1px solid var(--color-glass-soft-edge);
+    box-shadow: inset 0 1px 0 var(--color-glass-soft-spec);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    transition:
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+  .vbtn svg {
+    width: 1rem;
+    height: 1rem;
+  }
+  .vbtn:hover,
+  .vbtn:focus-visible {
+    color: var(--color-cream);
+    border-color: var(--color-glass-edge);
+  }
+
+  /* One row. The gap is a grid cell, so the first card's edge still starts on a
+     line even though a scrolling track cannot hold alignment once it moves. */
+  .vtrack {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0.5rem;
+    display: flex;
+    gap: var(--grid-cell);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .vtrack::-webkit-scrollbar {
+    display: none;
+  }
+  .vtrack:focus-visible {
+    outline: 2px solid var(--color-ember);
+    outline-offset: 6px;
+    border-radius: var(--radius-lg);
+  }
+  .vcard {
+    flex: 0 0 auto;
+    /* Under one full card, so part of the next is always showing — that peek is
+       the only thing telling a reader the row continues. */
+    width: 82%;
+    scroll-snap-align: start;
+  }
+  @media (min-width: 48rem) {
+    .vcard {
+      width: 46%;
+    }
+  }
   @media (min-width: 64rem) {
-    .vgrid {
-      /* One grid cell, so the panes are seven whole cells each and all four
-         edges land on lines. */
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: var(--grid-cell);
+    .vcard {
+      width: 31%;
     }
   }
 
@@ -245,6 +423,8 @@ const schema = graph([
   }
   .vcard__who {
     margin: 0;
+    /* Italic: it is a note about the speaker, not more of the quote. */
+    font-style: italic;
     font-size: var(--text-md);
     line-height: 1.55;
     color: var(--color-cream-dim);

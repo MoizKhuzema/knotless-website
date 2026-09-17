@@ -406,13 +406,13 @@ const fontFace = [
       }
 
       /* Clears the 5rem fixed bar for pages that don't open with a hero. */
+      /* Clearance stated as "the bar, plus this much air", the same way the
+         homepage hero states it — rather than 9rem and 7rem, two round numbers
+         with no declared relationship to the thing they were clearing. The bar
+         is 84px at desktop and 78px on a phone, so those left 60px and 34px of
+         actual air. This is the floor the homepage uses. */
       .main--contained {
-        padding-top: 9rem;
-      }
-      @media (max-width: 639px) {
-        .main--contained {
-          padding-top: 7rem;
-        }
+        padding-top: calc(var(--nav-space) + clamp(3rem, 5vw, 4.5rem));
       }
 
       /* z-index 0 puts it on the grid's layer: above the page's own
