@@ -102,7 +102,13 @@ export const SITE = {
   supportPhone: '+61 400 000 000', // PLACEHOLDER — see the interface note
 
   privacyEmail: 'privacy@knotless.com.au',
-  companyLinkedinUrl: 'https://www.linkedin.com/company/knotless-ai', // TODO confirm
+  /* Empty until the page is confirmed. It was a guessed URL carrying a TODO,
+     and it feeds schema.org sameAs as well as the footer — publishing an
+     unverified profile as sameAs is a claim about identity, not merely a
+     broken link. Empty, the Organization node omits sameAs entirely. The
+     footer still shows a LinkedIn row; Footer.astro says where it points in
+     the meantime. */
+  companyLinkedinUrl: '',
   primaryDomain: 'knotless.com.au',
   secondaryDomain: 'knotless.au',
   founders: [

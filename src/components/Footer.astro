@@ -51,15 +51,22 @@ const year = new Date().getFullYear();
               </li>
             ))
           }
-          {
-            SITE.companyLinkedinUrl && (
-              <li>
-                <a href={SITE.companyLinkedinUrl} target="_blank" rel="noopener noreferrer">
-                  LinkedIn
-                </a>
-              </li>
-            )
-          }
+          {/* Until the company page is confirmed this points at the homepage
+              rather than at a guessed LinkedIn URL, and it is NOT wired
+              through SITE.companyLinkedinUrl for it: that value also feeds
+              schema.org sameAs, where our own homepage would be a false claim
+              about identity. The row appears either way; only the target and
+              the new-tab behaviour change once the real URL lands. */}
+          <li>
+            <a
+              href={SITE.companyLinkedinUrl || href('/')}
+              {...(SITE.companyLinkedinUrl
+                ? { target: '_blank', rel: 'noopener noreferrer' }
+                : {})}
+            >
+              LinkedIn
+            </a>
+          </li>
         </ul>
       </div>
     </div>
