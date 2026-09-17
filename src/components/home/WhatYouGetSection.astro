@@ -145,7 +145,10 @@ import { WHAT_YOU_GET } from '../../data/homepage';
    * material with something behind it rather than as a tinted rectangle. */
   .stage {
     position: relative;
-    padding: clamp(1.5rem, 2.6vw, 2.25rem);
+    /* Was clamp(1.5rem, 2.6vw, 2.25rem) — 36px at 1440, against a 16px type
+       size. Tightened so the pane is a frame around the content rather than a
+       margin with content in it. */
+    padding: clamp(1.25rem, 2vw, 1.5rem);
     border-radius: var(--radius-lg);
     background-color: var(--color-glass-soft);
     backdrop-filter: blur(14px) saturate(140%);
@@ -189,7 +192,7 @@ import { WHAT_YOU_GET } from '../../data/homepage';
     --link-size: 1px 100%, 5px 5px, 5px 5px;
     --link-pos: 2px 0, center top, center bottom;
     position: absolute;
-    left: calc(clamp(1.5rem, 2.6vw, 2.25rem) - 2px);
+    left: calc(clamp(1.25rem, 2vw, 1.5rem) - 2px);
     top: calc(-1 * var(--stage-gap));
     width: 5px;
     height: var(--stage-gap);

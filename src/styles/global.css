@@ -357,12 +357,18 @@
   @media (min-width: 48rem) {
     :root {
       --page-pad: 2.5rem;
-      --grid-cols: 5;
+      /* Raised from 5 and 9. The column count sets the gap between the two
+         stages — one cell, by the odd-count rule — and at 9 that gap was 133px
+         at 1440, a fifth of the content column spent on nothing. At 15 it is
+         80px and the cards gain 27px each, which is what takes the longest
+         bullet from filling 83% of its measure to 96%. Still odd, so the
+         cards' inner edges stay on grid lines. */
+      --grid-cols: 9;
     }
   }
   @media (min-width: 64rem) {
     :root {
-      --grid-cols: 9;
+      --grid-cols: 15;
     }
   }
 
@@ -395,9 +401,12 @@
    * the element is not a whole number of cells wide, which is almost always
    * once the background is offset to the column.
    *
-   * Cells stay square: --grid-cell resolves to px, so the horizontal pitch can
-   * match the vertical one. The horizontal lines align to nothing — they are
-   * texture — but an unsquare cell would read as a mistake. */
+   * Horizontal lines run at TWICE the cell. They align to nothing — nothing on
+   * the page is positioned against them — so their pitch is free, and pinning
+   * them to the cell would mean the whole mesh doubled in density every time
+   * the column count went up to tighten a gap. At 2x they hold the 160px
+   * rhythm the page was built on while the vertical lines follow the layout.
+   * A 1:2 cell reads as a column grid, which is what this is. */
   body::before {
     content: '';
     position: fixed;
@@ -414,7 +423,7 @@
     background-image:
       linear-gradient(to right, var(--color-grid) 0 1px, transparent 1px),
       linear-gradient(to bottom, var(--color-grid) 0 1px, transparent 1px);
-    background-size: var(--grid-cell) 100%, 100% var(--grid-cell);
+    background-size: var(--grid-cell) 100%, 100% calc(var(--grid-cell) * 2);
     /* +5rem cancels the inset, so the first vertical line lands exactly on the
        content column's left edge. */
     background-position:
