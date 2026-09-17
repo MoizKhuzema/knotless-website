@@ -453,6 +453,20 @@ import { WHAT_YOU_GET } from '../../data/homepage';
 
      Glass, like the beads in the cards above, at 5px rather than 8: the same
      material, sized as punctuation rather than as a marker. */
+  /* A stop that has landed at the end of a wrapped line is not between two
+     things, so it is not punctuation — it is a dangling mark. Which item ends
+     a line is a fact only the layout knows, and it changes with the width, so
+     the script below measures it and marks the item.
+
+     visibility, NOT display. Removing the box would give the line back ~14px,
+     which can be enough for the next member to fit — and then the item is no
+     longer at the end of a line, the mark comes back, the line overflows
+     again, and it oscillates. Keeping the box means the measurement stays true
+     after the mark is hidden. */
+  .vlist__m[data-eol] .vlist__stop {
+    visibility: hidden;
+  }
+
   .vlist__stop {
     width: 0.3125rem;
     height: 0.3125rem;
@@ -477,3 +491,53 @@ import { WHAT_YOU_GET } from '../../data/homepage';
     }
   }
 </style>
+
+<script>
+  /* Hide the stop on any member that ends a wrapped line.
+   *
+   * The stop is bound to the member before it so that a wrap can never start a
+   * line with a mark — but that puts one at the END of a line whenever the
+   * break falls there, which is not between two things and so is not
+   * punctuation.
+   *
+   * No CSS can express this: where a line breaks is known only after layout.
+   * So it is measured — but on resize, not per frame, and the only thing
+   * written is a visibility toggle, which cannot itself change the layout that
+   * produced it.
+   *
+   * ResizeObserver rather than a window resize listener: it catches the list's
+   * box changing for any reason, including a font swapping in and reflowing
+   * the words, which a width listener would miss. */
+  (() => {
+    const lists = [...document.querySelectorAll('.vlist__members')];
+    if (!lists.length) return;
+
+    const sync = () => {
+      for (const list of lists) {
+        const items = [...list.children];
+        /* Read every top first, then write. Interleaving them would make each
+           write invalidate the next read. */
+        const tops = items.map((el) => el.getBoundingClientRect().top);
+        for (let i = 0; i < items.length; i++) {
+          // Ends a line when there is a next member and it sits lower.
+          const eol = i + 1 < items.length && tops[i + 1] - tops[i] > 1;
+          if (items[i].hasAttribute('data-eol') !== eol) {
+            items[i].toggleAttribute('data-eol', eol);
+          }
+        }
+      }
+    };
+
+    sync();
+    /* Metrics change when the real face replaces the fallback, and the wrap
+       points move with them. */
+    document.fonts?.ready.then(sync);
+
+    if ('ResizeObserver' in window) {
+      const ro = new ResizeObserver(sync);
+      lists.forEach((l) => ro.observe(l));
+    } else {
+      addEventListener('resize', sync, { passive: true });
+    }
+  })();
+</script>
