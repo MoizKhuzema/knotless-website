@@ -39,9 +39,9 @@ export const WWD_META = {
  */
 export const WWD_QUESTIONS = {
   heading: 'Sound familiar?',
-  /* Set as a LABEL at the end of the masthead line, not as a sentence under the
-     question — so no full stop. */
-  lead: 'Different industries, same knots',
+  /* Set as the second half of the question's own line — one sentence, so the
+     full stop is back. */
+  lead: 'Different industries, same knots.',
   vignettes: [
     {
       quote: 'We know we should be doing something. We don’t know what.',

@@ -72,17 +72,20 @@ const vignettes = WWD_QUESTIONS.vignettes;
     </div>
 
     <div class="whero__ask">
-      {/* A masthead line, not a heading with a smaller sentence beside it.
-          Setting the two at different sizes side by side made the second look
-          like a fragment that had lost its own heading. The fix is not size, it
-          is ROLE: the question is the statement, the line carries the eye
-          across the page, and what was a sentence is set as the label it
-          actually is, at the far end where the row begins. */}
-      <div class="ask__head r" style="--i: 2">
-        <h2 class="ask__h">{WWD_QUESTIONS.heading}</h2>
-        <span class="rule-thread ask__rule" data-catch="line" aria-hidden="true"></span>
-        <p class="ask__lead meta">{WWD_QUESTIONS.lead}</p>
-      </div>
+      {/* ONE line, one sentence. Two goes at this failed the same way for the
+          same reason: a heading with a second, smaller thing set apart from it
+          reads as two objects, and the reader has to work out what the second
+          one is for. Pushed to opposite ends of a rule they were not even
+          adjacent.
+
+          So they stop being two objects. The question and what answers it are
+          one line at one size, and the only thing that separates them is tone —
+          the question in cream, the answer a step back in dim. Nothing to
+          relate, nothing to span, and the row below hangs off a single line
+          rather than off a construction. */}
+      <h2 class="ask__h r" style="--i: 2">
+        {WWD_QUESTIONS.heading} <span class="ask__lead">{WWD_QUESTIONS.lead}</span>
+      </h2>
 
       {/* The controls flank the row rather than sitting above it: they belong at
           the ends of the thing they move, and the row is the thing. On a phone
@@ -155,11 +158,12 @@ const vignettes = WWD_QUESTIONS.vignettes;
         scale rather than four bullets in a box: this is what the money buys,
         and it was the same size as the fine print. */}
     <div class="deliv" data-reveal>
-      {/* The label moves into the margin instead of sitting on top of the list
-          at a third of its size. An 11px eyebrow over four 26px statements is
-          not a heading, it is a caption nobody reads; given its own column it
-          has presence from POSITION rather than from size, which is what lets
-          the statements stay large. */}
+      {/* The label leads the list, above it and bigger than it. Two attempts at
+          this went the wrong way about the same problem: first an 11px eyebrow
+          over 26px statements, then a 21px heading parked in the left margin —
+          still smaller than the thing it introduced, and now beside it as well,
+          so it read as an aside rather than as a head. A heading outranks its
+          list and sits in front of it. 32px over 21px, in that order. */}
       <h3 class="deliv__lead r" style="--i: 0">{WWD_ASSESSMENT.deliverablesLead}</h3>
       <div class="deliv__body">
         <span class="deliv__spine" data-catch="line" aria-hidden="true"></span>
@@ -425,7 +429,14 @@ const vignettes = WWD_QUESTIONS.vignettes;
        and what is left over falls below the row, where it reads as the page
        continuing rather than as a gap. */
     justify-content: flex-start;
-    gap: clamp(2rem, 4vh, 3.5rem);
+    /* Both the air above the headline and the distance to the question are
+       held as custom properties, because both are the same decision at three
+       different amounts of screen: none on a phone, where every pixel is the
+       row's, some on a short laptop, and the full measure only where there is
+       height to spend. */
+    padding-top: var(--hero-top, 0px);
+    gap: var(--hero-gap);
+    --hero-gap: clamp(1.75rem, 3.5vh, 3.5rem);
     min-height: calc(100svh - var(--main-clear));
     padding-bottom: clamp(1rem, 2vh, 3rem);
   }
@@ -460,7 +471,17 @@ const vignettes = WWD_QUESTIONS.vignettes;
      quote the reader can actually see. */
   @media (min-width: 48rem) and (min-height: 46rem) {
     .whero {
-      padding-top: clamp(1.5rem, 5vh, 4rem);
+      --hero-top: clamp(1.5rem, 5vh, 4rem);
+    }
+  }
+  /* Above 800px of screen both measures go up a step: the headline sits lower
+     under the bar, and the question is a clear beat after the standfirst rather
+     than the next line down. Measured at 1440x900: 63px of air over the
+     headline, 63px between the two groups, against 45 and 36. */
+  @media (min-width: 48rem) and (min-height: 50rem) {
+    .whero {
+      --hero-top: clamp(2.5rem, 7vh, 6rem);
+      --hero-gap: clamp(3rem, 7vh, 6rem);
     }
   }
   /* No min-height once the content is taller than the screen can hold it —
@@ -469,7 +490,7 @@ const vignettes = WWD_QUESTIONS.vignettes;
   @media (max-height: 34rem) {
     .whero {
       min-height: 0;
-      gap: clamp(1.5rem, 4vh, 2.5rem);
+      --hero-gap: clamp(1.5rem, 4vh, 2.5rem);
     }
   }
   /* A laptop is a WIDE screen and a SHORT one — a 1440x900 display is a
@@ -492,48 +513,24 @@ const vignettes = WWD_QUESTIONS.vignettes;
   }
 
   /* --- The question, leading into the row ---------------------------------- */
-  /* Question, thread, label — one line spanning the column, the way a masthead
-     sets a title against a folio. The thread is the page's own rule, so the row
-     below reads as hanging off it rather than as the next thing down. */
-  .ask__head {
-    display: grid;
-    grid-template-columns: auto minmax(3rem, 1fr) auto;
-    align-items: center;
-    gap: 1.25rem;
-  }
   .ask__h {
     margin: 0;
-    /* 34px against the headline's 72: large enough to be the line's subject,
-       far enough down the ladder never to compete with the claim above it. */
-    font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.125rem);
-    line-height: 1.2;
+    /* 30px against the headline's 72: the line that introduces the row, never
+       a second claim. */
+    font-size: clamp(1.375rem, 1.05rem + 1.15vw, 1.875rem);
+    line-height: 1.3;
     letter-spacing: var(--tracking-display);
     font-weight: 600;
     color: var(--color-cream);
+    /* It is one sentence of about 48 characters; balanced it breaks in the
+       middle rather than dropping two words onto a second line. */
+    text-wrap: balance;
   }
-  /* Fades at BOTH ends: a thread that stops dead against the type reads as a
-     border, and this one is passing through. */
-  .ask__rule {
-    mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
-    -webkit-mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
-  }
+  /* The answer, in the same type at the same size. Only the tone steps back —
+     which is what makes it read as the rest of the sentence rather than as a
+     caption that has come loose. */
   .ask__lead {
-    margin: 0;
     color: var(--color-cream-dim);
-    white-space: nowrap;
-  }
-  /* Stacked on a phone, and the thread goes with the width that justified it. */
-  @media (max-width: 47.99rem) {
-    .ask__head {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 0.4rem;
-    }
-    .ask__rule {
-      display: none;
-    }
-    .ask__lead {
-      white-space: normal;
-    }
   }
 
   /* --- Section 2 — the vignettes ----------------------------------------- */
@@ -748,49 +745,27 @@ const vignettes = WWD_QUESTIONS.vignettes;
   /* --- Section 3 — what you walk away with ------------------------------- */
   .deliv {
     margin-top: clamp(2.75rem, 5vw, 4.5rem);
-    display: grid;
-    gap: 1.25rem;
-  }
-  /* The margin only exists where there is width to give it one. At 768 a
-     three-cell label column left the statements 459px, which set every one of
-     them over two lines — the column bought the label presence by taking it
-     from the thing the label introduces. Four of the fifteen cells, one
-     breakpoint, or nothing. */
-  @media (min-width: 64rem) {
-    .deliv {
-      grid-template-columns: calc(var(--grid-cell) * 4) minmax(0, 1fr);
-      gap: var(--grid-cell);
-    }
   }
   .deliv__lead {
-    margin: 0;
-    /* A heading, set as one. 21 against the statements' 24 — near enough to be
-       their equal, quiet enough to introduce them. */
-    font-size: var(--text-lg);
-    line-height: 1.3;
-    letter-spacing: var(--tracking-tight);
+    margin: 0 0 clamp(1.25rem, 2vw, 1.75rem);
+    /* 32px over the statements' 21. The heading is the larger of the two now,
+       which is the whole point: it is what the four are an answer to. */
+    font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+    line-height: 1.2;
+    letter-spacing: var(--tracking-display);
     font-weight: 600;
     color: var(--color-cream);
-  }
-  /* Set to the INSIDE edge of its column once it has one, so it sits a single
-     gutter from the thread it introduces instead of stranded at the far left
-     with 200px of nothing between them. A margin note aligns to the thing it
-     annotates. */
-  @media (min-width: 64rem) {
-    .deliv__lead {
-      text-align: right;
-    }
   }
   /* The thread runs INSIDE this box, and the em unit below resolves against the
      statement size, so the line can start and stop at the first and last bead's
      centre without either measurement being a magic number. */
   .deliv__body {
     position: relative;
-    /* --text-xl is a fixed 26px, which on a 390 phone set every statement over
-       three lines — the size that reads as substance on a desktop reads as
-       shouting on a phone. Fluid, and a step quieter than it was: at 26 the
-       statements dominated the label that introduces them. */
-    font-size: clamp(1.1875rem, 1rem + 0.85vw, 1.5rem);
+    /* 21px at 1440, 17 on a phone. Twice now these have been set larger than
+       the heading above them, which is what made the heading disappear; the
+       four statements are the substance of the section, and being the substance
+       is not the same as being the biggest thing in it. */
+    font-size: clamp(1.0625rem, 0.95rem + 0.55vw, 1.3125rem);
   }
   .deliv__spine {
     position: absolute;
