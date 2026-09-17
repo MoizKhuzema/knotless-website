@@ -39,7 +39,9 @@ export const WWD_META = {
  */
 export const WWD_QUESTIONS = {
   heading: 'Sound familiar?',
-  lead: 'Different industries, same knots.',
+  /* Set as a LABEL at the end of the masthead line, not as a sentence under the
+     question — so no full stop. */
+  lead: 'Different industries, same knots',
   vignettes: [
     {
       quote: 'We know we should be doing something. We don’t know what.',

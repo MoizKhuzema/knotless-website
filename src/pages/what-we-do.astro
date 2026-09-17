@@ -72,11 +72,16 @@ const vignettes = WWD_QUESTIONS.vignettes;
     </div>
 
     <div class="whero__ask">
-      {/* Question and answer on one line where there is room for it: they are
-          one sentence of setup, and stacked they cost 40px the row needs. */}
-      <div class="ask__head">
-        <h2 class="ask__h r" style="--i: 2">{WWD_QUESTIONS.heading}</h2>
-        <p class="ask__lead r" style="--i: 3">{WWD_QUESTIONS.lead}</p>
+      {/* A masthead line, not a heading with a smaller sentence beside it.
+          Setting the two at different sizes side by side made the second look
+          like a fragment that had lost its own heading. The fix is not size, it
+          is ROLE: the question is the statement, the line carries the eye
+          across the page, and what was a sentence is set as the label it
+          actually is, at the far end where the row begins. */}
+      <div class="ask__head r" style="--i: 2">
+        <h2 class="ask__h">{WWD_QUESTIONS.heading}</h2>
+        <span class="rule-thread ask__rule" data-catch="line" aria-hidden="true"></span>
+        <p class="ask__lead meta">{WWD_QUESTIONS.lead}</p>
       </div>
 
       {/* The controls flank the row rather than sitting above it: they belong at
@@ -150,7 +155,12 @@ const vignettes = WWD_QUESTIONS.vignettes;
         scale rather than four bullets in a box: this is what the money buys,
         and it was the same size as the fine print. */}
     <div class="deliv" data-reveal>
-      <p class="meta deliv__lead r" style="--i: 0">{WWD_ASSESSMENT.deliverablesLead}</p>
+      {/* The label moves into the margin instead of sitting on top of the list
+          at a third of its size. An 11px eyebrow over four 26px statements is
+          not a heading, it is a caption nobody reads; given its own column it
+          has presence from POSITION rather than from size, which is what lets
+          the statements stay large. */}
+      <h3 class="deliv__lead r" style="--i: 0">{WWD_ASSESSMENT.deliverablesLead}</h3>
       <div class="deliv__body">
         <span class="deliv__spine" data-catch="line" aria-hidden="true"></span>
         <ul class="deliv__list">
@@ -174,17 +184,28 @@ const vignettes = WWD_QUESTIONS.vignettes;
       <h2 class="h-section sect__h r" style="--i: 1">{WWD_IMPLEMENTATION.heading}</h2>
     </div>
 
-    {/* No surface and no beads. The glass row is above it and the cream slab is
-        below it; set plainly on the page this section is the rest between them,
-        and a dash is enough to mark where each commitment starts. */}
+    {/* A SCHEDULE, ruled like one. Seven commitments set as a two-column list
+        of dashes were the page's fine print — the same shape as a footnote, for
+        the part that says what you are actually buying.
+
+        Ruled rows give each one its own measure and let the index carry the
+        count, which is the one thing a reader wants from seven of anything. The
+        index is a decoration, not an order: these are commitments that all hold
+        at once, so the list is unordered and the numbers are hidden from a
+        screen reader.
+
+        No surface, still. The glass row is above this section and the cream
+        slab is below it, and the rules are the only marks it needs. */}
     <div class="impl" data-reveal>
-      <span class="impl__rule r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
-      <ul class="impl__list">
+      <ul class="ledger">
         {
           WWD_IMPLEMENTATION.points.map((point, i) => (
-            <li class="impl__item r" style={`--i: ${i + 1}`}>
-              <span class="impl__dash" aria-hidden="true" />
-              <span>{point}</span>
+            <li class="ledger__row r" style={`--i: ${i + 1}`}>
+              <span class="ledger__rule" data-catch="line" aria-hidden="true" />
+              <span class="ledger__n meta--num" aria-hidden="true">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span class="ledger__t">{point}</span>
             </li>
           ))
         }
@@ -396,18 +417,17 @@ const vignettes = WWD_QUESTIONS.vignettes;
   .whero {
     display: flex;
     flex-direction: column;
-    /* Two groups, both anchored: the claim sits under the bar's air, the row
-       sits on the floor, and the screen's slack is the space between them. It
-       is what makes one composition out of two movements — and it is why the
-       section holds the screen exactly at any height rather than at one. */
-    justify-content: space-between;
-    /* The vh terms are small on purpose. On a tall screen the slack between the
-       two groups dwarfs them anyway, so they cost nothing there; on a short one
-       they are the difference between the row landing above the fold and being
-       cut in half. */
-    gap: clamp(2rem, 4vh, 4rem);
+    /* The slack goes at the BOTTOM, not in the middle. Anchoring one group to
+       the top and the other to the floor put every spare pixel of a tall screen
+       between the standfirst and the question — a hole the reader had to cross,
+       with the headline pinned under the bar at one end of it. Now the top is
+       air the headline is given, the two groups sit a measured distance apart,
+       and what is left over falls below the row, where it reads as the page
+       continuing rather than as a gap. */
+    justify-content: flex-start;
+    gap: clamp(2rem, 4vh, 3.5rem);
     min-height: calc(100svh - var(--main-clear));
-    padding-bottom: clamp(1.25rem, 2.5vh, 3rem);
+    padding-bottom: clamp(1rem, 2vh, 3rem);
   }
   .whero__h {
     margin: 0;
@@ -434,6 +454,15 @@ const vignettes = WWD_QUESTIONS.vignettes;
     max-width: 52ch;
   }
 
+  /* The air above the headline is spent only where there is screen to spend it.
+     On a phone, and on any short viewport, those 40px come straight out of the
+     row at the bottom — and a headline that has to breathe is worth less than a
+     quote the reader can actually see. */
+  @media (min-width: 48rem) and (min-height: 46rem) {
+    .whero {
+      padding-top: clamp(1.5rem, 5vh, 4rem);
+    }
+  }
   /* No min-height once the content is taller than the screen can hold it —
      below about 600px the composition stops being a composition and the
      headline starts being pushed off the top. */
@@ -463,31 +492,48 @@ const vignettes = WWD_QUESTIONS.vignettes;
   }
 
   /* --- The question, leading into the row ---------------------------------- */
-  /* One step between --text-lg and --text-xl, fluid so it does not shout on a
-     phone. Two things on this page carry it: the question above the row, and
-     the four statements the Assessment produces. */
-  .ask__h,
-  .deliv__body {
-    font-size: clamp(1.25rem, 1.05rem + 0.95vw, 1.625rem);
-  }
+  /* Question, thread, label — one line spanning the column, the way a masthead
+     sets a title against a folio. The thread is the page's own rule, so the row
+     below reads as hanging off it rather than as the next thing down. */
   .ask__head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.25rem 0.75rem;
+    display: grid;
+    grid-template-columns: auto minmax(3rem, 1fr) auto;
+    align-items: center;
+    gap: 1.25rem;
   }
   .ask__h {
     margin: 0;
-    line-height: 1.3;
+    /* 34px against the headline's 72: large enough to be the line's subject,
+       far enough down the ladder never to compete with the claim above it. */
+    font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.125rem);
+    line-height: 1.2;
     letter-spacing: var(--tracking-display);
     font-weight: 600;
     color: var(--color-cream);
   }
+  /* Fades at BOTH ends: a thread that stops dead against the type reads as a
+     border, and this one is passing through. */
+  .ask__rule {
+    mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
+  }
   .ask__lead {
     margin: 0;
-    font-size: var(--text-md);
-    line-height: 1.5;
     color: var(--color-cream-dim);
+    white-space: nowrap;
+  }
+  /* Stacked on a phone, and the thread goes with the width that justified it. */
+  @media (max-width: 47.99rem) {
+    .ask__head {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.4rem;
+    }
+    .ask__rule {
+      display: none;
+    }
+    .ask__lead {
+      white-space: normal;
+    }
   }
 
   /* --- Section 2 — the vignettes ----------------------------------------- */
@@ -637,7 +683,6 @@ const vignettes = WWD_QUESTIONS.vignettes;
   }
   /* The card's one rule, as an element so it catches the cursor light. */
   .vcard__rule,
-  .impl__rule,
   .spec__rule {
     display: block;
     height: 1px;
@@ -691,7 +736,11 @@ const vignettes = WWD_QUESTIONS.vignettes;
      it was a fourth fact. */
   .spec__note {
     margin: 0.85rem 0 0;
-    font-size: var(--text-sm);
+    /* 16px, not 13. At the caption size it read as small print under a price,
+       which is exactly the wrong signal from a firm whose pitch is that it
+       shows its working. It is a condition of the quote, so it is set at
+       reading size. */
+    font-size: var(--text-md);
     line-height: 1.6;
     color: var(--color-cream-dim);
   }
@@ -699,23 +748,49 @@ const vignettes = WWD_QUESTIONS.vignettes;
   /* --- Section 3 — what you walk away with ------------------------------- */
   .deliv {
     margin-top: clamp(2.75rem, 5vw, 4.5rem);
+    display: grid;
+    gap: 1.25rem;
+  }
+  /* The margin only exists where there is width to give it one. At 768 a
+     three-cell label column left the statements 459px, which set every one of
+     them over two lines — the column bought the label presence by taking it
+     from the thing the label introduces. Four of the fifteen cells, one
+     breakpoint, or nothing. */
+  @media (min-width: 64rem) {
+    .deliv {
+      grid-template-columns: calc(var(--grid-cell) * 4) minmax(0, 1fr);
+      gap: var(--grid-cell);
+    }
   }
   .deliv__lead {
     margin: 0;
-    color: var(--color-cream-dim);
+    /* A heading, set as one. 21 against the statements' 24 — near enough to be
+       their equal, quiet enough to introduce them. */
+    font-size: var(--text-lg);
+    line-height: 1.3;
+    letter-spacing: var(--tracking-tight);
+    font-weight: 600;
+    color: var(--color-cream);
+  }
+  /* Set to the INSIDE edge of its column once it has one, so it sits a single
+     gutter from the thread it introduces instead of stranded at the far left
+     with 200px of nothing between them. A margin note aligns to the thing it
+     annotates. */
+  @media (min-width: 64rem) {
+    .deliv__lead {
+      text-align: right;
+    }
   }
   /* The thread runs INSIDE this box, and the em unit below resolves against the
      statement size, so the line can start and stop at the first and last bead's
      centre without either measurement being a magic number. */
   .deliv__body {
     position: relative;
-    margin-top: 1.25rem;
     /* --text-xl is a fixed 26px, which on a 390 phone set every statement over
        three lines — the size that reads as substance on a desktop reads as
-       shouting on a phone. Fluid from 20 to 26, so it tops out at the fixed
-       step on a wide screen and lands two lines per statement on a narrow
-       one. */
-    font-size: clamp(1.25rem, 1.05rem + 0.95vw, 1.625rem);
+       shouting on a phone. Fluid, and a step quieter than it was: at 26 the
+       statements dominated the label that introduces them. */
+    font-size: clamp(1.1875rem, 1rem + 0.85vw, 1.5rem);
   }
   .deliv__spine {
     position: absolute;
@@ -771,49 +846,58 @@ const vignettes = WWD_QUESTIONS.vignettes;
     -webkit-backdrop-filter: blur(6px) saturate(140%);
   }
 
-  /* --- Section 4 — implementation ---------------------------------------- */
+  /* --- Section 4 — implementation, as a ruled schedule -------------------- */
   .impl {
     margin-top: clamp(2rem, 3vw, 3rem);
   }
-  .impl__list {
+  .ledger {
     list-style: none;
-    margin: 1.1rem 0 0;
+    margin: 0;
     padding: 0;
   }
-  /* Two columns that read DOWN, not across. Plain row flow put items 1 and 2
-     side by side, so the eye going down the left column read 1, 3, 5, 7 — a
-     list whose order is nonsense. Four explicit rows with column flow fills the
-     left column first: 1-4, then 5-7. */
-  @media (min-width: 64rem) {
-    .impl__list {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      grid-template-rows: repeat(4, auto);
-      grid-auto-flow: column;
-      column-gap: var(--grid-cell);
+  .ledger__row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 3.25rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: 0 1rem;
+    padding: clamp(0.9rem, 1.6vw, 1.35rem) 0;
+  }
+  @media (max-width: 47.99rem) {
+    .ledger__row {
+      grid-template-columns: 2.25rem minmax(0, 1fr);
+      gap: 0 0.75rem;
     }
   }
-  .impl__item {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: start;
-    gap: 0 0.75rem;
-    padding: 0.5rem 0;
-    font-size: var(--text-md);
-    line-height: 1.55;
-    color: var(--color-cream-dim);
-    /* balance, not pretty: these are two-line items, and pretty only rebalances
-       the tail of a longer paragraph. */
-    text-wrap: balance;
-  }
-  /* A hairline, not a bead. The beads are spoken for one section up, and these
-     seven are the page's fine print — a rule the width of an en dash is the
-     quietest marker that still shows where an item starts. */
-  .impl__dash {
-    margin-top: calc((1.55em - 1px) / 2);
-    width: 0.625rem;
+  /* The rule runs the full measure, unfaded — a schedule's rules reach both
+     margins, and a fade here would read as seven threads rather than as a
+     table. It is an element, not a border, so it takes the cursor light like
+     every other rule on the page. */
+  .ledger__rule {
+    position: absolute;
+    inset: 0 0 auto;
     height: 1px;
-    background-color: var(--color-wire);
+    background-color: var(--color-line);
+  }
+  /* The index keeps the mono, which on this site is what numbers are set in.
+     It counts the commitments; it does not order them. */
+  .ledger__n {
+    color: var(--color-wire-lit);
+  }
+  .ledger__t {
+    font-size: clamp(1rem, 0.9rem + 0.45vw, 1.3125rem);
+    line-height: 1.4;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-cream);
+    text-wrap: pretty;
+    /* 62ch clears the longest of the seven by a character, so every row is one
+       line and the rules stay evenly spaced — a schedule whose rows are
+       different heights is a list again. Still inside the 68-character
+       measure. */
+    max-width: 62ch;
+  }
+  .ledger__n {
+    font-size: var(--text-sm);
   }
 
   /* --- Section 5 — the close --------------------------------------------- */
