@@ -111,14 +111,23 @@ const year = new Date().getFullYear();
     display: inline-flex;
     align-items: center;
     min-height: 2.75rem;
-    font-size: var(--text-lead);
+    /* Was --text-lead, 26px at 1440 — the largest thing in the footer after
+       the wordmark, and larger than any body text anywhere on the page. The
+       address is the footer's most useful line, not its loudest. 21px is the
+       ladder's next rung and still reads first. */
+    font-size: var(--text-lg);
     color: var(--color-cream);
     text-decoration: none;
     letter-spacing: var(--tracking-tight);
     border-bottom: 1px solid var(--color-line);
     padding-bottom: 2px;
     transition: border-color var(--dur-fast) var(--ease-out);
-    word-break: break-word;
+    /* No word-break. It was splitting the address mid-domain —
+       "hello@knotless.com.a / u" — whenever the column came out narrower than
+       the line. An fr track's automatic minimum is its min-content, so with
+       the break removed the column simply widens to hold the address instead.
+       Checked from 320 to 1920: one line at every width, no overflow. */
+    white-space: nowrap;
   }
   .foot__mail:hover {
     border-bottom-color: var(--color-ember);
