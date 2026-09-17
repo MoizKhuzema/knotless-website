@@ -374,13 +374,38 @@ const vignettes = WWD_QUESTIONS.vignettes;
   }
 
   /* --- Section 1 — hero -------------------------------------------------- */
-  /* A page hero, not the homepage's full-screen brand moment, so it needs the
-     clearance stated rather than inherited from main's padding. main--contained
-     derives its own from --nav-space; this is the extra air a hero wants on top
-     of it, plus the ~25px the opening thread used to occupy before it was
-     removed. */
+  /* The full screen, and nothing else on it, exactly as the homepage's hero
+     works — the section below was showing a heading and a line of lead under
+     the fold at load, which reads as a page that started badly rather than as
+     an invitation to scroll.
+
+     100svh MINUS main's own clearance, not 100svh: this section starts below
+     that padding, so a full 100svh would put its floor one clearance below the
+     fold and leak the next section anyway. Both come from --main-clear, so they
+     cannot drift apart.
+
+     svh, deliberately, not lvh or dvh. svh is the viewport with the browser
+     chrome SHOWING, which is the state a page loads in; lvh would make the hero
+     taller than the screen at load, and dvh would resize it as the chrome
+     retracts, moving the words while they are being read.
+
+     Weighted to the bottom, like the homepage: the space above the headline
+     does the work, and the page below is visibly next rather than hidden. */
   .whero {
-    padding-top: clamp(3.5rem, 7vw, 7.5rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: calc(100svh - var(--main-clear));
+    padding-bottom: clamp(4rem, 16vh, 11rem);
+  }
+  /* No min-height once the content is taller than the screen can hold it —
+     below about 600px the composition stops being a composition and the
+     headline starts being pushed off the top. */
+  @media (max-height: 34rem) {
+    .whero {
+      min-height: 0;
+      padding-bottom: clamp(3rem, 8vh, 5rem);
+    }
   }
   .whero__h {
     margin: 0;

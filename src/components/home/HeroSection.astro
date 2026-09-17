@@ -83,7 +83,7 @@ import BrandMark from '../BrandMark.astro';
        before: 26px of clearance at 390, 115px at 1440x900, 197px at 768 — the
        same layout reading as cramped, fine, and airy depending on the
        viewport. */
-    padding-block: calc(var(--nav-space) + clamp(3rem, 5vw, 4.5rem))
+    padding-block: var(--main-clear)
       /* Grows with the viewport now that the hero fills it. At 9vh the content
          sat at 91% of the screen once the hero was full height — glued to the
          bottom rather than weighted toward it. At 20vh it holds the same 80%

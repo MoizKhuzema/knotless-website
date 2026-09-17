@@ -347,6 +347,12 @@
     --nav-h: 4.25rem;
     /* Everything the bar occupies, measured from the top of the viewport. */
     --nav-space: calc(var(--nav-inset-top) + var(--nav-h));
+    /* The bar, plus the air a page wants under it before its first element.
+       Three places need this exact figure — main's own padding, the homepage
+       hero's top, and any hero that has to fill the viewport EXCEPT this much,
+       so that nothing below it shows on load. Three copies of one clamp is how
+       the last set of numbers drifted apart. */
+    --main-clear: calc(var(--nav-space) + clamp(3rem, 5vw, 4.5rem));
 
     --vw: 100vw;
     --page-pad: var(--spacing-gutter);
