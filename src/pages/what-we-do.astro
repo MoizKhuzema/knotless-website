@@ -55,59 +55,68 @@ const vignettes = WWD_QUESTIONS.vignettes;
 ---
 
 <BaseLayout title="What We Do" description={WWD_META.description} schema={schema}>
-  {/* --- Section 1 — hero ------------------------------------------------ */}
-  {/* No opening thread. The homepage hero has none either: the thread marks a
-      section within a page, and the top of a page is not one. */}
-  <section class="whero" data-reveal>
-    <h1 class="whero__h r" style="--i: 0">{WWD_HERO.heading}</h1>
-    <p class="whero__body r" style="--i: 1">{WWD_HERO.body}</p>
-  </section>
+  {/* --- Section 1 — the hero, and the questions that belong to it -------- */}
+  {/* ONE section, not two. "Sound familiar?" was a second movement with its own
+      thread and its own 60px heading, which made the page open by asking the
+      reader to start again one screen down. The claim and the evidence for it
+      are one thought: here is what we do, and here is the state you are
+      probably in. So the question is set as a line leading into the row rather
+      than as a section heading, and the whole thing holds one screen.
 
-  {/* --- Section 2 — sound familiar? ------------------------------------- */}
-  <section class="sect">
-    <div data-reveal>
-      <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
-      <h2 class="h-section sect__h r" style="--i: 1">{WWD_QUESTIONS.heading}</h2>
-      <p class="sect__lead r" style="--i: 2">{WWD_QUESTIONS.lead}</p>
+      No opening thread: the thread marks a section within a page, and the top
+      of a page is not one. The homepage hero has none either. */}
+  <section class="whero" data-reveal>
+    <div class="whero__intro">
+      <h1 class="whero__h r" style="--i: 0">{WWD_HERO.heading}</h1>
+      <p class="whero__body r" style="--i: 1">{WWD_HERO.body}</p>
     </div>
 
-    {/* The controls flank the row rather than sitting above it: they belong at
-        the ends of the thing they move, and the row is the thing. On a phone
-        they drop below — two 44px buttons either side of a 350px column would
-        leave the card 250px wide, and swipe is the control there anyway. */}
-    <div class="vwrap" data-reveal>
-      <button type="button" class="vbtn vbtn--prev r" data-vig="-1" aria-label="Previous statements" style="--i: 0">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg>
-      </button>
+    <div class="whero__ask">
+      {/* Question and answer on one line where there is room for it: they are
+          one sentence of setup, and stacked they cost 40px the row needs. */}
+      <div class="ask__head">
+        <h2 class="ask__h r" style="--i: 2">{WWD_QUESTIONS.heading}</h2>
+        <p class="ask__lead r" style="--i: 3">{WWD_QUESTIONS.lead}</p>
+      </div>
 
-      {/* tabindex + a label make the track a real keyboard stop: a scroll
-          container is only reachable by keyboard if it can be focused, and left
-          and right then step it by a card. */}
-      <ul
-        class="vtrack r"
-        data-vig-track
-        data-vig-count={vignettes.length}
-        tabindex="0"
-        role="group"
-        aria-label="What clients tell us"
-        style="--i: 1"
-      >
-        {
-          [0, 1].map((copy) =>
-            vignettes.map((v) => (
-              <li class="vcard" data-catch="ring" aria-hidden={copy === 1 ? 'true' : undefined}>
-                <p class="vcard__q">“{v.quote}”</p>
-                <span class="vcard__rule" data-catch="line" aria-hidden="true" />
-                <p class="vcard__who">{v.who}</p>
-              </li>
-            )),
-          )
-        }
-      </ul>
+      {/* The controls flank the row rather than sitting above it: they belong at
+          the ends of the thing they move, and the row is the thing. On a phone
+          they drop below — two 44px buttons either side of a 350px column would
+          leave the card 250px wide, and swipe is the control there anyway. */}
+      <div class="vwrap">
+        <button type="button" class="vbtn vbtn--prev r" data-vig="-1" aria-label="Previous statements" style="--i: 4">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg>
+        </button>
 
-      <button type="button" class="vbtn vbtn--next r" data-vig="1" aria-label="Next statements" style="--i: 2">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3l5 5-5 5" /></svg>
-      </button>
+        {/* tabindex + a label make the track a real keyboard stop: a scroll
+            container is only reachable by keyboard if it can be focused, and
+            left and right then step it by a card. */}
+        <ul
+          class="vtrack r"
+          data-vig-track
+          data-vig-count={vignettes.length}
+          tabindex="0"
+          role="group"
+          aria-label="What clients tell us"
+          style="--i: 4"
+        >
+          {
+            [0, 1].map((copy) =>
+              vignettes.map((v) => (
+                <li class="vcard" data-catch="ring" aria-hidden={copy === 1 ? 'true' : undefined}>
+                  <p class="vcard__q">“{v.quote}”</p>
+                  <span class="vcard__rule" data-catch="line" aria-hidden="true" />
+                  <p class="vcard__who">{v.who}</p>
+                </li>
+              )),
+            )
+          }
+        </ul>
+
+        <button type="button" class="vbtn vbtn--next r" data-vig="1" aria-label="Next statements" style="--i: 4">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3l5 5-5 5" /></svg>
+        </button>
+      </div>
     </div>
   </section>
 
@@ -365,13 +374,6 @@ const vignettes = WWD_QUESTIONS.vignettes;
   .sect__h {
     margin: 1.25rem 0 0;
   }
-  .sect__lead {
-    margin: 1.5rem 0 0;
-    font-size: var(--text-lead);
-    line-height: 1.5;
-    color: var(--color-cream-dim);
-    max-width: 52ch;
-  }
 
   /* --- Section 1 — hero -------------------------------------------------- */
   /* The full screen, and nothing else on it, exactly as the homepage's hero
@@ -394,18 +396,18 @@ const vignettes = WWD_QUESTIONS.vignettes;
   .whero {
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    /* Two groups, both anchored: the claim sits under the bar's air, the row
+       sits on the floor, and the screen's slack is the space between them. It
+       is what makes one composition out of two movements — and it is why the
+       section holds the screen exactly at any height rather than at one. */
+    justify-content: space-between;
+    /* The vh terms are small on purpose. On a tall screen the slack between the
+       two groups dwarfs them anyway, so they cost nothing there; on a short one
+       they are the difference between the row landing above the fold and being
+       cut in half. */
+    gap: clamp(2rem, 4vh, 4rem);
     min-height: calc(100svh - var(--main-clear));
-    padding-bottom: clamp(4rem, 16vh, 11rem);
-  }
-  /* No min-height once the content is taller than the screen can hold it —
-     below about 600px the composition stops being a composition and the
-     headline starts being pushed off the top. */
-  @media (max-height: 34rem) {
-    .whero {
-      min-height: 0;
-      padding-bottom: clamp(3rem, 8vh, 5rem);
-    }
+    padding-bottom: clamp(1.25rem, 2.5vh, 3rem);
   }
   .whero__h {
     margin: 0;
@@ -432,6 +434,62 @@ const vignettes = WWD_QUESTIONS.vignettes;
     max-width: 52ch;
   }
 
+  /* No min-height once the content is taller than the screen can hold it —
+     below about 600px the composition stops being a composition and the
+     headline starts being pushed off the top. */
+  @media (max-height: 34rem) {
+    .whero {
+      min-height: 0;
+      gap: clamp(1.5rem, 4vh, 2.5rem);
+    }
+  }
+  /* A laptop is a WIDE screen and a SHORT one — a 1440x900 display is a
+     1440x760 viewport once the browser has taken its chrome — and the display
+     step that belongs over a full-height hero puts 150px of headline above a
+     195px paragraph there, which leaves the row no screen to land on. Stepping
+     the type down by HEIGHT rather than by width is the only lever that answers
+     the constraint that is actually binding. 50rem is 800px: every laptop
+     viewport is under it, every phone held upright is over it. */
+  @media (max-height: 50rem) {
+    .whero__h {
+      font-size: clamp(2.25rem, 1.6rem + 2vw, 3.25rem);
+    }
+    /* The standfirst steps with it. 264 characters at 26px is five lines and
+       195px of the same screen; at 20px it is five lines and 150. */
+    .whero__body {
+      font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
+      margin-top: clamp(1rem, 2vh, 1.5rem);
+    }
+  }
+
+  /* --- The question, leading into the row ---------------------------------- */
+  /* One step between --text-lg and --text-xl, fluid so it does not shout on a
+     phone. Two things on this page carry it: the question above the row, and
+     the four statements the Assessment produces. */
+  .ask__h,
+  .deliv__body {
+    font-size: clamp(1.25rem, 1.05rem + 0.95vw, 1.625rem);
+  }
+  .ask__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+  }
+  .ask__h {
+    margin: 0;
+    line-height: 1.3;
+    letter-spacing: var(--tracking-display);
+    font-weight: 600;
+    color: var(--color-cream);
+  }
+  .ask__lead {
+    margin: 0;
+    font-size: var(--text-md);
+    line-height: 1.5;
+    color: var(--color-cream-dim);
+  }
+
   /* --- Section 2 — the vignettes ----------------------------------------- */
   /* Tight to the lead it answers. It used to clear 3rem and then spend another
      60px on a row of buttons above the cards; the lead and the first quote are
@@ -452,7 +510,10 @@ const vignettes = WWD_QUESTIONS.vignettes;
       grid-template-areas:
         'track track track'
         'prev next .';
-      row-gap: 1rem;
+      /* 10px, not 16. The controls cost a phone 54px of a screen the row is
+         already fighting for, and the gap is the only part of that which buys
+         nothing. */
+      row-gap: 0.625rem;
     }
   }
   .vbtn--prev {
@@ -496,7 +557,7 @@ const vignettes = WWD_QUESTIONS.vignettes;
     grid-area: track;
     list-style: none;
     margin: 0;
-    padding: 0 0 0.5rem;
+    padding: 0 0 0.25rem;
     display: flex;
     gap: clamp(0.75rem, 1.2vw, 1.25rem);
     overflow-x: auto;
