@@ -103,8 +103,13 @@ const dial = (phone: string) => phone.replace(/\s+/g, '');
   }
   @media (min-width: 48rem) {
     .founders__grid {
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
+      /* One grid cell, the same as the stages above. The gap was a hardcoded
+         1.5rem, which put these card edges 28px off the nearest grid line at
+         1440 and 26px at 768 — the one section on the page not standing on its
+         own grid. With an odd column count a one-cell gap leaves (n-1)/2 whole
+         cells per card, so all four edges land. */
+      gap: var(--grid-cell);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
