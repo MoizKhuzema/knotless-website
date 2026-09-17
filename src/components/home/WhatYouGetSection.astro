@@ -167,21 +167,56 @@ import { WHAT_YOU_GET } from '../../data/homepage';
    * it lands under the ordinal. Side by side it runs across the gap at the
    * cards' shared middle — which only holds because they are equal-height grid
    * items. */
+  /* The connector, terminated.
+   *
+   * As a bare 1px hairline it was indistinguishable from the background — the
+   * gap is exactly one grid cell, so the thing crossing it looked like the
+   * grid's own line crossing it. A node at each end is what says a human put
+   * it there: it is the page's schematic vocabulary, it marks the two things
+   * being joined, and the grid has nothing like it.
+   *
+   * Drawn entirely as backgrounds in currentColor, and the pattern, sizes and
+   * positions are custom properties, so the catch glow can repaint the exact
+   * same figure in ember. A solid fill for the glow would have lit a rectangle
+   * where the mark is a line with two dots. Same device as .rule-thread. */
   .stage__link {
+    --link-img:
+      linear-gradient(currentColor 0 100%),
+      radial-gradient(circle, currentColor 1.75px, transparent 2px),
+      radial-gradient(circle, currentColor 1.75px, transparent 2px);
+    /* Stacked: a vertical line with a node top and bottom. */
+    --link-size: 1px 100%, 5px 5px, 5px 5px;
+    --link-pos: 2px 0, center top, center bottom;
     position: absolute;
-    left: clamp(1.5rem, 2.6vw, 2.25rem);
+    left: calc(clamp(1.5rem, 2.6vw, 2.25rem) - 2px);
     top: calc(-1 * var(--stage-gap));
-    width: 1px;
+    width: 5px;
     height: var(--stage-gap);
-    background-color: var(--color-line);
+    color: var(--color-line);
+    background-image: var(--link-img);
+    background-size: var(--link-size);
+    background-position: var(--link-pos);
+    background-repeat: no-repeat;
   }
   @media (min-width: 48rem) {
     .stage__link {
+      /* Side by side: the same figure turned through ninety degrees. */
+      --link-size: 100% 1px, 5px 5px, 5px 5px;
+      --link-pos: 0 2px, left center, right center;
       left: calc(-1 * var(--stage-gap) - 1px);
-      top: 50%;
+      top: calc(50% - 2.5px);
       width: var(--stage-gap);
-      height: 1px;
+      height: 5px;
     }
+  }
+  /* More specific than the generic line variant, which paints a solid fill. */
+  .stage__link[data-catch]::after {
+    color: var(--catch-lit);
+    background-color: transparent;
+    background-image: var(--link-img);
+    background-size: var(--link-size);
+    background-position: var(--link-pos);
+    background-repeat: no-repeat;
   }
 
   /* Ember mono, the same numbering idiom as the verticals list below, so the
@@ -195,10 +230,6 @@ import { WHAT_YOU_GET } from '../../data/homepage';
      the only thing in the pane that has to carry weight — but it is a third
      level heading inside a section, not a rival to the section's own. */
   .stage__h {
-    /* The only rule in the card. There was one between every bullet, which made
-       four deliverables read as four rows of a table — the separators had more
-       presence than the things they separated. One line, dividing the name from
-       what it delivers, is the whole structure the card needs. */
     margin: 0.35rem 0 0;
     padding-bottom: 1.1rem;
     border-bottom: 1px solid var(--color-line);
