@@ -31,7 +31,7 @@ const dial = (phone: string) => phone.replace(/\s+/g, '');
     <div class="founders__grid" data-reveal>
       {
         SITE.founders.map((f, i) => (
-          <article class="fcard panel r" data-catch="ring" style={`--i: ${i + 1}`}>
+          <article class="fcard r" data-catch="ring" style={`--i: ${i + 1}`}>
             <div class="fcard__head">
               <h3 class="fcard__name display">{f.name}</h3>
               <p class="meta fcard__role">{f.title}</p>
@@ -115,35 +115,26 @@ const dial = (phone: string) => phone.replace(/\s+/g, '');
 
   /* --- Card ----------------------------------------------------------- */
 
+  /* The same pane as the stages, not .panel. These were an opaque #1a1815 slab
+     at 10px radius with no blur while the section above used glass at 14px —
+     two card materials on one page, for no reason either could state.
+
+     overflow is NOT hidden any more. It was there to clip the ember thread
+     that used to run along the top edge; what it was also doing was clipping
+     the catch ring, which sits at inset:-1px and so lost its outer pixel on
+     every card. The stages are overflow:visible for the same reason. */
   .fcard {
-    padding: clamp(1.75rem, 3vw, 2.5rem);
+    position: relative;
+    padding: clamp(1.25rem, 2vw, 1.5rem);
     display: flex;
     flex-direction: column;
-    gap: 1.75rem;
-    position: relative;
-    overflow: hidden;
-    transition: border-color var(--dur-fast) var(--ease-out);
-  }
-
-  /* A thread of ember along the top edge, drawn in on reveal. The card's
-     own strike. */
-  .fcard::before {
-    content: '';
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 1px;
-    background: linear-gradient(to right, var(--color-ember), transparent 70%);
-    transform: scaleX(0);
-    transform-origin: left;
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .fcard::before {
-      transition: transform var(--dur-slow) var(--ease-out);
-      transition-delay: calc(var(--i) * 90ms + 200ms);
-    }
-  }
-  :global([data-reveal].is-visible) .fcard::before {
-    transform: scaleX(1);
+    gap: 1.25rem;
+    border-radius: var(--radius-lg);
+    background-color: var(--color-glass-soft);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid var(--color-glass-soft-edge);
+    box-shadow: inset 0 1px 0 var(--color-glass-soft-spec);
   }
 
   .fcard__name {
