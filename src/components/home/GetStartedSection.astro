@@ -26,7 +26,7 @@ import CtaButton from '../CtaButton.astro';
           {
             GET_STARTED.steps.map((step, i) => (
               <li class="close__step r" style={`--i: ${i + 2}`}>
-                <span class="close__bullet" aria-hidden="true" />
+                <span class="close__srule" aria-hidden="true" />
                 <p>{step}</p>
               </li>
             ))
@@ -80,7 +80,7 @@ import CtaButton from '../CtaButton.astro';
     margin: clamp(2rem, 4vw, 3rem) 0 0;
     padding: 0;
     display: grid;
-    gap: 1.5rem;
+    gap: 2rem;
   }
 
   /* ONE measure, and widening it is what fixes both faults at once.
@@ -101,10 +101,6 @@ import CtaButton from '../CtaButton.astro';
    * same measure. */
   .close__step {
     max-width: 58rem;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 1.25rem;
-    align-items: start;
   }
   .close__step p {
     margin: 0;
@@ -114,12 +110,19 @@ import CtaButton from '../CtaButton.astro';
     color: var(--color-invert-fg-dim);
   }
 
-  /* A short ember dash, not a number — the thread, one segment per statement. */
-  .close__bullet {
-    width: 1.75rem;
-    height: 2px;
-    background-color: var(--color-invert-accent);
-    margin-top: 0.85em;
+  /* A rule above each statement, replacing the ember dash beside it.
+     11.3 forbids more than one terracotta element per composition and there
+     were two, and a list marker is not a verdict, a figure or a call to
+     action — which leaves the panel with no accent at all. That is right: a
+     cream slab on a dark page is already the loudest thing on it, and the ink
+     button does not need competition.
+     The rule is the device the stage cards use, at the measure of the text it
+     belongs to. */
+  .close__srule {
+    display: block;
+    height: 1px;
+    margin-bottom: 1.25rem;
+    background-color: var(--color-invert-line);
   }
 
   .close__cta {
@@ -127,13 +130,6 @@ import CtaButton from '../CtaButton.astro';
   }
 
   @media (max-width: 639px) {
-    .close__step {
-      gap: 0.85rem;
-    }
-    .close__bullet {
-      width: 1rem;
-      margin-top: 0.7em;
-    }
     /* At phone width the lead size leaves ~18 characters a line inside the
        panel. Step it down to body so each statement reads as a sentence. */
     .close__step p {
