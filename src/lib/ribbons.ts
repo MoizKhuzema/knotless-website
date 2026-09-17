@@ -332,10 +332,31 @@ export function frontAt(u: number, p: number): number {
  * point the whole warp away from the hole it is supposed to be falling into.
  * It has to form on the right and then move.
  */
-export function collapseX(i: number, rowCount: number, u: number, W: number, slide = 0): number {
+export function collapseX(
+  i: number,
+  rowCount: number,
+  u: number,
+  W: number,
+  slide = 0,
+  len = 1,
+): number {
   const half = W / 2;
+  /* The line's LENGTH, anchored at the hole and growing leftwards from it.
+   *
+   * At len 1 this is the finished line across the right half, which is what
+   * phase 2 hands over. Below 1 the same slot packing is squeezed into a
+   * shorter line at the right edge — every row still owns its slot, but the
+   * slots are close enough together to read as one place.
+   *
+   * That is what makes the collapse symmetric. With the full-length line as
+   * the target from the first frame, row 0 aimed at screen centre and row 12
+   * at the right edge: the top of the field had half a screen further to
+   * travel than the bottom, so it emptied first and the two halves visibly
+   * collapsed at different rates. Length, not just position, has to open out
+   * over time. */
+  const L = half * len;
   const s = Math.pow(clamp01n(u), COLLAPSE.POW);
-  return half + ((i + s) / rowCount) * half - slide * half;
+  return W - L + ((i + s) / rowCount) * L - slide * half;
 }
 
 /** Top and bottom of the finished line, in pixels. Every row collapses to the

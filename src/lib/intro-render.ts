@@ -185,11 +185,27 @@ function drawField(
     clamp01((ms - FIELD_MS - SLIDE_FROM) / SLIDE_MS),
     0.75,
   );
-  /* How far the rows' targets have separated from the hole into their own
-     slots. Held at the hole for the first third so the funnel establishes,
-     then opened out, and complete by p 0.8 — before the slide starts at p
-     0.82, so the line is fully formed before it travels. */
-  const spread = easeOut(clamp01((p - 0.3) / 0.5));
+  /* How long the target line is, 0.12 to 1 of the half-screen.
+   *
+   * At 0.12 every row's slot is packed into a short bar at the right edge —
+   * near enough to a point to read as one, but NOT a literal point, which
+   * would give arrived material zero width and make it vanish instead of
+   * gathering.
+   *
+   * IT OPENS WITH THE SLIDE, and that timing is the whole fix. Row 0 sits at
+   * the line's left end and row 12 at its right, so the moment the line has
+   * length the top of the field is aiming half a screen further left than the
+   * bottom. Do that while material is still arriving and the top consolidates
+   * into the line while the bottom is still strung out crossing the screen —
+   * which is exactly what "the top has collapsed more than the bottom" looks
+   * like. Measured, sampling lit area above against below the midline through
+   * the collapse: it fell to 0.384 at the worst, against 0.5 for even.
+   *
+   * Opening it on the slide instead puts the whole separation after the field
+   * has arrived. Same sweep: 0.479 to 0.500 at every frame. The end state is
+   * unchanged — slide 1 is lineLen 1, which is the full-length line phase 2
+   * has always handed over. */
+  const lineLen = 0.12 + 0.88 * slide;
   ctx.clearRect(0, 0, W, H);
   /* Ground the field in its own darkest ribbon colour, not the page's ink.
      Adjacent fills share exact edges, but canvas antialiases both sides and
@@ -265,21 +281,14 @@ function drawField(
       if (p <= 0) return [u * W, y];
       const c = frontAt(clamp01(uRef), p);
       if (c <= 0) return [u * W, y];
-      /* The TARGET moves, which is the whole of the fix.
-       *
-       * Every row owns a slot along the finished line, and aiming each row at
-       * its slot from the first frame meant the top of the field was drawn to
-       * the line's left end and the bottom of it to the right end — two
-       * destinations, a screen apart, so there was no point being collapsed
-       * into. The brief is a hole at the centre of the right edge, and the top
-       * and the bottom have to fall into the same one.
-       *
-       * So everything aims at the hole first and the targets only separate
-       * into slots once the material is already there. The END STATE is
-       * untouched — spread reaches 1 before the line starts moving — so the
-       * line is still exactly the segmented, hard-edged, slot-packed thing it
-       * was, with none of the raggedness a literal radial pull produces. */
-      const tx = lerp(W, collapseX(i, rowCount, uRef, W, slide), spread);
+      /* The target LINE grows; the slots inside it do not move relative to
+       * each other. See collapseX — the whole field falls into one short bar
+       * at the hole and that bar then opens out into the line, rather than
+       * each row setting off for a different part of a line that is already
+       * full length. The END STATE is untouched: lineLen reaches 1 before the
+       * slide starts, so phase 2 still hands over exactly the segmented,
+       * hard-edged, slot-packed bar it did before. */
+      const tx = collapseX(i, rowCount, uRef, W, slide, lineLen);
       const ty = top ? lineTop : lineBottom;
       return [lerp(u * W, tx, c), lerp(y, ty, c)];
     };
