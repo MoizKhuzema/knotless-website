@@ -236,6 +236,23 @@ import { WHAT_YOU_GET } from '../../data/homepage';
     font-size: var(--text-md);
     line-height: 1.55;
     color: var(--color-cream-dim);
+    /* balance, not pretty. "in order", "shown" and "applicable law" were each
+       wrapping alone onto a last line; pretty cleared that at 390, 768 and
+       1024 but left two of them at 1440 and 1920, where it only rebalances the
+       tail of a paragraph and these are two lines long. balance splits the
+       lines evenly instead: measured, the worst last line goes from 14% of the
+       full measure to 80%, and there are no widows at any width.
+
+       The other lever — narrowing the card padding to widen the measure —
+       was tried and rejected on evidence, not taste: swept from 2.25rem down
+       to 1.25rem, a widow survived every value. These strings are longer than
+       any measure the card can offer, so the fix has to be in how the lines
+       are split, not how much room they get.
+
+       Every item here is two or three lines, well inside the line count a
+       balanced block is allowed. Engines without it fall back to normal
+       wrapping, which is what shipped before. */
+    text-wrap: balance;
   }
 
   /* The marker. Glass, like the pane it sits in, at the smallest weight the
