@@ -481,7 +481,10 @@ const isActive = (path: string) => here.startsWith(href(path));
   .nav__menu-link {
     display: block;
     padding: 0.4rem 0;
-    font-size: clamp(2.25rem, 11vw, 3.5rem);
+    /* Was clamp(2.25rem, 11vw, 3.5rem) — 43px at 390, set for a drawer that
+       filled the screen. It is a compact sheet now, and three routes do not
+       need to be the largest type on the phone. */
+    font-size: clamp(1.75rem, 7vw, 2.25rem);
     color: var(--color-cream);
     text-decoration: none;
   }
