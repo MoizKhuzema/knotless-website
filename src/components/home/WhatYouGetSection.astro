@@ -73,6 +73,7 @@ import { WHAT_YOU_GET } from '../../data/homepage';
         {
           WHAT_YOU_GET.verticals.map((v, i) => (
             <li class="vlist__row r" style={`--i: ${i + 1}`}>
+              <span class="vlist__rule" data-catch="line" aria-hidden="true" />
               <span class="vlist__n meta meta--num">{String(i + 1).padStart(2, '0')}</span>
               <h4 class="vlist__name">{v.name}</h4>
               <p class="vlist__members">
@@ -87,6 +88,7 @@ import { WHAT_YOU_GET } from '../../data/homepage';
           ))
         }
       </ul>
+      <span class="vlist__rule vlist__rule--end r" data-catch="line" aria-hidden="true" style={`--i: ${WHAT_YOU_GET.verticals.length + 1}`} />
     </div>
   </div>
 </section>
@@ -352,15 +354,32 @@ import { WHAT_YOU_GET } from '../../data/homepage';
     list-style: none;
     margin: 0;
     padding: 0;
-    border-top: 1px solid var(--color-line);
+  }
+
+  /* The three rules are ELEMENTS, not the list's and the rows' borders. A
+     border cannot be lit — the catch system paints into ::after, and a row's
+     ::after belongs to the row. As elements they register as catchers and take
+     the line variant with nothing new. One at the top of each row, one closing
+     the list. */
+  .vlist__rule {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--color-line);
+  }
+  .vlist__rule--end {
+    position: static;
+    display: block;
   }
 
   .vlist__row {
+    position: relative;
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     gap: 0.75rem 1.5rem;
     padding: clamp(1.75rem, 3vw, 2.5rem) 0;
-    border-bottom: 1px solid var(--color-line);
     transition: opacity var(--dur-fast) var(--ease-out);
   }
   @media (min-width: 48rem) {
@@ -414,8 +433,6 @@ import { WHAT_YOU_GET } from '../../data/homepage';
     }
   }
 
-  /* A hairline between members instead of commas — quieter, and it echoes the
-     rules running through the rest of the page. */
   .vlist__sep {
     width: 1.25rem;
     height: 1px;
