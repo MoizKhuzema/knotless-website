@@ -16,6 +16,13 @@ import { SITE } from '../../config/site';
 import ArrowLink from '../ArrowLink.astro';
 
 const dial = (phone: string) => phone.replace(/\s+/g, '');
+/* Split at the @ so the address has one legal place to break. Without it the
+   only break available is mid-word, which is how "knotless.com." / "au"
+   happened. */
+const splitEmail = (email: string) => {
+  const at = email.indexOf('@');
+  return [email.slice(0, at + 1), email.slice(at + 1)];
+};
 ---
 
 <section class="founders">
@@ -46,7 +53,10 @@ const dial = (phone: string) => phone.replace(/\s+/g, '');
                     <rect x="3" y="5" width="18" height="14" rx="2" />
                     <path d="M3.5 6.5 12 13l8.5-6.5" />
                   </svg>
-                  <span>{f.email}</span>
+                  {/* On ONE line: a newline between the parts is literal
+                      whitespace in the output, which gives the address a space
+                      to break at and defeats the point. */}
+                  <span>{splitEmail(f.email)[0]}<wbr />{splitEmail(f.email)[1]}</span>
                 </a>
               </li>
               <li>
@@ -103,7 +113,13 @@ const dial = (phone: string) => phone.replace(/\s+/g, '');
     gap: 1.25rem;
     margin-top: clamp(3rem, 6vw, 5rem);
   }
-  @media (min-width: 48rem) {
+  /* Two-up from 64rem, not 48rem. At 768 two cards are 306px wide and the
+     longest address wants 247px of text inside 235px of room — short by 12px,
+     at exactly one breakpoint. Shaving 12px off the padding and the icon gap
+     would have closed it and left nothing in hand: a different fallback face
+     or a reader's larger default reopens it immediately. A card with room is
+     the fix. Above 64rem the card is 441px and the address clears by 124px. */
+  @media (min-width: 64rem) {
     .founders__grid {
       /* One grid cell, the same as the stages above. The gap was a hardcoded
          1.5rem, which put these card edges 28px off the nearest grid line at
@@ -176,7 +192,9 @@ const dial = (phone: string) => phone.replace(/\s+/g, '');
 
   .flink {
     display: flex;
-    align-items: center;
+    /* Top, not centre, so a wrapped address keeps its glyph beside the first
+       line instead of floating against the middle of a two-line block. */
+    align-items: flex-start;
     gap: 0.75rem;
     /* Exactly the 44px floor, not 52. The row was 52px tall carrying 13px text,
        so the text floated in it. The type goes up to the card body size the
@@ -187,12 +205,18 @@ const dial = (phone: string) => phone.replace(/\s+/g, '');
     text-decoration: none;
     font-size: var(--text-md);
     transition: color var(--dur-fast) var(--ease-out);
-    word-break: break-word;
+    /* Not word-break: that breaks anywhere and produced "knotless.com." / "au".
+       overflow-wrap only breaks a word that cannot fit at all, and the <wbr>
+       after the @ gives it a sensible place to do it first. */
+    overflow-wrap: break-word;
   }
   .flink svg {
     width: 1.05rem;
     height: 1.05rem;
     flex: none;
+    /* Optically centred on the first line: half the line box, less half the
+       glyph. */
+    margin-top: calc((1.55em - 1.05rem) / 2);
     color: var(--color-cream-dim);
     opacity: 0.7;
     transition: opacity var(--dur-fast) var(--ease-out);
