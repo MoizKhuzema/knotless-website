@@ -186,17 +186,23 @@ import { WHAT_YOU_GET } from '../../data/homepage';
   .stage__link {
     --link-img:
       linear-gradient(currentColor 0 100%),
-      radial-gradient(circle, currentColor 1.75px, transparent 2px),
-      radial-gradient(circle, currentColor 1.75px, transparent 2px);
+      radial-gradient(circle, currentColor 3px, transparent 3.25px),
+      radial-gradient(circle, currentColor 3px, transparent 3.25px);
     /* Stacked: a vertical line with a node top and bottom. */
-    --link-size: 1px 100%, 5px 5px, 5px 5px;
-    --link-pos: 2px 0, center top, center bottom;
+    --link-size: 2px 100%, 7px 7px, 7px 7px;
+    --link-pos: 2.5px 0, center top, center bottom;
     position: absolute;
-    left: calc(clamp(1.25rem, 2vw, 1.5rem) - 2px);
+    left: calc(clamp(1.25rem, 2vw, 1.5rem) - 2.5px);
     top: calc(-1 * var(--stage-gap));
-    width: 5px;
+    width: 7px;
     height: var(--stage-gap);
-    color: var(--color-line);
+    /* --color-wire, not --color-line. The hairline token is the faintest mark
+       the system has — a delta of 25 in 8 bits against the ground — and at 1px
+       it was disappearing. --color-wire is 63, and it is the token literally
+       named for this: "inert diagram: the manual process". A connector between
+       two stages of an engagement is a diagram wire. The line doubles to 2px
+       and the nodes go 4px to 6px on top of that. */
+    color: var(--color-wire);
     background-image: var(--link-img);
     background-size: var(--link-size);
     background-position: var(--link-pos);
@@ -205,12 +211,12 @@ import { WHAT_YOU_GET } from '../../data/homepage';
   @media (min-width: 48rem) {
     .stage__link {
       /* Side by side: the same figure turned through ninety degrees. */
-      --link-size: 100% 1px, 5px 5px, 5px 5px;
-      --link-pos: 0 2px, left center, right center;
+      --link-size: 100% 2px, 7px 7px, 7px 7px;
+      --link-pos: 0 2.5px, left center, right center;
       left: calc(-1 * var(--stage-gap) - 1px);
-      top: calc(50% - 2.5px);
+      top: calc(50% - 3.5px);
       width: var(--stage-gap);
-      height: 5px;
+      height: 7px;
     }
   }
   /* More specific than the generic line variant, which paints a solid fill. */
