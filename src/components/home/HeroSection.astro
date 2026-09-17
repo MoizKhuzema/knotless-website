@@ -62,7 +62,18 @@ import BrandMark from '../BrandMark.astro';
        and becomes a FLOOR — the minimum clearance under the bar, which the
        content only touches on a viewport too short to give it more. */
     align-items: flex-end;
-    min-height: 88svh;
+    /* The FULL small viewport, not 88% of it. At 88svh the next section showed
+       a strip of itself before anything had been scrolled, which read as the
+       page having started badly rather than as an invitation to scroll.
+
+       svh, deliberately, not lvh or dvh. svh is the viewport with the browser
+       chrome SHOWING, which is the state a page loads in — so on load the hero
+       is exactly the visible height and nothing below it can leak. lvh would
+       make the hero taller than the screen at load and push the call to action
+       under the fold, since the content is anchored to the hero's bottom; dvh
+       would resize the hero as the chrome retracts, moving the content while
+       the reader is looking at it. */
+    min-height: 100svh;
     /* Clearance stated as "the bar, plus this much air" rather than as a round
        number that happened to be bigger than the bar.
        
@@ -73,7 +84,11 @@ import BrandMark from '../BrandMark.astro';
        same layout reading as cramped, fine, and airy depending on the
        viewport. */
     padding-block: calc(var(--nav-space) + clamp(3rem, 5vw, 4.5rem))
-      clamp(4rem, 9vh, 7rem);
+      /* Grows with the viewport now that the hero fills it. At 9vh the content
+         sat at 91% of the screen once the hero was full height — glued to the
+         bottom rather than weighted toward it. At 20vh it holds the same 80%
+         it had at 88svh, at every height. */
+      clamp(5rem, 20vh, 14rem);
   }
 
   .hero__grid {
@@ -109,9 +124,9 @@ import BrandMark from '../BrandMark.astro';
 
   @media (max-width: 639px) {
     .hero {
-      /* No padding override: the clearance formula above already scales, and a
-         second number here is how the phone ended up 26px under the bar. */
-      min-height: 0;
+      /* No overrides. The clearance formula and the 100svh both scale; a second
+         set of numbers here is how the phone ended up 26px under the bar the
+         last time. */
     }
     .hero__lead {
       max-width: none;
