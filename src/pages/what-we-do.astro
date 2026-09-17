@@ -2,16 +2,22 @@
 /**
  * /what-we-do
  *
- * Rebuilt on the homepage's system rather than the utility-class layout it had:
- * the measured thread opening every section, glass panes on the page's own
- * column grid, the cursor-light variants (ring / line / dot), the shared type
- * ladder, and the reversed panel to close.
+ * Built on the homepage's system — the measured thread opening each section,
+ * the cursor-light variants (ring / line / dot), the shared type ladder, the
+ * one reversed panel to close — but deliberately NOT on its layouts.
  *
- * The old page's machinery is gone with it — a snap-scrolling carousel with
- * autoplay, a roving-tabindex tab rail, and disclosure accordions. Three
- * interaction models on one page, none of them used anywhere else on the site.
- * The content underneath was six quotes, two lists and seven commitments, and
- * that is what it is set as now.
+ * The homepage spends its two-pane grid twice: the stages of the engagement,
+ * and the founders. A third one here made the site look like it had one idea
+ * about how to hold content. So each section on this page has the shape its
+ * own content asks for:
+ *
+ *   2 · the questions   a moving row of glass cards — six voices, one after
+ *                       another, which is what a range of them feels like
+ *   3 · the Assessment  a specification band over four large statements on a
+ *                       thread: the price is metadata, the output is substance
+ *   4 · implementation  a bare two-column list — no surface at all, so the
+ *                       page breathes before the slab
+ *   5 · the close       the page's single reversed panel
  *
  * Copy lives in src/data/whatWeDo.ts.
  */
@@ -39,14 +45,22 @@ const schema = graph([
     description: WWD_META.description,
   }),
 ]);
+
+/* The row runs continuously, so it needs a second copy of the set to run INTO:
+   at the moment the first card of the copy reaches the left edge the view is
+   identical to the start, and the scroll position can be reset there without
+   anything visibly moving. The copy is aria-hidden — it is the same six
+   statements, and a screen reader should be read them once. */
+const vignettes = WWD_QUESTIONS.vignettes;
 ---
 
 <BaseLayout title="What We Do" description={WWD_META.description} schema={schema}>
   {/* --- Section 1 — hero ------------------------------------------------ */}
+  {/* No opening thread. The homepage hero has none either: the thread marks a
+      section within a page, and the top of a page is not one. */}
   <section class="whero" data-reveal>
-    <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
-    <h1 class="whero__h r" style="--i: 1">{WWD_HERO.heading}</h1>
-    <p class="whero__body r" style="--i: 2">{WWD_HERO.body}</p>
+    <h1 class="whero__h r" style="--i: 0">{WWD_HERO.heading}</h1>
+    <p class="whero__body r" style="--i: 1">{WWD_HERO.body}</p>
   </section>
 
   {/* --- Section 2 — sound familiar? ------------------------------------- */}
@@ -57,18 +71,14 @@ const schema = graph([
       <p class="sect__lead r" style="--i: 2">{WWD_QUESTIONS.lead}</p>
     </div>
 
-    {/* One row, scrolled. The controls sit above the track rather than over the
-        cards: an arrow floating on top of a quote covers the thing it is there
-        to help you read. */}
+    {/* The controls flank the row rather than sitting above it: they belong at
+        the ends of the thing they move, and the row is the thing. On a phone
+        they drop below — two 44px buttons either side of a 350px column would
+        leave the card 250px wide, and swipe is the control there anyway. */}
     <div class="vwrap" data-reveal>
-      <div class="vnav r" style="--i: 0">
-        <button type="button" class="vbtn" data-vig="-1" aria-label="Previous statements">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg>
-        </button>
-        <button type="button" class="vbtn" data-vig="1" aria-label="Next statements">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3l5 5-5 5" /></svg>
-        </button>
-      </div>
+      <button type="button" class="vbtn vbtn--prev r" data-vig="-1" aria-label="Previous statements" style="--i: 0">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg>
+      </button>
 
       {/* tabindex + a label make the track a real keyboard stop: a scroll
           container is only reachable by keyboard if it can be focused, and left
@@ -76,21 +86,28 @@ const schema = graph([
       <ul
         class="vtrack r"
         data-vig-track
+        data-vig-count={vignettes.length}
         tabindex="0"
         role="group"
         aria-label="What clients tell us"
         style="--i: 1"
       >
         {
-          WWD_QUESTIONS.vignettes.map((v) => (
-            <li class="vcard" data-catch="ring">
-              <p class="vcard__q">“{v.quote}”</p>
-              <span class="vcard__rule" data-catch="line" aria-hidden="true" />
-              <p class="vcard__who">{v.who}</p>
-            </li>
-          ))
+          [0, 1].map((copy) =>
+            vignettes.map((v) => (
+              <li class="vcard" data-catch="ring" aria-hidden={copy === 1 ? 'true' : undefined}>
+                <p class="vcard__q">“{v.quote}”</p>
+                <span class="vcard__rule" data-catch="line" aria-hidden="true" />
+                <p class="vcard__who">{v.who}</p>
+              </li>
+            )),
+          )
         }
       </ul>
+
+      <button type="button" class="vbtn vbtn--next r" data-vig="1" aria-label="Next statements" style="--i: 2">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3l5 5-5 5" /></svg>
+      </button>
     </div>
   </section>
 
@@ -101,27 +118,44 @@ const schema = graph([
       <h2 class="h-section sect__h r" style="--i: 1">{WWD_ASSESSMENT.heading}</h2>
     </div>
 
-    {/* Two panes, no ordinals and no connector: the homepage's stages carry
-        both because they are a sequence, and these two are facets of one
-        thing. */}
-    <ul class="apanes" data-reveal>
-      {
-        WWD_ASSESSMENT.blocks.map((block, i) => (
-          <li class="apane r" data-catch="ring" style={`--i: ${i}`}>
-            <h3 class="apane__h">{block.title}</h3>
-            <span class="apane__rule" data-catch="line" aria-hidden="true" />
-            <ul class="alist">
-              {block.points.map((point) => (
-                <li class="aitem">
-                  <span class="adot" data-catch="dot" aria-hidden="true" />
-                  <span>{point}</span>
-                </li>
-              ))}
-            </ul>
-          </li>
-        ))
-      }
-    </ul>
+    {/* The specification band: three facts between two rules, the way a printed
+        report states its own terms on the page before the findings. It is the
+        first thing a principal wants and the smallest thing on the section. */}
+    <div class="spec" data-reveal>
+      <span class="spec__rule r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
+      <dl class="spec__band">
+        {
+          WWD_ASSESSMENT.facts.map((fact, i) => (
+            <div class="spec__fact r" style={`--i: ${i + 1}`}>
+              <dt class="meta spec__label">{fact.label}</dt>
+              <dd class="spec__value">{fact.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      <span class="spec__rule r" data-catch="line" aria-hidden="true" style="--i: 4"></span>
+      <p class="spec__note r" style="--i: 5">{WWD_ASSESSMENT.note}</p>
+    </div>
+
+    {/* The output, hung off one vertical thread. Four statements at display
+        scale rather than four bullets in a box: this is what the money buys,
+        and it was the same size as the fine print. */}
+    <div class="deliv" data-reveal>
+      <p class="meta deliv__lead r" style="--i: 0">{WWD_ASSESSMENT.deliverablesLead}</p>
+      <div class="deliv__body">
+        <span class="deliv__spine" data-catch="line" aria-hidden="true"></span>
+        <ul class="deliv__list">
+          {
+            WWD_ASSESSMENT.deliverables.map((item, i) => (
+              <li class="deliv__item r" style={`--i: ${i + 1}`}>
+                <span class="deliv__bead" data-catch="dot" aria-hidden="true" />
+                <span>{item}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
   </section>
 
   {/* --- Section 4 — implementation --------------------------------------- */}
@@ -131,16 +165,16 @@ const schema = graph([
       <h2 class="h-section sect__h r" style="--i: 1">{WWD_IMPLEMENTATION.heading}</h2>
     </div>
 
-    {/* No pane here, on purpose. Two pane-heavy sections and the cream slab sit
-        either side of this one; set plainly on the page it gives the eye a rest
-        and stops the page reading as a stack of boxes. */}
+    {/* No surface and no beads. The glass row is above it and the cream slab is
+        below it; set plainly on the page this section is the rest between them,
+        and a dash is enough to mark where each commitment starts. */}
     <div class="impl" data-reveal>
       <span class="impl__rule r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
       <ul class="impl__list">
         {
           WWD_IMPLEMENTATION.points.map((point, i) => (
             <li class="impl__item r" style={`--i: ${i + 1}`}>
-              <span class="adot" data-catch="dot" aria-hidden="true" />
+              <span class="impl__dash" aria-hidden="true" />
               <span>{point}</span>
             </li>
           ))
@@ -166,41 +200,116 @@ const schema = graph([
 </BaseLayout>
 
 <script>
-  /* The "Sound familiar?" row: arrows, keyboard, and a slow drift.
+  /* The "Sound familiar?" row: a slow continuous drift, arrows, and keyboard.
    *
-   * Native overflow does the scrolling — swipe, trackpad and momentum come free
-   * and behave the way the platform's do. Everything here only moves scrollLeft.
+   * CONTINUOUS, not a slideshow. Stepping a card every six seconds made the row
+   * a thing that happens to you at intervals; drifting at 18px a second it is
+   * simply moving, and a reader can pick it up mid-sentence and follow it.
    *
-   * The drift PING-PONGS rather than looping to the start. A jump from the last
-   * card back to the first is the one movement a reader cannot follow, because
-   * nothing on screen explains it.
+   * One rAF owns scrollLeft. Two things add to it: the drift, at a constant
+   * rate, and an `offset` budget the arrows top up, which eases out. So an
+   * arrow press reads as a nudge to something already in motion rather than as
+   * a jump cut.
    *
-   * It stops for: a pointer over it, focus inside it, a hidden tab, being
-   * scrolled off screen, and prefers-reduced-motion — under which it never
-   * starts at all. Motion that carries content has to be interruptible by the
-   * person reading it.
+   * The set is rendered twice, so `pos` wraps at exactly one set's width and
+   * the reset lands on an identical view — nothing visible moves at the seam.
+   *
+   * It stops for: a pointer over it, a finger on it, focus inside it, a hidden
+   * tab, being scrolled off screen, and prefers-reduced-motion, under which it
+   * never drifts at all and the arrows jump. Motion that carries words has to
+   * be interruptible by the person reading them.
    */
   (() => {
-    const track = document.querySelector('[data-vig-track]');
+    const track = document.querySelector<HTMLElement>('[data-vig-track]');
     if (!track) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const count = Number(track.dataset.vigCount) || 0;
 
-    const step = () => {
+    const gapPx = () => parseFloat(getComputedStyle(track).columnGap) || 0;
+    const cardW = () => {
       const card = track.querySelector('li');
-      const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
-      return card ? card.getBoundingClientRect().width + gap : track.clientWidth;
+      return card ? card.getBoundingClientRect().width : track.clientWidth;
     };
-    const maxLeft = () => track.scrollWidth - track.clientWidth;
-    const go = (dir) => {
-      const behavior = reduce.matches ? 'auto' : 'smooth';
-      const at = track.scrollLeft;
-      if (dir > 0 && at >= maxLeft() - 2) return track.scrollTo({ left: 0, behavior });
-      if (dir < 0 && at <= 2) return track.scrollTo({ left: maxLeft(), behavior });
-      track.scrollBy({ left: dir * step(), behavior });
+    const step = () => cardW() + gapPx();
+    /* One period: the distance from a card to its own copy. Half the scrollWidth
+       would be off by a gap, and a seam out by 20px is a seam.
+
+       Measured in FRACTIONS of a pixel, not from offsetLeft. Every card is the
+       same width by rule, so the period is n × (card + gap) — and the gap is a
+       vw-derived 17.28px at 1440, which offsetLeft rounds away. scrollLeft
+       itself only takes whole pixels, so the seam still lands within half of
+       one; keeping the float here is what stops that half pixel becoming a
+       third of a pixel of drift on top of it, every lap. */
+    const period = () => {
+      const first = track.querySelector('li');
+      if (!first || !count) return step() * Math.max(count, 1);
+      return count * (first.getBoundingClientRect().width + gapPx());
     };
 
-    document.querySelectorAll('[data-vig]').forEach((btn) => {
+    const V = 18; // px per second — a drift, not a carousel
+    let pos = 0;
+    let offset = 0;
+    let playing = false;
+    let raf: number | null = null;
+    let lastT = 0;
+    let written = -1;
+    let onScreen = false;
+
+    const wrap = (n: number, L: number) => (L > 0 ? ((n % L) + L) % L : 0);
+
+    const frame = (t: number) => {
+      const dt = lastT ? Math.min(t - lastT, 64) : 16.67;
+      lastT = t;
+      if (playing) pos += (V * dt) / 1000;
+      if (offset) {
+        /* Frame-rate independent easing, the same form the cursor light uses. */
+        const k = 1 - Math.pow(1 - 0.14, dt / 16.67);
+        const d = offset * k;
+        pos += d;
+        offset -= d;
+        if (Math.abs(offset) < 0.5) {
+          pos += offset;
+          offset = 0;
+        }
+      }
+      pos = wrap(pos, period());
+      written = Math.round(pos);
+      track.scrollLeft = written;
+      if (playing || offset) raf = requestAnimationFrame(frame);
+      else {
+        raf = null;
+        lastT = 0;
+      }
+    };
+    const kick = () => {
+      if (raf === null) raf = requestAnimationFrame(frame);
+    };
+    const start = () => {
+      if (reduce.matches || document.hidden || !onScreen) return;
+      playing = true;
+      kick();
+    };
+    const stop = () => {
+      playing = false;
+    };
+
+    const go = (dir: number) => {
+      if (reduce.matches) {
+        pos = wrap(pos + dir * step(), period());
+        written = Math.round(pos);
+        track.scrollLeft = written;
+        return;
+      }
+      offset += dir * step();
+      kick();
+    };
+
+    document.querySelectorAll<HTMLElement>('[data-vig]').forEach((btn) => {
       btn.addEventListener('click', () => go(Number(btn.dataset.vig)));
+      btn.addEventListener('pointerenter', stop);
+      btn.addEventListener('pointerleave', start);
+      btn.addEventListener('focus', stop);
+      btn.addEventListener('blur', start);
     });
 
     /* A focused scroll container already takes arrow keys, but it scrolls by a
@@ -212,30 +321,24 @@ const schema = graph([
       go(e.key === 'ArrowRight' ? 1 : -1);
     });
 
-    let timer = null;
-    let dir = 1;
-    const tick = () => {
-      if (dir > 0 && track.scrollLeft >= maxLeft() - 2) dir = -1;
-      else if (dir < 0 && track.scrollLeft <= 2) dir = 1;
-      track.scrollBy({ left: dir * step(), behavior: 'smooth' });
-    };
-    const stop = () => {
-      clearInterval(timer);
-      timer = null;
-    };
-    const start = () => {
-      if (timer || reduce.matches || document.hidden || !onScreen) return;
-      timer = setInterval(tick, 6000);
-    };
+    /* The reader's own scroll wins. Anything that did not come from this rAF
+       becomes the new position, so a swipe is never fought or undone. */
+    track.addEventListener(
+      'scroll',
+      () => {
+        if (Math.abs(track.scrollLeft - written) <= 2) return;
+        pos = track.scrollLeft;
+        offset = 0;
+      },
+      { passive: true },
+    );
 
-    let onScreen = false;
-    ['pointerenter', 'focusin'].forEach((ev) => track.addEventListener(ev, stop));
-    ['pointerleave', 'focusout'].forEach((ev) => track.addEventListener(ev, start));
-    document.querySelectorAll('[data-vig]').forEach((btn) => {
-      btn.addEventListener('pointerenter', stop);
-      btn.addEventListener('pointerleave', start);
-      btn.addEventListener('focus', stop);
-    });
+    ['pointerenter', 'focusin', 'touchstart'].forEach((ev) =>
+      track.addEventListener(ev, stop, { passive: true }),
+    );
+    ['pointerleave', 'focusout', 'touchend', 'touchcancel'].forEach((ev) =>
+      track.addEventListener(ev, start, { passive: true }),
+    );
     document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
     reduce.addEventListener('change', () => (reduce.matches ? stop() : start()));
 
@@ -245,7 +348,7 @@ const schema = graph([
           onScreen = entries[0].isIntersecting;
           onScreen ? start() : stop();
         },
-        { threshold: 0.25 },
+        { threshold: 0.2 },
       ).observe(track);
     } else {
       onScreen = true;
@@ -273,22 +376,18 @@ const schema = graph([
   /* --- Section 1 — hero -------------------------------------------------- */
   /* A page hero, not the homepage's full-screen brand moment, so it needs the
      clearance stated rather than inherited from main's padding. main--contained
-     now derives its own from --nav-space; this is the extra air a hero wants on
-     top of it. Measured nav-bottom to headline: 105 / 119 / 183 against the
-     homepage's 314 / 376 / 233.
-
-     Not matched exactly, and deliberately: the homepage's figure is slack from
-     a 100svh hero anchored to its bottom, and 314px on a 844px phone would put
-     the headline 40% down an inner page before a word was read. */
+     derives its own from --nav-space; this is the extra air a hero wants on top
+     of it, plus the ~25px the opening thread used to occupy before it was
+     removed. */
   .whero {
-    padding-top: clamp(2rem, 6vw, 6rem);
+    padding-top: clamp(3.5rem, 7vw, 7.5rem);
   }
   .whero__h {
-    margin: 1.25rem 0 0;
-    /* Was --text-display: 104px at 1440, which is the size the homepage would
+    margin: 0;
+    /* Not --text-display (104px at 1440) — that is the size the homepage would
        set a wordmark at, not a sentence. The scale has --text-h2 at 60 and
-       nothing between, so this is a local step — 72px, a fifth above the
-       section headings it has to lead. */
+       nothing between, so this is a local step: 72px, a fifth above the section
+       headings it has to lead. */
     font-size: clamp(2.5rem, 1.4rem + 3.9vw, 4.5rem);
     line-height: 1.02;
     letter-spacing: var(--tracking-display);
@@ -307,19 +406,35 @@ const schema = graph([
     /* 52ch measures about 69 characters, the target the design sets. */
     max-width: 52ch;
   }
-  /* --- Section 2 — the vignettes ----------------------------------------- */
-  .vwrap {
-    margin-top: clamp(2rem, 3vw, 3rem);
-  }
 
-  /* The controls. Above the track and right-aligned, so they sit where the row
-     ends rather than on top of the quotes. Glass, like everything else that is
-     a surface on this site. */
-  .vnav {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+  /* --- Section 2 — the vignettes ----------------------------------------- */
+  /* Tight to the lead it answers. It used to clear 3rem and then spend another
+     60px on a row of buttons above the cards; the lead and the first quote are
+     one thought and were reading as two. */
+  .vwrap {
+    margin-top: clamp(1rem, 1.6vw, 1.5rem);
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: 'prev track next';
+    align-items: center;
+    gap: clamp(0.5rem, 1vw, 0.875rem);
+  }
+  /* On a phone the arrows go under the row: flanking would cost 100px of a
+     350px column, and the card is the thing that needs the width. */
+  @media (max-width: 47.99rem) {
+    .vwrap {
+      grid-template-columns: auto auto minmax(0, 1fr);
+      grid-template-areas:
+        'track track track'
+        'prev next .';
+      row-gap: 1rem;
+    }
+  }
+  .vbtn--prev {
+    grid-area: prev;
+  }
+  .vbtn--next {
+    grid-area: next;
   }
   .vbtn {
     display: grid;
@@ -348,50 +463,74 @@ const schema = graph([
     border-color: var(--color-glass-edge);
   }
 
-  /* One row. The gap is a grid cell, so the first card's edge still starts on a
-     line even though a scrolling track cannot hold alignment once it moves. */
+  /* One row, always moving. No scroll snap: mandatory snapping and a continuous
+     drift fight each other every frame — the browser keeps pulling the row back
+     to a card edge while the rAF moves it off one. Under reduced motion there
+     is no drift, so the snap goes back on and the arrows land square. */
   .vtrack {
+    grid-area: track;
     list-style: none;
     margin: 0;
     padding: 0 0 0.5rem;
     display: flex;
-    gap: var(--grid-cell);
+    gap: clamp(0.75rem, 1.2vw, 1.25rem);
     overflow-x: auto;
     overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
     scrollbar-width: none;
   }
   .vtrack::-webkit-scrollbar {
     display: none;
+  }
+  /* The ends dissolve rather than being sliced. A hard clip cuts a card — and a
+     word — in half with a straight vertical edge, which reads as a broken
+     layout; a short fade reads as a row that continues past the frame, which is
+     what it does. Symmetric, because a row that never stops has no start edge
+     to treat differently. */
+  .vtrack {
+    --vfade: clamp(0.75rem, 1.5vw, 1.5rem);
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 var(--vfade),
+      #000 calc(100% - var(--vfade)),
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 var(--vfade),
+      #000 calc(100% - var(--vfade)),
+      transparent 100%
+    );
   }
   .vtrack:focus-visible {
     outline: 2px solid var(--color-ember);
     outline-offset: 6px;
     border-radius: var(--radius-lg);
   }
+  @media (prefers-reduced-motion: reduce) {
+    .vtrack {
+      scroll-snap-type: x mandatory;
+    }
+    .vcard {
+      scroll-snap-align: start;
+    }
+  }
+
+  /* Wider, and capped in absolute terms rather than as a share of the row: the
+     cap is what the longest quote needs to set in two lines at --text-lg, and a
+     percentage would have hit it at one width only. Under the cap it takes 90%
+     of the column, so part of the next card always shows — that peek is the
+     only thing telling a reader the row continues. */
   .vcard {
     flex: 0 0 auto;
-    /* Under one full card, so part of the next is always showing — that peek is
-       the only thing telling a reader the row continues. */
-    width: 82%;
-    scroll-snap-align: start;
-  }
-  @media (min-width: 48rem) {
-    .vcard {
-      width: 46%;
-    }
-  }
-  @media (min-width: 64rem) {
-    .vcard {
-      width: 31%;
-    }
+    width: min(31rem, 90%);
   }
 
   /* The page's pane, identical to the homepage's: low-alpha fill, hairline
      edge, specular top line, blur, and no drop shadow — a shadow is what makes
      the nav read as floating, and these sit IN the page. */
-  .vcard,
-  .apane {
+  .vcard {
     position: relative;
     padding: clamp(1.25rem, 2vw, 1.5rem);
     border-radius: var(--radius-lg);
@@ -412,8 +551,8 @@ const schema = graph([
   }
   /* The card's one rule, as an element so it catches the cursor light. */
   .vcard__rule,
-  .apane__rule,
-  .impl__rule {
+  .impl__rule,
+  .spec__rule {
     display: block;
     height: 1px;
     background-color: var(--color-line);
@@ -431,53 +570,111 @@ const schema = graph([
     text-wrap: balance;
   }
 
-  /* --- Section 3 — the Assessment ---------------------------------------- */
-  .apanes {
-    list-style: none;
-    margin: clamp(2rem, 3vw, 3rem) 0 0;
-    padding: 0;
-    display: grid;
-    gap: 1.25rem;
+  /* --- Section 3 — the specification band -------------------------------- */
+  .spec {
+    margin-top: clamp(2rem, 3vw, 3rem);
   }
-  @media (min-width: 48rem) {
-    .apanes {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: var(--grid-cell);
+  .spec__band {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--grid-cell);
+    margin: 0;
+    padding: 1.1rem 0;
+  }
+  @media (max-width: 47.99rem) {
+    .spec__band {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1rem;
+      padding: 1rem 0;
     }
   }
-
-  .apane__h {
-    margin: 0 0 1.1rem;
-    font-size: var(--text-xl);
-    line-height: 1.2;
-    letter-spacing: var(--tracking-display);
-    font-weight: 600;
-    color: var(--color-cream);
+  .spec__label {
+    margin: 0;
+    color: var(--color-cream-dim);
   }
-  .alist {
+  .spec__value {
+    margin: 0.5rem 0 0;
+    font-size: var(--text-lg);
+    line-height: 1.3;
+    letter-spacing: var(--tracking-display);
+    color: var(--color-cream);
+    text-wrap: balance;
+  }
+  /* The qualification, under the band's closing rule rather than inside it as a
+     fourth column: it is a note on the price, and a column would have claimed
+     it was a fourth fact. */
+  .spec__note {
+    margin: 0.85rem 0 0;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--color-cream-dim);
+  }
+
+  /* --- Section 3 — what you walk away with ------------------------------- */
+  .deliv {
+    margin-top: clamp(2.75rem, 5vw, 4.5rem);
+  }
+  .deliv__lead {
+    margin: 0;
+    color: var(--color-cream-dim);
+  }
+  /* The thread runs INSIDE this box, and the em unit below resolves against the
+     statement size, so the line can start and stop at the first and last bead's
+     centre without either measurement being a magic number. */
+  .deliv__body {
+    position: relative;
+    margin-top: 1.25rem;
+    /* --text-xl is a fixed 26px, which on a 390 phone set every statement over
+       three lines — the size that reads as substance on a desktop reads as
+       shouting on a phone. Fluid from 20 to 26, so it tops out at the fixed
+       step on a wide screen and lands two lines per statement on a narrow
+       one. */
+    font-size: clamp(1.25rem, 1.05rem + 0.95vw, 1.625rem);
+  }
+  .deliv__spine {
+    position: absolute;
+    left: 0.25rem; /* the bead's centre: half of its 0.5rem width */
+    top: calc(0.75rem + 0.675em);
+    bottom: calc(0.75rem + 0.675em);
+    width: 1px;
+    background-color: var(--color-wire);
+  }
+  .deliv__list {
     list-style: none;
-    margin: 1.1rem 0 0;
+    margin: 0;
     padding: 0;
   }
-  .aitem,
-  .impl__item {
+  .deliv__item {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     align-items: start;
-    gap: 0 0.75rem;
-    padding: 0.5rem 0;
-    font-size: var(--text-md);
-    line-height: 1.55;
-    color: var(--color-cream-dim);
-    /* balance, not pretty: these are two- and three-line items, and pretty only
-       rebalances the tail of a longer paragraph. */
+    gap: 0 1.25rem;
+    padding: 0.75rem 0;
+    font-size: 1em;
+    line-height: 1.35;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-cream);
     text-wrap: balance;
+    max-width: 34ch;
+  }
+  @media (min-width: 48rem) {
+    .deliv__item {
+      max-width: 46ch;
+    }
+  }
+  /* 64ch, which is under the 68-character measure the design targets and just
+     over the longest of the four — so each statement holds one line and the
+     four read as a stack rather than as a paragraph with bullets. */
+  @media (min-width: 64rem) {
+    .deliv__item {
+      max-width: 64ch;
+    }
   }
 
   /* The marker: the pane's own material at the smallest weight it has, a bead
      rather than a glyph. */
-  .adot {
-    margin-top: calc((1.55em - 0.5rem) / 2 - 0.04em);
+  .deliv__bead {
+    margin-top: calc(0.675em - 0.25rem);
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 50%;
@@ -509,6 +706,28 @@ const schema = graph([
       grid-auto-flow: column;
       column-gap: var(--grid-cell);
     }
+  }
+  .impl__item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 0 0.75rem;
+    padding: 0.5rem 0;
+    font-size: var(--text-md);
+    line-height: 1.55;
+    color: var(--color-cream-dim);
+    /* balance, not pretty: these are two-line items, and pretty only rebalances
+       the tail of a longer paragraph. */
+    text-wrap: balance;
+  }
+  /* A hairline, not a bead. The beads are spoken for one section up, and these
+     seven are the page's fine print — a rule the width of an en dash is the
+     quietest marker that still shows where an item starts. */
+  .impl__dash {
+    margin-top: calc((1.55em - 1px) / 2);
+    width: 0.625rem;
+    height: 1px;
+    background-color: var(--color-wire);
   }
 
   /* --- Section 5 — the close --------------------------------------------- */

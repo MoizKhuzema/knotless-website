@@ -74,32 +74,33 @@ export const WWD_QUESTIONS = {
 /**
  * Section 3 — the Assessment.
  *
- * Two blocks, and deliberately NOT numbered. The homepage's two stages carry
- * ordinals and a connector because they are a sequence; these are two facets of
- * one thing — what it produces, and what it costs — and numbering them would
- * assert an order that does not exist.
+ * NOT two matching lists any more. It was set as two lists of four because they
+ * arrived as two lists of four, and on the page that became a pair of glass
+ * panes — the third two-pane grid on a five-page site.
+ *
+ * The content is not a pair. One half is what the work PRODUCES; the other half
+ * is what it COSTS, which is metadata about the first. So the facts are now
+ * label/value pairs for a specification band, and the deliverables are the
+ * section's substance, set large. The four facts became three plus a footnote:
+ * "a fixed price quoted on the free Fit Call" and "price depends on your size
+ * and the scope you choose" are one fact about price and a qualification of it,
+ * and a band of equal columns asserted they were two equal facts.
  */
 export const WWD_ASSESSMENT = {
   heading: 'The Knotless Assessment',
-  blocks: [
-    {
-      title: 'You walk away with',
-      points: [
-        'Every opportunity where AI could save you money',
-        'The arithmetic behind each saving',
-        'How long each opportunity takes to pay back',
-        'Every blocker that needs to be resolved before investing in AI',
-      ],
-    },
-    {
-      title: 'Time and cost',
-      points: [
-        'Completed within two to four weeks',
-        'A few hours of your team’s time',
-        'A fixed price quoted on the free Fit Call',
-        'Price depends on your size and the scope you choose',
-      ],
-    },
+  /** The three things a buyer asks before anything else. */
+  facts: [
+    { label: 'Duration', value: 'Two to four weeks' },
+    { label: 'Your time', value: 'A few hours' },
+    { label: 'Price', value: 'Fixed, quoted on the free Fit Call' },
+  ],
+  note: 'Priced on your size and the scope you choose.',
+  deliverablesLead: 'You walk away with',
+  deliverables: [
+    'Every opportunity where AI could save you money',
+    'The arithmetic behind each saving',
+    'How long each opportunity takes to pay back',
+    'Every blocker that needs to be resolved before investing in AI',
   ],
 } as const;
 
