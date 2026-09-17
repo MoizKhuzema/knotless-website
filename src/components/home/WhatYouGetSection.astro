@@ -52,6 +52,7 @@ import { WHAT_YOU_GET } from '../../data/homepage';
             {i > 0 && <span class="stage__link" data-catch="line" aria-hidden="true" />}
             <p class="stage__n meta meta--num">{String(i + 1).padStart(2, '0')}</p>
             <h3 class="stage__h">{stage.title}</h3>
+            <span class="stage__rule" data-catch="line" aria-hidden="true" />
             <ul class="stage__list">
               {stage.points.map((point) => (
                 <li class="stage__item">
@@ -230,9 +231,7 @@ import { WHAT_YOU_GET } from '../../data/homepage';
      the only thing in the pane that has to carry weight — but it is a third
      level heading inside a section, not a rival to the section's own. */
   .stage__h {
-    margin: 0.35rem 0 0;
-    padding-bottom: 1.1rem;
-    border-bottom: 1px solid var(--color-line);
+    margin: 0.35rem 0 1.1rem;
     font-size: var(--text-xl);
     line-height: 1.2;
     letter-spacing: var(--tracking-display);
@@ -255,6 +254,19 @@ import { WHAT_YOU_GET } from '../../data/homepage';
      points competed with the stage's own name, and the pane read as a wall.
      Cream-dim on the pane measures 6.94:1 — comfortably past AA, so the step
      down is hierarchy, not a concession. */
+  /* The card's one rule, as an ELEMENT rather than the heading's border. A
+     border cannot catch the light — the catch system paints into ::after, and
+     the heading's belongs to the heading. As its own element it registers as a
+     catcher and gets the line variant for free.
+
+     It is still the only division in the card: name above, deliverables
+     below. */
+  .stage__rule {
+    display: block;
+    height: 1px;
+    background-color: var(--color-line);
+  }
+
   .stage__list {
     margin-top: 1.1rem;
   }
