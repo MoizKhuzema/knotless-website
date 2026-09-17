@@ -143,9 +143,14 @@ const dial = (phone: string) => phone.replace(/\s+/g, '');
     color: var(--color-cream);
   }
 
+  /* Cream-dim, not ember. On the old panel this measured 4.38:1 — under AA,
+     a real failure that had been shipping — and a job title is not a verdict,
+     a figure or a call to action, which is what the accent is reserved for.
+     It reads 6.86:1 now, and with the icons below it the card spends no ember
+     at all: the section's only orange is the arrow on the link under it. */
   .fcard__role {
-    margin: 0.75rem 0 0;
-    color: var(--color-ember);
+    margin: 0.6rem 0 0;
+    color: var(--color-cream-dim);
   }
 
   .fcard__links {
@@ -173,7 +178,7 @@ const dial = (phone: string) => phone.replace(/\s+/g, '');
     width: 1.05rem;
     height: 1.05rem;
     flex: none;
-    color: var(--color-ember);
+    color: var(--color-cream-dim);
     opacity: 0.7;
     transition: opacity var(--dur-fast) var(--ease-out);
   }
