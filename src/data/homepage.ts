@@ -117,7 +117,7 @@ export const GET_STARTED = {
   heading: 'How to get started',
   steps: [
     'You book a free 30-minute Fit Call. No AI knowledge needed, no homework.',
-    'You leave knowing what we can do for your business, what the Assessment will cost and how long it will take — priced on the size and complexity of your workflows.',
+    'You leave knowing what we can do for your business, what the Assessment will cost and how long it will take, priced on the size and complexity of your workflows.',
   ],
   cta: { label: 'Book a free Fit Call', href: '/contact' },
 } as const;
