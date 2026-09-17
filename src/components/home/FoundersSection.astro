@@ -37,6 +37,8 @@ const dial = (phone: string) => phone.replace(/\s+/g, '');
               <p class="meta fcard__role">{f.title}</p>
             </div>
 
+            <span class="fcard__rule" data-catch="line" aria-hidden="true" />
+
             <ul class="fcard__links">
               <li>
                 <a class="flink" href={`mailto:${f.email}`}>
@@ -120,9 +122,8 @@ const dial = (phone: string) => phone.replace(/\s+/g, '');
      two card materials on one page, for no reason either could state.
 
      overflow is NOT hidden any more. It was there to clip the ember thread
-     that used to run along the top edge; what it was also doing was clipping
-     the catch ring, which sits at inset:-1px and so lost its outer pixel on
-     every card. The stages are overflow:visible for the same reason. */
+     below, which has gone; what it was also doing was clipping the catch ring,
+     which sits at inset:-1px and so lost its outer pixel on every card. */
   .fcard {
     position: relative;
     padding: clamp(1.25rem, 2vw, 1.5rem);
@@ -137,40 +138,54 @@ const dial = (phone: string) => phone.replace(/\s+/g, '');
     box-shadow: inset 0 1px 0 var(--color-glass-soft-spec);
   }
 
+  /* Was 44px at 1440 — a fourth display size between the section's 60 and the
+     34 the rest of the page uses, and two of them crowding the heading. This is
+     the same step as the verticals subheading, so the page reads
+     60 / 34 / 21 / 16 / 13 throughout. */
   .fcard__name {
-    font-size: clamp(1.875rem, 1.2rem + 2vw, 2.75rem);
+    font-size: clamp(1.5rem, 1rem + 1.4vw, 2.125rem);
     margin: 0;
     color: var(--color-cream);
   }
 
-  /* Cream-dim, not ember. On the old panel this measured 4.38:1 — under AA,
-     a real failure that had been shipping — and a job title is not a verdict,
-     a figure or a call to action, which is what the accent is reserved for.
-     It reads 6.86:1 now, and with the icons below it the card spends no ember
-     at all: the section's only orange is the arrow on the link under it. */
+  /* Cream-dim, not ember. On the old panel this measured 4.38:1 — under AA —
+     and a job title is not a verdict, a figure or a call to action, which is
+     what the accent is for. It now reads 6.9:1 and the card spends no ember at
+     all, which leaves the section's only orange on the arrow link below it. */
   .fcard__role {
     margin: 0.6rem 0 0;
     color: var(--color-cream-dim);
+  }
+
+  /* One rule under the name, as an ELEMENT so it catches the cursor light like
+     every other rule on the page. There were three hairlines for two rows —
+     the list's border plus one between the items — which is the pattern the
+     stage cards had removed for making two lines of content read as rows of a
+     table. */
+  .fcard__rule {
+    display: block;
+    height: 1px;
+    background-color: var(--color-line);
   }
 
   .fcard__links {
     list-style: none;
     margin: 0;
     padding: 0;
-    border-top: 1px solid var(--color-line);
-  }
-  .fcard__links li + li {
-    border-top: 1px solid var(--color-line);
   }
 
   .flink {
     display: flex;
     align-items: center;
-    gap: 0.85rem;
-    min-height: 3.25rem; /* comfortably over the 44px floor */
+    gap: 0.75rem;
+    /* Exactly the 44px floor, not 52. The row was 52px tall carrying 13px text,
+       so the text floated in it. The type goes up to the card body size the
+       stages established and the row comes down to the minimum a tap target is
+       allowed to be — the text now fills the row it is given. */
+    min-height: 2.75rem;
     color: var(--color-cream-dim);
     text-decoration: none;
-    font-size: var(--text-sm);
+    font-size: var(--text-md);
     transition: color var(--dur-fast) var(--ease-out);
     word-break: break-word;
   }
