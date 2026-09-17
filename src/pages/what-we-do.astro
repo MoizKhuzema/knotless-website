@@ -1,478 +1,365 @@
 ---
 /**
- * /what-we-do — "One product. The whole story."
+ * /what-we-do
  *
- * Same editorial register as the homepage: accent-rule + heading blocks,
- * disclosure accordions for the stages and FAQs, a two-outcomes fork for the
- * build, and the reversed-Ink final CTA. Copy lives in src/data/whatWeDo.ts.
+ * Rebuilt on the homepage's system rather than the utility-class layout it had:
+ * the measured thread opening every section, glass panes on the page's own
+ * column grid, the cursor-light variants (ring / line / dot), the shared type
+ * ladder, and the reversed panel to close.
+ *
+ * The old page's machinery is gone with it — a snap-scrolling carousel with
+ * autoplay, a roving-tabindex tab rail, and disclosure accordions. Three
+ * interaction models on one page, none of them used anywhere else on the site.
+ * The content underneath was six quotes, two lists and seven commitments, and
+ * that is what it is set as now.
+ *
+ * Copy lives in src/data/whatWeDo.ts.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaButton from '../components/CtaButton.astro';
 import { graph, webPage, service } from '../lib/schema';
 import {
-  WWD_INTRO,
+  WWD_HERO,
+  WWD_META,
   WWD_QUESTIONS,
-  WWD_STAGES,
+  WWD_ASSESSMENT,
   WWD_IMPLEMENTATION,
-  WWD_FAQS,
-  WWD_FINAL_CTA,
+  WWD_CLOSE,
 } from '../data/whatWeDo';
-
-const whoBullets = [
-  WWD_IMPLEMENTATION.whoFirst,
-  WWD_IMPLEMENTATION.whoDelivery,
-  WWD_IMPLEMENTATION.whoLast,
-];
-
-// Plain-text intro body for the meta description (strip the emphasis markers).
-const introDescription = WWD_INTRO.bodyParts
-  .map((p) => (typeof p === 'string' ? p : p.strong))
-  .join('');
 
 const origin = Astro.site!.origin;
 const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
 
-// Service node (provided by the Organization) + this WebPage.
 const schema = graph([
-  webPage(origin, { url: pageUrl, name: 'What We Do', description: introDescription }),
+  webPage(origin, { url: pageUrl, name: 'What We Do', description: WWD_META.description }),
   service(origin, {
     url: pageUrl,
     name: 'AI Assessment and Implementation',
     serviceType: 'Artificial intelligence consulting',
-    description: introDescription,
+    description: WWD_META.description,
   }),
 ]);
 ---
 
-<BaseLayout title="What We Do" description={introDescription} schema={schema}>
-  <!-- Section 1 — page intro. On mobile it fills the first screen (content
-       centred) so the next section sits below the fold and reveals on scroll;
-       top-aligned from sm up. -->
-  <section class="hero-screen sm:pt-28">
-    <p class="meta text-cream">{WWD_INTRO.eyebrow}</p>
-    <h1 class="mt-5 text-[2.4rem] leading-[1.02] tracking-[-0.035em] text-cream min-[420px]:text-[2.9rem] sm:text-[3.75rem] md:text-[4.25rem] lg:text-[5.75rem] xl:text-[6.75rem]">
-      One <span class="emph-type" data-word="product."
-        ><span class="sr-only">product.</span><span class="ew" aria-hidden="true"
-          ><span class="ew-sizer">product.</span><span class="ew-live"><span class="ew-typed">product.</span><span class="ew-caret"></span></span></span
-        ></span
-      ><br />Whole story.
-    </h1>
-    <p class="mt-8 max-w-text text-base text-cream sm:text-lg">
-      {
-        WWD_INTRO.bodyParts.map((p) =>
-          typeof p === 'string' ? p : <strong class="font-semibold text-ember">{p.strong}</strong>,
-        )
-      }
-    </p>
-    <div class="mt-8">
-      <CtaButton href={WWD_INTRO.cta.href}>{WWD_INTRO.cta.label}</CtaButton>
+<BaseLayout title="What We Do" description={WWD_META.description} schema={schema}>
+  {/* --- Section 1 — hero ------------------------------------------------ */}
+  <section class="whero" data-reveal>
+    <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
+    <h1 class="whero__h r" style="--i: 1">{WWD_HERO.heading}</h1>
+    <p class="whero__body r" style="--i: 2">{WWD_HERO.body}</p>
+    <div class="whero__cta r" style="--i: 3">
+      <CtaButton href={WWD_HERO.cta.href}>{WWD_HERO.cta.label}</CtaButton>
     </div>
   </section>
 
-  <!-- Section 2 — the questions people bring us -->
-  <section class="pt-section-lg">
+  {/* --- Section 2 — sound familiar? ------------------------------------- */}
+  <section class="sect">
     <div data-reveal>
-      <span class="accent-rule"></span>
-      <h2 class="mt-6 text-2xl tracking-tight text-cream sm:text-3xl">
-        {WWD_QUESTIONS.heading}
-      </h2>
-      <p class="mt-6 max-w-text text-base text-cream">{WWD_QUESTIONS.lead}</p>
+      <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
+      <h2 class="h-section sect__h r" style="--i: 1">{WWD_QUESTIONS.heading}</h2>
+      <p class="sect__lead r" style="--i: 2">{WWD_QUESTIONS.lead}</p>
     </div>
 
-    {/* A horizontal, snap-scrolling carousel on every viewport: swipe / trackpad
-        on touch, plus prev/next arrows and gentle autoplay on desktop. The next
-        card peeks to signal there's more. */}
-    <div data-reveal class="relative mt-10 sm:mt-14">
-      <button
-        type="button"
-        class="vig-prev absolute left-1 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-ink text-cream transition-colors hover:bg-ink-panel hover:text-cream sm:flex"
-        aria-label="Previous statements"
-      >
-        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
-      </button>
-      <button
-        type="button"
-        class="vig-next absolute right-1 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-ink text-cream transition-colors hover:bg-ink-panel hover:text-cream sm:flex"
-        aria-label="Next statements"
-      >
-        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
-      </button>
-      <div class="vig-track -mx-gutter flex snap-x snap-mandatory gap-4 overflow-x-auto px-gutter pb-4 sm:mx-0 sm:gap-6 sm:px-0">
-        {
-          WWD_QUESTIONS.vignettes.map((v) => (
-            <article
-              data-catch="ring"
-              class="group flex w-[80%] shrink-0 snap-center flex-col rounded-sm border border-line p-5 transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-line hover:bg-ink-panel sm:w-[46%] sm:p-7 lg:w-[31%]"
-            >
-              <p class="text-lg font-medium leading-snug tracking-tight text-cream transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream">
-                “{v.quote}”
-              </p>
-              <p class="mt-3 text-sm italic text-cream transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-cream sm:mt-4">
-                {v.who}
-              </p>
-            </article>
-          ))
-        }
-      </div>
-    </div>
-
-    <!-- No max-width so the closing line stays on one row where space allows. -->
-    <p data-reveal class="mt-14 text-base text-cream">{WWD_QUESTIONS.close}</p>
-  </section>
-
-  <!-- Section 3 — what you get at each stage -->
-  <section class="pt-section-lg">
-    <div data-reveal class="max-w-text">
-      <span class="accent-rule"></span>
-      <h2 class="mt-6 text-2xl tracking-tight text-cream sm:text-3xl">
-        {WWD_STAGES.heading}
-      </h2>
-      <p class="mt-6 text-base text-cream">{WWD_STAGES.lead}</p>
-    </div>
-
-    {/* Stage selector: pick one stage, see only its detail. Tabs are scrollable
-        pills on mobile and a vertical rail on desktop — distinct from the
-        homepage stepper/rows and the questions carousel. Progressive: with no JS,
-        the first panel shows. */}
-    <div data-reveal class="mt-10 sm:mt-14 sm:grid sm:grid-cols-12 sm:gap-10 lg:gap-14">
-      <div
-        role="tablist"
-        aria-label="Assessment stages"
-        class="stage-tabs -mx-gutter flex gap-2 overflow-x-auto px-gutter pb-1 sm:col-span-5 sm:mx-0 sm:flex-col sm:gap-0 sm:overflow-visible sm:border-l sm:border-line sm:px-0 sm:pb-0 lg:col-span-4"
-      >
-        {
-          WWD_STAGES.stages.map((stage, i) => (
-            <button
-              type="button"
-              role="tab"
-              id={`tab-${stage.id}`}
-              aria-controls={`panel-${stage.id}`}
-              aria-selected={i === 0 ? 'true' : 'false'}
-              tabindex={i === 0 ? 0 : -1}
-              class="stage-tab"
-            >
-              {stage.title}
-            </button>
-          ))
-        }
-      </div>
-
-      <div class="mt-8 sm:col-span-7 sm:mt-0 lg:col-span-8">
-        {
-          WWD_STAGES.stages.map((stage, i) => (
-            <div
-              role="tabpanel"
-              id={`panel-${stage.id}`}
-              aria-labelledby={`tab-${stage.id}`}
-              hidden={i !== 0}
-              tabindex="0"
-              class="stage-panel"
-            >
-              <p class="text-base italic leading-snug text-cream">{stage.oneLiner}</p>
-              <div class="mt-6 grid gap-8 sm:grid-cols-2">
-                <div>
-                  <p class="text-base font-semibold text-cream">{WWD_STAGES.labels.whatWeDo}</p>
-                  <ul class="mt-3 space-y-2.5">
-                    {stage.whatWeDo.map((item) => (
-                      <li class="flex gap-3 text-cream">
-                        <span aria-hidden="true" class="mt-[0.62em] h-px w-3 shrink-0 bg-line" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <p class="text-base font-semibold text-cream">{WWD_STAGES.labels.walkAway}</p>
-                  <ul class="mt-3 space-y-2.5">
-                    {stage.walkAway.map((item) => (
-                      <li class="flex gap-3 text-cream">
-                        <span aria-hidden="true" class="mt-[0.62em] h-px w-3 shrink-0 bg-line" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          ))
-        }
-      </div>
-    </div>
-  </section>
-
-  <!-- Section 4 — implementation -->
-  <section class="pt-section-lg">
-    <div data-reveal class="max-w-text">
-      <span class="accent-rule"></span>
-      <h2 class="mt-6 text-2xl tracking-tight text-cream sm:text-3xl">
-        {WWD_IMPLEMENTATION.heading}
-      </h2>
-    </div>
-
-    {/* Decision fork: after the findings, two honest outcomes branch from one
-         point. A small org-chart fork on desktop; a left-spine branch on mobile. */}
-    <div data-reveal class="mt-12 sm:mt-16">
-      <div class="relative grid gap-y-10 pl-6 sm:grid-cols-2 sm:gap-x-16 sm:pl-0">
-        <!-- desktop: a terracotta decision node at the centre + a line the two
-             outcomes flank symmetrically (right-aligned left / left-aligned right) -->
-        <span class="absolute left-1/2 top-0 hidden h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-ember sm:block" aria-hidden="true"></span>
-        <span class="absolute bottom-0 left-1/2 top-3 hidden w-px -translate-x-1/2 bg-line sm:block" aria-hidden="true"></span>
-        <!-- mobile: a left spine + node the two outcomes branch from -->
-        <span class="absolute left-1 top-2 bottom-2 w-px bg-line sm:hidden" aria-hidden="true"></span>
-        <span class="absolute left-1 top-0 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-ember sm:hidden" aria-hidden="true"></span>
-
-        <div class="relative sm:pt-6 sm:text-right">
-          <span class="absolute right-full top-[0.7em] h-px w-5 bg-line sm:hidden" aria-hidden="true"></span>
-          <p class="text-base font-semibold text-cream">{WWD_IMPLEMENTATION.fork.no.label}</p>
-          <p class="mt-3 text-cream sm:ml-auto sm:prose-measure">{WWD_IMPLEMENTATION.fork.no.body}</p>
-        </div>
-        <div class="relative sm:pt-6">
-          <span class="absolute right-full top-[0.7em] h-px w-5 bg-line sm:hidden" aria-hidden="true"></span>
-          <p class="text-base font-semibold text-ember">{WWD_IMPLEMENTATION.fork.yes.label}</p>
-          <p class="mt-3 text-cream">{WWD_IMPLEMENTATION.fork.yes.lead}</p>
-          <ul class="mt-4 space-y-2.5">
-            {
-              WWD_IMPLEMENTATION.fork.yes.points.map((item) => (
-                <li class="flex gap-3 text-cream">
-                  <span aria-hidden="true" class="mt-[0.62em] h-px w-3 shrink-0 bg-line" />
-                  <span>{item}</span>
-                </li>
-              ))
-            }
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- Who does the work: the founders, the delivery choice, the single channel —
-         set as hairline-separated principles (distinct from the dash lists). -->
-    <div data-reveal class="mt-16 max-w-text">
-      <p class="text-base font-semibold text-cream">{WWD_IMPLEMENTATION.whoHeading}</p>
-      <div class="mt-6 border-t border-line">
-        {whoBullets.map((item) => <p class="border-b border-line py-4 text-cream">{item}</p>)}
-      </div>
-    </div>
-  </section>
-
-  <!-- Section 5 — FAQs -->
-  <section class="pt-section-lg">
-    <div data-reveal>
-      <span class="accent-rule"></span>
-      <h2 class="mt-6 text-2xl tracking-tight text-cream sm:text-3xl">
-        {WWD_FAQS.heading}
-      </h2>
-    </div>
-
-    <div class="mt-12 border-t border-line">
+    {/* Six panes, two up. They were a snap-scrolling carousel with autoplay,
+        which hid four of the six behind a gesture — and the whole point of the
+        section is the RANGE, so the one thing it could not afford was showing
+        one at a time. */}
+    <ul class="vgrid" data-reveal>
       {
-        WWD_FAQS.items.map((item) => (
-          <details data-reveal class="border-b border-line">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-lg font-semibold tracking-tight text-cream [&::-webkit-details-marker]:hidden">
-              <span>{item.q}</span>
-              <svg
-                class="disclosure-chevron h-5 w-5 shrink-0 text-cream-dim"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </summary>
-            <p class="prose-measure pb-6 text-cream">{item.a}</p>
-          </details>
+        WWD_QUESTIONS.vignettes.map((v, i) => (
+          <li class="vcard r" data-catch="ring" style={`--i: ${i}`}>
+            <p class="vcard__q">“{v.quote}”</p>
+            <span class="vcard__rule" data-catch="line" aria-hidden="true" />
+            <p class="vcard__who">{v.who}</p>
+          </li>
         ))
       }
+    </ul>
+  </section>
+
+  {/* --- Section 3 — the Assessment -------------------------------------- */}
+  <section class="sect">
+    <div data-reveal>
+      <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
+      <h2 class="h-section sect__h r" style="--i: 1">{WWD_ASSESSMENT.heading}</h2>
+    </div>
+
+    {/* Two panes, no ordinals and no connector: the homepage's stages carry
+        both because they are a sequence, and these two are facets of one
+        thing. */}
+    <ul class="apanes" data-reveal>
+      {
+        WWD_ASSESSMENT.blocks.map((block, i) => (
+          <li class="apane r" data-catch="ring" style={`--i: ${i}`}>
+            <h3 class="apane__h">{block.title}</h3>
+            <span class="apane__rule" data-catch="line" aria-hidden="true" />
+            <ul class="alist">
+              {block.points.map((point) => (
+                <li class="aitem">
+                  <span class="adot" data-catch="dot" aria-hidden="true" />
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  {/* --- Section 4 — implementation --------------------------------------- */}
+  <section class="sect">
+    <div data-reveal>
+      <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
+      <h2 class="h-section sect__h r" style="--i: 1">{WWD_IMPLEMENTATION.heading}</h2>
+    </div>
+
+    {/* No pane here, on purpose. Two pane-heavy sections and the cream slab sit
+        either side of this one; set plainly on the page it gives the eye a rest
+        and stops the page reading as a stack of boxes. */}
+    <div class="impl" data-reveal>
+      <span class="impl__rule r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
+      <ul class="impl__list">
+        {
+          WWD_IMPLEMENTATION.points.map((point, i) => (
+            <li class="impl__item r" style={`--i: ${i + 1}`}>
+              <span class="adot" data-catch="dot" aria-hidden="true" />
+              <span>{point}</span>
+            </li>
+          ))
+        }
+      </ul>
     </div>
   </section>
 
-  <!-- Section 6 — final CTA (reversed Ink panel) -->
-  <section class="pt-section-lg">
-    <div data-reveal class="on-ink flex flex-col items-center rounded-sm px-6 py-20 text-center">
-      <span class="accent-rule"></span>
-      <h2 class="mt-6 text-2xl tracking-tight sm:text-3xl">{WWD_FINAL_CTA.heading}</h2>
-      <p class="mt-4 prose-measure text-base text-cream">{WWD_FINAL_CTA.body}</p>
-      <div class="mt-9">
-        <CtaButton href={WWD_FINAL_CTA.cta.href} variant="inverse">
-          {WWD_FINAL_CTA.cta.label}
-        </CtaButton>
+  {/* --- Section 5 — the close -------------------------------------------- */}
+  <section class="sect">
+    <div class="wclose" data-reveal>
+      <div class="wclose__inner">
+        <span class="rule-thread wclose__rule r" data-catch="line" aria-hidden="true" style="--i: 0"
+        ></span>
+        <h2 class="h-section wclose__h r" style="--i: 1">{WWD_CLOSE.heading}</h2>
+        <p class="wclose__body r" style="--i: 2">{WWD_CLOSE.body}</p>
+        <div class="wclose__cta r" style="--i: 3">
+          <CtaButton href={WWD_CLOSE.cta.href} variant="inverse">{WWD_CLOSE.cta.label}</CtaButton>
+        </div>
       </div>
     </div>
   </section>
 </BaseLayout>
 
-<script is:inline>
-  // "Sound familiar?" carousel: prev/next arrows, native swipe/trackpad scroll,
-  // and gentle autoplay on desktop (paused on hover/focus, off-screen, hidden
-  // tab, and under reduced motion). Mobile relies on swipe (no autoplay).
-  (() => {
-    const track = document.querySelector('.vig-track');
-    if (!track) return;
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const wide = () => window.matchMedia('(min-width: 640px)').matches;
-    const prev = document.querySelector('.vig-prev');
-    const next = document.querySelector('.vig-next');
-
-    const stepX = () => {
-      const card = track.querySelector('article');
-      const gap = parseFloat(getComputedStyle(track).columnGap) || 16;
-      return card ? card.offsetWidth + gap : track.clientWidth;
-    };
-    const maxLeft = () => track.scrollWidth - track.clientWidth;
-    const go = (dir) => {
-      const behavior = reduce ? 'auto' : 'smooth';
-      if (dir > 0 && track.scrollLeft >= maxLeft() - 2) return track.scrollTo({ left: 0, behavior });
-      if (dir < 0 && track.scrollLeft <= 2) return track.scrollTo({ left: maxLeft(), behavior });
-      track.scrollBy({ left: dir * stepX(), behavior });
-    };
-    if (prev) prev.addEventListener('click', () => go(-1));
-    if (next) next.addEventListener('click', () => go(1));
-
-    // Autoplay ping-pongs so it never makes a long jump back to the start.
-    let timer = null;
-    let dir = 1;
-    const tick = () => {
-      if (dir > 0 && track.scrollLeft >= maxLeft() - 2) dir = -1;
-      else if (dir < 0 && track.scrollLeft <= 2) dir = 1;
-      track.scrollBy({ left: dir * stepX(), behavior: 'smooth' });
-    };
-    const start = () => {
-      if (reduce || timer || !wide()) return;
-      timer = setInterval(tick, 4500);
-    };
-    const stop = () => {
-      if (timer) clearInterval(timer);
-      timer = null;
-    };
-    ['pointerenter', 'focusin'].forEach((e) => track.addEventListener(e, stop));
-    ['pointerleave', 'focusout'].forEach((e) => track.addEventListener(e, start));
-    [prev, next].forEach((b) => {
-      if (!b) return;
-      b.addEventListener('pointerenter', stop);
-      b.addEventListener('pointerleave', start);
-    });
-    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver(
-        (entries) => entries.forEach((e) => (e.isIntersecting ? start() : stop())),
-        { threshold: 0.2 },
-      ).observe(track);
-    } else {
-      start();
-    }
-  })();
-</script>
-
-<script is:inline>
-  // "What you get at each stage" tabs: show one stage panel at a time, with
-  // roving-tabindex + arrow-key support. No-JS shows the first panel only.
-  (() => {
-    const tablist = document.querySelector('[role="tablist"][aria-label="Assessment stages"]');
-    if (!tablist) return;
-    const tabs = [...tablist.querySelectorAll('[role="tab"]')];
-    const select = (tab, focus) => {
-      tabs.forEach((t) => {
-        const on = t === tab;
-        t.setAttribute('aria-selected', on ? 'true' : 'false');
-        t.tabIndex = on ? 0 : -1;
-        const panel = document.getElementById(t.getAttribute('aria-controls'));
-        if (panel) panel.hidden = !on;
-      });
-      if (focus) tab.focus();
-    };
-    tabs.forEach((tab, i) => {
-      tab.addEventListener('click', () => select(tab));
-      tab.addEventListener('keydown', (e) => {
-        let n = null;
-        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') n = tabs[(i + 1) % tabs.length];
-        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') n = tabs[(i - 1 + tabs.length) % tabs.length];
-        else if (e.key === 'Home') n = tabs[0];
-        else if (e.key === 'End') n = tabs[tabs.length - 1];
-        if (n) {
-          e.preventDefault();
-          select(n, true);
-        }
-      });
-    });
-  })();
-</script>
-
 <style>
-  /* Disclosure chevron (stages + FAQ): rotates when its <details> is open. */
-  .disclosure-chevron {
-    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  /* --- Section rhythm, shared with the homepage --------------------------- */
+  .sect {
+    padding-top: var(--spacing-section-lg);
   }
-  details[open] .disclosure-chevron {
-    transform: rotate(180deg);
+  .sect__h {
+    margin: 1.25rem 0 0;
   }
-
-  /* "Sound familiar?" carousel: hide the scrollbar (still scrollable via swipe,
-     trackpad and the arrows). */
-  .vig-track {
-    scrollbar-width: none; /* Firefox */
-  }
-  .vig-track::-webkit-scrollbar {
-    display: none; /* WebKit / Chromium */
-  }
-  .stage-tabs {
-    scrollbar-width: none;
-  }
-  .stage-tabs::-webkit-scrollbar {
-    display: none;
+  .sect__lead {
+    margin: 1.5rem 0 0;
+    font-size: var(--text-lead);
+    line-height: 1.5;
+    color: var(--color-cream-dim);
+    max-width: 52ch;
   }
 
-  /* Stage tabs: pills on mobile, a vertical rail on desktop. */
-  .stage-tab {
-    flex-shrink: 0;
-    white-space: nowrap;
-    border: 1px solid var(--color-line);
-    border-radius: 9999px;
-    padding: 0.5rem 1rem;
-    font-size: var(--text-sm);
-    font-weight: 500;
+  /* --- Section 1 — hero -------------------------------------------------- */
+  .whero__h {
+    margin: 1.25rem 0 0;
+    font-size: var(--text-display);
+    line-height: 0.95;
+    letter-spacing: var(--tracking-display);
+    font-weight: 600;
     color: var(--color-cream);
-    cursor: pointer;
-    transition:
-      background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-      color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-      border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    /* The headline is five words; balanced it never leaves one of them alone
+       on the last line. */
+    text-wrap: balance;
+    max-width: 16ch;
   }
-  /* A fill carrying text: the brand terracotta, not the lifted ember. */
-  .stage-tab[aria-selected='true'] {
-    background-color: var(--color-terracotta);
-    color: var(--color-on-accent);
-    border-color: var(--color-terracotta);
+  .whero__body {
+    margin: clamp(1.75rem, 3vw, 2.5rem) 0 0;
+    font-size: var(--text-lead);
+    line-height: 1.5;
+    color: var(--color-cream-dim);
+    /* 52ch measures about 69 characters, the target the design sets. */
+    max-width: 52ch;
   }
-  @media (min-width: 640px) {
-    .stage-tab {
-      white-space: normal;
-      border: 0;
-      border-left: 2px solid transparent;
-      border-radius: 0;
-      margin-left: -1px;
-      padding: 0.625rem 1.25rem;
-      text-align: left;
-      font-size: var(--text-base);
-      color: var(--color-cream-dim);
-    }
-    .stage-tab:hover {
-      color: var(--color-cream);
-    }
-    .stage-tab[aria-selected='true'] {
-      background-color: transparent;
-      border-left-color: var(--color-ember);
-      color: var(--color-cream);
-      font-weight: 600;
+  .whero__cta {
+    margin-top: clamp(2rem, 3vw, 2.75rem);
+  }
+
+  /* --- Section 2 — the vignettes ----------------------------------------- */
+  .vgrid {
+    list-style: none;
+    margin: clamp(2rem, 3vw, 3rem) 0 0;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+  }
+  /* Two up from 64rem, not 48rem. At 768 two columns are 306px wide and these
+     panes carry a 21px quote — the same reasoning that moved the founder cards
+     up a breakpoint. */
+  @media (min-width: 64rem) {
+    .vgrid {
+      /* One grid cell, so the panes are seven whole cells each and all four
+         edges land on lines. */
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--grid-cell);
     }
   }
-  /* The panel is a keyboard stop (tabindex="0" — it holds no focusable content),
-     so it needs a real focus indicator. Ink at 2px reads clearly on Cream and
-     stays inside the five-value palette. */
-  .stage-panel:focus-visible {
-    outline: 2px solid var(--color-ember);
-    outline-offset: 4px;
+
+  /* The page's pane, identical to the homepage's: low-alpha fill, hairline
+     edge, specular top line, blur, and no drop shadow — a shadow is what makes
+     the nav read as floating, and these sit IN the page. */
+  .vcard,
+  .apane {
+    position: relative;
+    padding: clamp(1.25rem, 2vw, 1.5rem);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-glass-soft);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid var(--color-glass-soft-edge);
+    box-shadow: inset 0 1px 0 var(--color-glass-soft-spec);
+  }
+
+  .vcard__q {
+    margin: 0;
+    font-size: var(--text-lg);
+    line-height: 1.4;
+    letter-spacing: var(--tracking-display);
+    color: var(--color-cream);
+    text-wrap: balance;
+  }
+  /* The card's one rule, as an element so it catches the cursor light. */
+  .vcard__rule,
+  .apane__rule,
+  .impl__rule {
+    display: block;
+    height: 1px;
+    background-color: var(--color-line);
+  }
+  .vcard__rule {
+    margin: 1.1rem 0;
+  }
+  .vcard__who {
+    margin: 0;
+    font-size: var(--text-md);
+    line-height: 1.55;
+    color: var(--color-cream-dim);
+    text-wrap: balance;
+  }
+
+  /* --- Section 3 — the Assessment ---------------------------------------- */
+  .apanes {
+    list-style: none;
+    margin: clamp(2rem, 3vw, 3rem) 0 0;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+  }
+  @media (min-width: 48rem) {
+    .apanes {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--grid-cell);
+    }
+  }
+
+  .apane__h {
+    margin: 0 0 1.1rem;
+    font-size: var(--text-xl);
+    line-height: 1.2;
+    letter-spacing: var(--tracking-display);
+    font-weight: 600;
+    color: var(--color-cream);
+  }
+  .alist {
+    list-style: none;
+    margin: 1.1rem 0 0;
+    padding: 0;
+  }
+  .aitem,
+  .impl__item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 0 0.75rem;
+    padding: 0.5rem 0;
+    font-size: var(--text-md);
+    line-height: 1.55;
+    color: var(--color-cream-dim);
+    /* balance, not pretty: these are two- and three-line items, and pretty only
+       rebalances the tail of a longer paragraph. */
+    text-wrap: balance;
+  }
+
+  /* The marker: the pane's own material at the smallest weight it has, a bead
+     rather than a glyph. */
+  .adot {
+    margin-top: calc((1.55em - 0.5rem) / 2 - 0.04em);
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: var(--color-glass-soft);
+    border: 1px solid var(--color-glass-soft-edge);
+    box-shadow: inset 0 1px 0 var(--color-glass-soft-spec);
+    backdrop-filter: blur(6px) saturate(140%);
+    -webkit-backdrop-filter: blur(6px) saturate(140%);
+  }
+
+  /* --- Section 4 — implementation ---------------------------------------- */
+  .impl {
+    margin-top: clamp(2rem, 3vw, 3rem);
+  }
+  .impl__list {
+    list-style: none;
+    margin: 1.1rem 0 0;
+    padding: 0;
+  }
+  /* Two columns that read DOWN, not across. Plain row flow put items 1 and 2
+     side by side, so the eye going down the left column read 1, 3, 5, 7 — a
+     list whose order is nonsense. Four explicit rows with column flow fills the
+     left column first: 1-4, then 5-7. */
+  @media (min-width: 64rem) {
+    .impl__list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(4, auto);
+      grid-auto-flow: column;
+      column-gap: var(--grid-cell);
+    }
+  }
+
+  /* --- Section 5 — the close --------------------------------------------- */
+  .wclose {
+    background-color: var(--color-invert-bg);
+    color: var(--color-invert-fg);
+    border-radius: var(--radius-lg);
+    padding: clamp(1.75rem, 5vw, 6rem);
+    position: relative;
+  }
+  .wclose__inner {
+    position: relative;
+  }
+  /* Ink on paper, keeping .rule-thread's tick pattern so it takes the shared
+     line variant and catches the light like every other rule. */
+  .wclose__rule {
+    color: var(--color-invert-line);
+  }
+  .wclose__h {
+    margin: 1.25rem 0 0;
+    color: var(--color-invert-fg);
+  }
+  .wclose__body {
+    margin: 1.5rem 0 0;
+    font-size: var(--text-lead);
+    line-height: 1.5;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-invert-fg-dim);
+    max-width: 52ch;
+  }
+  .wclose__cta {
+    margin-top: clamp(2.5rem, 4vw, 3.25rem);
   }
 </style>
