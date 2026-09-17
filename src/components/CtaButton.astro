@@ -13,8 +13,9 @@
  *   ghost    — hairline outline on dark
  *   inverse  — for the light close panel
  *
- * Minimum 48px tall in every variant. Under prefers-reduced-motion the label
- * swap and wipe are dropped and hover simply brightens.
+ * 48px tall in every variant, 44px on a phone — the tap-target floor, not a
+ * compromise. Under prefers-reduced-motion the label swap and wipe are dropped
+ * and hover simply brightens.
  */
 import { href as withBase } from '../lib/href';
 
@@ -63,6 +64,17 @@ const { href, variant = 'primary' } = Astro.props;
       border-color var(--dur-fast) var(--ease-out),
       color var(--dur-fast) var(--ease-out),
       background-color var(--dur-fast) var(--ease-out);
+  }
+
+  /* Tighter on the phone. 48px tall with 1.6rem of padding either side made a
+     236px pill on a 375px screen — nearly two thirds of the width for twenty
+     characters. 44px is the tap-target floor, not a compromise, and the
+     narrower padding takes ~24px off the pill without touching the label. */
+  @media (max-width: 639px) {
+    .btn {
+      min-height: 2.75rem;
+      padding: 0 1.25rem;
+    }
   }
 
   /* The label track: two stacked copies, one visible at a time. */

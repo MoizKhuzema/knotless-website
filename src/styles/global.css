@@ -277,6 +277,10 @@
 @media (max-width: 639px) {
   :root {
     --text-base: 1rem; /* 16px — never lower on a phone          */
+    /* The fluid lead resolves to 20.5px at 390 — a standfirst set larger than
+       most phones set their headings. 17px still reads as a lead against 16px
+       body without taking six lines to say four. */
+    --text-lead: 1.0625rem;
     --text-sm: 0.8125rem;
     --text-meta: 0.625rem;
     --spacing-section: 4rem;

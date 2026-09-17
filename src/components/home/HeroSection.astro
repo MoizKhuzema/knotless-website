@@ -87,6 +87,14 @@ import BrandMark from '../BrandMark.astro';
     margin: 0;
     max-width: min(100%, 34rem);
   }
+  @media (max-width: 639px) {
+    /* Edge to edge it was 342 x 97px at 390 — the mark as a banner rather than
+       as a mark. At 79% of the column it still leads the screen and leaves the
+       lead and the button room to be read with it. */
+    .hero__lockup {
+      max-width: 79%;
+    }
+  }
 
 
   .hero__lead {
