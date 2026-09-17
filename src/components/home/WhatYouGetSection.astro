@@ -67,14 +67,14 @@ import { WHAT_YOU_GET } from '../../data/homepage';
     </ol>
 
     <div class="wyg__verticals" data-reveal>
-      <p class="wyg__vlead r" style="--i: 0">{WHAT_YOU_GET.verticalsLead}</p>
+      <h3 class="wyg__vlead r" style="--i: 0">{WHAT_YOU_GET.verticalsLead}</h3>
 
       <ul class="vlist">
         {
           WHAT_YOU_GET.verticals.map((v, i) => (
             <li class="vlist__row r" style={`--i: ${i + 1}`}>
               <span class="vlist__n meta meta--num">{String(i + 1).padStart(2, '0')}</span>
-              <h3 class="vlist__name">{v.name}</h3>
+              <h4 class="vlist__name">{v.name}</h4>
               <p class="vlist__members">
                 {v.members.map((m, j) => (
                   <>
@@ -331,20 +331,20 @@ import { WHAT_YOU_GET } from '../../data/homepage';
     margin-top: clamp(4.5rem, 8vw, 7.5rem);
   }
 
-  /* Was --text-meta at 11px: smaller than the member lists it introduces, and
-     the smallest text in the section. It is the sentence that frames the whole
-     block, so it is set at 13px, in cream, with the tracking that marks it as a
-     label rather than prose. */
-  /* A sentence, so the sans — it was in the mono, which set "We specialise in
-     two verticals" as though it were a readout. Tracking comes from the token
-     now rather than a local 0.14em. */
+  /* The subheading, at last. It introduces the block, so it was set as a 13px
+     uppercase label — smaller than the two names under it and smaller than the
+     member lists. The hierarchy ran backwards: two entries in a list were
+     carrying more weight than the sentence that framed them.
+     
+     It takes the size the names had, 24 to 34px, and drops the uppercase and
+     the label tracking with it — a heading is read, not scanned. The section
+     now runs 60 / 34 / 21 / 13 from its heading down, in that order. */
   .wyg__vlead {
-    margin: 0 0 1.75rem;
-    font-family: var(--font-sans);
-    font-size: var(--text-sm);
-    font-weight: 500;
-    letter-spacing: var(--tracking-meta);
-    text-transform: uppercase;
+    margin: 0 0 2rem;
+    font-size: clamp(1.5rem, 1rem + 1.4vw, 2.125rem);
+    line-height: 1.15;
+    letter-spacing: var(--tracking-display);
+    font-weight: 600;
     color: var(--color-cream);
   }
 
@@ -387,7 +387,9 @@ import { WHAT_YOU_GET } from '../../data/homepage';
      reads 60 / 34 / 21 / 13 and the order is unambiguous. */
   .vlist__name {
     font-family: var(--font-display, inherit);
-    font-size: clamp(1.5rem, 1rem + 1.4vw, 2.125rem);
+    /* Two entries in a list, not a display line. They were at the subheading's
+       size and the subheading was at a label's; this is the swap. */
+    font-size: var(--text-lg);
     line-height: 1.15;
     letter-spacing: var(--tracking-display);
     font-weight: 600;
