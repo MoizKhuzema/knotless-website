@@ -85,6 +85,20 @@ const year = new Date().getFullYear();
     gap: 3rem;
     padding-top: clamp(3rem, 6vw, 5rem);
   }
+  /* Tighter on the phone: the blocks are short there, and 48px between them
+     was spacing built for the three-column desktop layout. */
+  @media (max-width: 639px) {
+    .foot__grid {
+      gap: 2.25rem;
+      padding-top: 2.5rem;
+    }
+    .foot__label {
+      margin-bottom: 0.75rem;
+    }
+    .foot__legal {
+      margin-top: 2.5rem;
+    }
+  }
   /* Snapped from the first breakpoint that has columns at all, not just the
      widest. 1.4fr/1fr/1fr with a 4rem gap left every column start at an
      arbitrary offset — measured 31px off the nearest line at 768. */
@@ -203,6 +217,25 @@ const year = new Date().getFullYear();
     text-decoration: none;
     font-size: var(--text-sm);
     transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  /* On the phone the four links run ACROSS, not down. Stacked they were four
+     44px rows — 176px of the footer's 691px, for four words that fit on one
+     line. A row costs 44px and reads the same.
+
+     The horizontal padding is a tap target, not decoration: "Terms" sets 40px
+     wide and a target should be 44. The list is pulled back by the same amount
+     so the first link still starts on the content edge. */
+  @media (max-width: 639px) {
+    .foot__links {
+      display: flex;
+      flex-wrap: wrap;
+      column-gap: 0.75rem;
+      margin-inline: -0.4rem;
+    }
+    .foot__links a {
+      padding-inline: 0.4rem;
+    }
   }
   .foot__links a:hover {
     color: var(--color-ember);
