@@ -52,28 +52,17 @@ import CtaButton from '../CtaButton.astro';
     border-radius: var(--radius-lg);
     padding: clamp(1.75rem, 5vw, 6rem);
     position: relative;
-    overflow: hidden;
   }
 
-  /* Faint threads embossed into the paper, mirroring the hero — the same
-     bundle, now fully resolved. Drawn in CSS so it costs nothing. */
-  .close__panel::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image: repeating-linear-gradient(
-      to bottom,
-      var(--color-invert-texture) 0 1px,
-      transparent 1px 14px
-    );
-    mask-image: linear-gradient(to left, #000, transparent 55%);
-    -webkit-mask-image: linear-gradient(to left, #000, transparent 55%);
-  }
+  /* The embossed thread texture is gone. Its mask deliberately faded it IN
+     across the right 55% — it existed to fill the half of the panel nothing
+     else reached, and the reason recorded for it, mirroring the hero's thread
+     bundle, refers to a hero that no longer exists. overflow:hidden went with
+     it: clipping that texture to the rounded corners was its only job. */
 
+  /* The cap moves off this wrapper, which was capping the HEADING too. */
   .close__inner {
     position: relative;
-    max-width: 44rem;
   }
 
   /* The index rule has to flip to ink on the light panel. */
@@ -94,7 +83,24 @@ import CtaButton from '../CtaButton.astro';
     gap: 1.5rem;
   }
 
+  /* ONE measure, and widening it is what fixes both faults at once.
+   *
+   * The cap was 44rem on the wrapper. Inside a panel with 1056px of usable
+   * width at 1440 that ran the statements at 48 characters — well under the
+   * 68-70 the design asks for — and left 352px, 29% of the panel, empty at the
+   * same time. Both faults had one cause, so they have one fix: the same type
+   * in a wider column reads longer lines AND reaches further across the panel.
+   * Narrowing it to correct the measure would have taken the empty share to
+   * 41%; widening it corrects both.
+   *
+   * 58rem, measured: 68 characters at 1024, 1280, 1440 and 1920 — on target —
+   * with the residual right margin down from 29% to 12.5% at 1440, which reads
+   * as margin rather than as a hole.
+   *
+   * On the ROW, not the paragraph, so the marker beside the text is inside the
+   * same measure. */
   .close__step {
+    max-width: 58rem;
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 1.25rem;
