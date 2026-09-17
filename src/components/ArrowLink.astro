@@ -37,7 +37,10 @@ const { href, onPaper = false } = Astro.props;
     min-height: 2.75rem;
     color: var(--color-cream);
     text-decoration: none;
-    font-size: var(--text-meta);
+    /* --text-sm, not --text-meta: the micro-label pass moved every other label
+       to 13px and missed this one, which left it at 11px on desktop and 10px on
+       a phone — the smallest type on the site, on a link. */
+    font-size: var(--text-sm);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: var(--tracking-meta);
