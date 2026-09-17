@@ -18,7 +18,7 @@ import CtaButton from '../CtaButton.astro';
   <div class="shell">
     <div class="close__panel" data-reveal>
       <div class="close__inner">
-        <span class="rule-thread close__rule r" aria-hidden="true" style="--i: 0"></span>
+        <span class="rule-thread close__rule r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
 
         <h2 class="h-section close__h r" style="--i: 1">{GET_STARTED.heading}</h2>
 
@@ -26,7 +26,7 @@ import CtaButton from '../CtaButton.astro';
           {
             GET_STARTED.steps.map((step, i) => (
               <li class="close__step r" style={`--i: ${i + 2}`}>
-                <span class="close__srule" aria-hidden="true" />
+                <span class="close__srule" data-catch="line" aria-hidden="true" />
                 <p>{step}</p>
               </li>
             ))
@@ -56,18 +56,24 @@ import CtaButton from '../CtaButton.astro';
 
   /* The embossed thread texture is gone. Its mask deliberately faded it IN
      across the right 55% — it existed to fill the half of the panel nothing
-     else reached, and the reason recorded for it, mirroring the hero's thread
-     bundle, refers to a hero that no longer exists. overflow:hidden went with
-     it: clipping that texture to the rounded corners was its only job. */
+     else reached. With that half now carrying the second statement it would
+     sit behind the type, and the reason given for it, mirroring the hero's
+     thread bundle, refers to a hero that no longer exists. overflow:hidden
+     went with it: clipping the texture to the rounded corners was its only
+     job. */
 
-  /* The cap moves off this wrapper, which was capping the HEADING too. */
+  /* The measure cap moves off this wrapper and onto the paragraph itself, in
+     characters. Capping the wrapper at 44rem capped the HEADING and the
+     columns too, which is what left 352px of a 1056px panel empty. */
   .close__inner {
     position: relative;
   }
 
-  /* The index rule has to flip to ink on the light panel. */
+  /* Ink on paper, and the tick pattern rather than a smooth gradient — which
+     is what lets it use the shared line variant and catch the cursor light
+     like every other rule on the page. Only the colour is overridden now. */
   .close__rule {
-    background: linear-gradient(to right, var(--color-invert-line), transparent);
+    color: var(--color-invert-line);
   }
 
   .close__h {
@@ -85,20 +91,18 @@ import CtaButton from '../CtaButton.astro';
 
   /* ONE measure, and widening it is what fixes both faults at once.
    *
-   * The cap was 44rem on the wrapper. Inside a panel with 1056px of usable
-   * width at 1440 that ran the statements at 48 characters — well under the
-   * 68-70 the design asks for — and left 352px, 29% of the panel, empty at the
-   * same time. Both faults had one cause, so they have one fix: the same type
-   * in a wider column reads longer lines AND reaches further across the panel.
-   * Narrowing it to correct the measure would have taken the empty share to
-   * 41%; widening it corrects both.
+   * The cap was 44rem. Inside a panel with 1056px of usable width at 1440
+   * that ran the statements at 48 characters — well under the 68-70 the design
+   * asks for — and left 352px, 29% of the panel, empty at the same time. The
+   * two faults had one cause, so they have one fix: the same type in a wider
+   * column reads longer lines AND reaches further across the panel.
    *
-   * 58rem, measured: 68 characters at 1024, 1280, 1440 and 1920 — on target —
-   * with the residual right margin down from 29% to 12.5% at 1440, which reads
-   * as margin rather than as a hole.
+   * 58rem, measured: 68 characters, on target, with the residual right margin
+   * down from 29% to 11% — which reads as margin rather than as a hole.
    *
-   * On the ROW, not the paragraph, so the marker beside the text is inside the
-   * same measure. */
+   * The cap is on the ROW, so the rule above each statement stops where the
+   * text stops instead of running out to the panel edge and drawing attention
+   * to what is left. */
   .close__step {
     max-width: 58rem;
   }
@@ -110,14 +114,10 @@ import CtaButton from '../CtaButton.astro';
     color: var(--color-invert-fg-dim);
   }
 
-  /* A rule above each statement, replacing the ember dash beside it.
-     11.3 forbids more than one terracotta element per composition and there
-     were two, and a list marker is not a verdict, a figure or a call to
-     action — which leaves the panel with no accent at all. That is right: a
-     cream slab on a dark page is already the loudest thing on it, and the ink
-     button does not need competition.
-     The rule is the device the stage cards use, at the measure of the text it
-     belongs to. */
+  /* A rule above each statement, replacing the ember dash beside it. Two
+     terracotta dashes is two accent elements in one composition (11.3), and a
+     list marker is not a verdict, a figure or a call to action. The rule is
+     the device the stage cards already use, and it catches the light. */
   .close__srule {
     display: block;
     height: 1px;
@@ -130,8 +130,8 @@ import CtaButton from '../CtaButton.astro';
   }
 
   @media (max-width: 639px) {
-    /* At phone width the lead size leaves ~18 characters a line inside the
-       panel. Step it down to body so each statement reads as a sentence. */
+    /* At phone width the panel has 286px to give, so the type steps down to
+       body or each statement reads a handful of words a line. */
     .close__step p {
       font-size: var(--text-base);
       line-height: 1.6;
