@@ -19,7 +19,7 @@ export const HERO = {
   // it as the page heading, not as a lockup line under the mark.
   headline: 'AI Untangled.',
   standfirst:
-    'We’re helping clients discover what AI is worth in their business. We calculate where AI saves money in their workflows, then build solutions that pay back in the first year.',
+    'We’re helping clients discover what AI is worth in their business. We calculate where AI saves money in their workflows, then build solutions that pay back.',
   cta: {
     label: 'Book a free Fit Call',
     href: '/contact', // all "Book a free Fit Call" CTAs route to the contact page
@@ -29,9 +29,12 @@ export const HERO = {
 /**
  * Meta description, deliberately NOT the standfirst.
  *
- * The standfirst is 174 characters; search results cut off around 155, so
- * using it would publish a truncated sentence. This is the first clause of the
- * same claim, complete at 105.
+ * The standfirst is 156 characters; search results cut off around 155, so
+ * using it would publish a sentence truncated by a hair. This is the first
+ * clause of the same claim, complete at 106 — and it still carries "in the
+ * first year", which the hero has dropped. That is deliberate: a search result
+ * has one line to make the claim and no page around it to qualify the claim
+ * later.
  */
 export const META = {
   description:
