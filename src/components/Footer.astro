@@ -20,7 +20,7 @@ const year = new Date().getFullYear();
 
 <footer class="foot">
   <div class="shell">
-    <hr class="rule" />
+    <span class="rule-thread" data-catch="line" aria-hidden="true"></span>
 
     <div class="foot__grid">
       <div class="foot__brand">
@@ -51,12 +51,11 @@ const year = new Date().getFullYear();
               </li>
             ))
           }
-          {/* Until the company page is confirmed this points at the homepage
-              rather than at a guessed LinkedIn URL, and it is NOT wired
-              through SITE.companyLinkedinUrl for it: that value also feeds
-              schema.org sameAs, where our own homepage would be a false claim
-              about identity. The row appears either way; only the target and
-              the new-tab behaviour change once the real URL lands. */}
+          {/* Until the company page exists this points at the homepage rather
+              than at a guessed LinkedIn URL. It is NOT wired to
+              SITE.companyLinkedinUrl: that value also feeds schema.org sameAs,
+              where an unverified profile would be a false claim about identity
+              rather than just a dead link. */}
           <li>
             <a
               href={SITE.companyLinkedinUrl || href('/')}
@@ -86,10 +85,42 @@ const year = new Date().getFullYear();
     gap: 3rem;
     padding-top: clamp(3rem, 6vw, 5rem);
   }
+  /* Snapped from the first breakpoint that has columns at all, not just the
+     widest. 1.4fr/1fr/1fr with a 4rem gap left every column start at an
+     arbitrary offset — measured 31px off the nearest line at 768. */
   @media (min-width: 48rem) {
     .foot__grid {
-      grid-template-columns: 1.4fr 1fr 1fr;
-      gap: 4rem;
+      grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+      gap: 0;
+    }
+    /* 3 / 4 / 2 of nine. The contact column takes the widest share because it
+       carries the address, which sets the minimum this layout has to clear. */
+    .foot__brand {
+      grid-column: 1 / span 3;
+      padding-right: 1.5rem;
+    }
+    .foot__contact {
+      grid-column: 4 / span 4;
+      padding-right: 1.5rem;
+    }
+    .foot__meta {
+      grid-column: 8 / span 2;
+    }
+  }
+  /* Fifteen columns above 64rem, so the shares change: 6 / 5 / 4. The gutter
+     is padding INSIDE the first two columns rather than a grid gap, because a
+     gap would push every following column off the lines again. */
+  @media (min-width: 64rem) {
+    .foot__brand {
+      grid-column: 1 / span 6;
+      padding-right: var(--grid-cell);
+    }
+    .foot__contact {
+      grid-column: 7 / span 5;
+      padding-right: var(--grid-cell);
+    }
+    .foot__meta {
+      grid-column: 12 / span 4;
     }
   }
 
@@ -112,9 +143,9 @@ const year = new Date().getFullYear();
     align-items: center;
     min-height: 2.75rem;
     /* Was --text-lead, 26px at 1440 — the largest thing in the footer after
-       the wordmark, and larger than any body text anywhere on the page. The
-       address is the footer's most useful line, not its loudest. 21px is the
-       ladder's next rung and still reads first. */
+       the wordmark, and larger than any body text on the page. The address is
+       the footer's most useful line, not its loudest; 21px is the ladder's
+       next rung and still reads first. */
     font-size: var(--text-lg);
     color: var(--color-cream);
     text-decoration: none;
@@ -123,10 +154,9 @@ const year = new Date().getFullYear();
     padding-bottom: 2px;
     transition: border-color var(--dur-fast) var(--ease-out);
     /* No word-break. It was splitting the address mid-domain —
-       "hello@knotless.com.a / u" — whenever the column came out narrower than
-       the line. An fr track's automatic minimum is its min-content, so with
-       the break removed the column simply widens to hold the address instead.
-       Checked from 320 to 1920: one line at every width, no overflow. */
+       "hello@knotless.com.a / u" — whenever the column was narrower than the
+       line. An fr track's automatic minimum is its min-content, so with the
+       break removed the column simply widens to hold the address instead. */
     white-space: nowrap;
   }
   .foot__mail:hover {

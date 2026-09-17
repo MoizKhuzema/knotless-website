@@ -56,10 +56,10 @@ export interface SiteConfig {
   contactEmail: string;
   /**
    * PLACEHOLDER — a support line for the footer, standing in until a real
-   * number exists. 11.17 forbids placeholder data reaching production, so this
-   * is deliberately an obviously-unassigned number rather than something that
-   * could be mistaken for real and quietly shipped. Replace before launch, or
-   * empty the string and the footer drops the row entirely.
+   * number exists. §11.17 forbids placeholder data reaching production, so
+   * this is deliberately an obviously-unassigned number rather than something
+   * that could be mistaken for real and quietly shipped. Replace before the
+   * site goes live, or empty the string and the footer drops the row.
    */
   supportPhone: string;
   /** Email for privacy / data requests. */
@@ -102,12 +102,11 @@ export const SITE = {
   supportPhone: '+61 400 000 000', // PLACEHOLDER — see the interface note
 
   privacyEmail: 'privacy@knotless.com.au',
-  /* Empty until the page is confirmed. It was a guessed URL carrying a TODO,
-     and it feeds schema.org sameAs as well as the footer — publishing an
-     unverified profile as sameAs is a claim about identity, not merely a
-     broken link. Empty, the Organization node omits sameAs entirely. The
-     footer still shows a LinkedIn row; Footer.astro says where it points in
-     the meantime. */
+  /* Empty until the page exists. It was a guessed URL carrying a TODO, and it
+     feeds schema.org sameAs as well as the footer — publishing an unverified
+     profile as sameAs is a claim about identity, not a broken link. Empty, the
+     Organization node omits sameAs entirely. The footer still shows a LinkedIn
+     row; see Footer.astro for where it points in the meantime. */
   companyLinkedinUrl: '',
   primaryDomain: 'knotless.com.au',
   secondaryDomain: 'knotless.au',
