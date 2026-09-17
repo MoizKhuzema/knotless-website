@@ -31,16 +31,14 @@ const year = new Date().getFullYear();
       <div class="foot__contact">
         <p class="meta foot__label">Get in touch</p>
         <a class="foot__mail" href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>
-        <ul class="foot__people">
-          {
-            SITE.founders.map((f) => (
-              <li>
-                <span>{f.name}</span>
-                <a href={`tel:${dial(f.phone)}`}>{f.phone}</a>
-              </li>
-            ))
-          }
-        </ul>
+        {
+          SITE.supportPhone && (
+            <p class="foot__people">
+              <span>Support</span>
+              <a href={`tel:${dial(SITE.supportPhone)}`}>{SITE.supportPhone}</a>
+            </p>
+          )
+        }
       </div>
 
       <div class="foot__meta">
@@ -119,20 +117,18 @@ const year = new Date().getFullYear();
     border-bottom-color: var(--color-ember);
   }
 
+  /* One support line, not a row per founder. Two personal mobiles in the
+     footer put the founders' direct numbers on every page of the site; the
+     founder cards already carry them where they mean something. */
   .foot__people {
-    list-style: none;
-    margin: 1.75rem 0 0;
+    margin: 1.5rem 0 0;
     padding: 0;
-    display: grid;
-    gap: 0.35rem;
-    font-size: var(--text-sm);
-  }
-  .foot__people li {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.75rem;
     min-height: 2.75rem;
+    font-size: var(--text-sm);
   }
   .foot__people span {
     color: var(--color-cream-dim);

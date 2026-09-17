@@ -54,6 +54,14 @@ export interface SiteConfig {
   registeredAddress: string;
   /** General contact email. */
   contactEmail: string;
+  /**
+   * PLACEHOLDER — a support line for the footer, standing in until a real
+   * number exists. 11.17 forbids placeholder data reaching production, so this
+   * is deliberately an obviously-unassigned number rather than something that
+   * could be mistaken for real and quietly shipped. Replace before launch, or
+   * empty the string and the footer drops the row entirely.
+   */
+  supportPhone: string;
   /** Email for privacy / data requests. */
   privacyEmail: string;
   /**
@@ -91,6 +99,8 @@ export const SITE = {
   // the value here AND restore the token line in both markdown files.
   registeredAddress: '',
   contactEmail: 'hello@knotless.com.au',
+  supportPhone: '+61 400 000 000', // PLACEHOLDER — see the interface note
+
   privacyEmail: 'privacy@knotless.com.au',
   companyLinkedinUrl: 'https://www.linkedin.com/company/knotless-ai', // TODO confirm
   primaryDomain: 'knotless.com.au',
