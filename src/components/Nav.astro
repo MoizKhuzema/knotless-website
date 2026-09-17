@@ -144,6 +144,7 @@ const isActive = (path: string) => here.startsWith(href(path));
     grid-template-columns: auto auto auto;
     width: fit-content;
     max-width: min(var(--container-page), 100%);
+    margin-inline: auto;
     align-items: center;
     /* No column gap: a gap survives its track collapsing to zero and would
        leave dead glass either side of the links. The spacing rides on the
@@ -219,6 +220,17 @@ const isActive = (path: string) => here.startsWith(href(path));
     box-shadow:
       var(--nav-shadow-stuck),
       inset 0 1px 0 var(--color-glass-spec);
+  }
+
+  /* On the phone the capsule holds the toggle and, once it has arrived, the
+     mark. Shrink-to-fit and centred, that left the only control on the screen
+     floating in the middle of it; anchored right it sits where a thumb reaches
+     and where a menu button belongs, and the capsule still opens leftwards as
+     the mark comes in. */
+  @media (max-width: 47.99rem) {
+    .nav__bar {
+      margin-inline: auto 0;
+    }
   }
 
   .nav__flank {
