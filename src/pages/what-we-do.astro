@@ -53,19 +53,6 @@ const schema = graph([
    statements, and a screen reader should be read them once. */
 const vignettes = WWD_QUESTIONS.vignettes;
 
-/* The hero's one accent: the logo's strike, applied to the phrase that carries
-   the claim. Split rather than marked up in the data, so the copy stays one
-   readable sentence in the file it lives in — and if the phrase ever stops
-   matching, the paragraph simply renders unmarked rather than breaking. */
-const heroCut = WWD_HERO.body.indexOf(WWD_HERO.emphasis);
-const heroBody =
-  heroCut < 0
-    ? null
-    : {
-        before: WWD_HERO.body.slice(0, heroCut),
-        mark: WWD_HERO.emphasis,
-        after: WWD_HERO.body.slice(heroCut + WWD_HERO.emphasis.length),
-      };
 ---
 
 <BaseLayout title="What We Do" description={WWD_META.description} schema={schema}>
@@ -82,10 +69,7 @@ const heroBody =
   <section class="whero" data-reveal>
     <div class="whero__intro">
       <h1 class="whero__h r" style="--i: 0">{WWD_HERO.heading}</h1>
-      {/* One line, deliberately: a newline between the span and the text after
-          it emits a real space, and the sentence would read "pay back . It
-          starts" — the same trap as a <wbr> on its own line. */}
-      <p class="whero__body r" style="--i: 1">{heroBody ? (<>{heroBody.before}<span class="strike">{heroBody.mark}</span>{heroBody.after}</>) : WWD_HERO.body}</p>
+      <p class="whero__body r" style="--i: 1">{WWD_HERO.body}</p>
     </div>
 
     <div class="whero__ask">
@@ -143,11 +127,7 @@ const heroBody =
   {/* --- Section 3 — the Assessment -------------------------------------- */}
   <section class="sect">
     <div data-reveal>
-      {/* The accent rule, DESIGN §06: a short terracotta lead-in at the head of
-          the section's thread, once per composition. It is this section's only
-          ember — the statements' thread is wire, the beads are glass. */}
-      <span class="rule-thread thread--accent r" data-catch="line" aria-hidden="true" style="--i: 0"
-      ></span>
+      <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
       <h2 class="h-section sect__h r" style="--i: 1">{WWD_ASSESSMENT.heading}</h2>
     </div>
 
@@ -414,19 +394,6 @@ const heroBody =
   }
   .sect__h {
     margin: 1.25rem 0 0;
-  }
-  /* The thread draws its hairline as a background layer 2px down, so the accent
-     sits at the same offset and reads as the first 3.5rem of that same line
-     rather than as a second rule above it. ::before, because ::after is the
-     cursor-light catcher. */
-  .thread--accent::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 2px;
-    width: 3.5rem;
-    height: 1px;
-    background-color: var(--color-ember);
   }
 
   /* --- Section 1 — hero -------------------------------------------------- */
@@ -808,10 +775,9 @@ const heroBody =
        is not the same as being the biggest thing in it. */
     font-size: clamp(1.0625rem, 0.95rem + 0.55vw, 1.3125rem);
   }
-  /* Wire, not ember. Ember here was tried and is wrong: a saturated vertical bar
-     down the left of a block of text is the convention for an error or a
-     callout, and the glass beads punched holes in it. The section's accent goes
-     on its heading rule instead, which is what the accent rule is for. */
+  /* Wire. Ember here was tried and is wrong: a saturated vertical bar down the
+     left of a block of text is the convention for an error or a callout, and
+     the glass beads punched holes in it. */
   .deliv__spine {
     position: absolute;
     left: 0.25rem; /* the bead's centre: half of its 0.5rem width */
@@ -899,12 +865,10 @@ const heroBody =
     height: 1px;
     background-color: var(--color-line);
   }
-  /* The index keeps the mono, which on this site is what numbers are set in,
-     and the ember, which is what the homepage sets an ordinal in — the stages
-     and the verticals both. It counts the commitments; it does not order them.
-     Measured 4.74:1 on the ink ground at 13px. */
+  /* The index keeps the mono, which on this site is what numbers are set in.
+     It counts the commitments; it does not order them. */
   .ledger__n {
-    color: var(--color-ember);
+    color: var(--color-wire-lit);
   }
   .ledger__t {
     font-size: clamp(1rem, 0.9rem + 0.45vw, 1.3125rem);
