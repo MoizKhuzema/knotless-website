@@ -85,8 +85,7 @@ const vignettes = WWD_QUESTIONS.vignettes;
 
       {/* The controls flank the row rather than sitting above it: they belong at
           the ends of the thing they move, and the row is the thing. On a phone
-          they drop below — two 44px buttons either side of a 350px column would
-          leave the card 250px wide, and swipe is the control there anyway. */}
+          there are none — swipe is the control there. */}
       <div class="vwrap">
         <button type="button" class="vbtn vbtn--prev r" data-vig="-1" aria-label="Previous statements" style="--i: 4">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg>
@@ -555,20 +554,6 @@ const vignettes = WWD_QUESTIONS.vignettes;
     align-items: center;
     gap: clamp(0.5rem, 1vw, 0.875rem);
   }
-  /* On a phone the arrows go under the row: flanking would cost 100px of a
-     350px column, and the card is the thing that needs the width. */
-  @media (max-width: 47.99rem) {
-    .vwrap {
-      grid-template-columns: auto auto minmax(0, 1fr);
-      grid-template-areas:
-        'track track track'
-        'prev next .';
-      /* 10px, not 16. The controls cost a phone 54px of a screen the row is
-         already fighting for, and the gap is the only part of that which buys
-         nothing. */
-      row-gap: 0.625rem;
-    }
-  }
   .vbtn--prev {
     grid-area: prev;
   }
@@ -600,6 +585,25 @@ const vignettes = WWD_QUESTIONS.vignettes;
   .vbtn:focus-visible {
     color: var(--color-cream);
     border-color: var(--color-glass-edge);
+  }
+  /* No arrows on a phone. They could not flank the row there — two 44px buttons
+     either side of a 350px column would leave the card 250px wide — so they sat
+     under it, which is a control in the wrong place paying 54px for the
+     privilege. A touch screen already has the gesture the arrows stand in for,
+     and the row drifts on its own; the keyboard path is unaffected, because it
+     runs through the track's own arrow keys, not these buttons.
+
+     Declared AFTER .vbtn, not up with the other .vwrap rules: `display: none`
+     and `display: grid` are the same specificity, so source order decides, and
+     up there it loses. Third time this file has caught me that way. */
+  @media (max-width: 47.99rem) {
+    .vwrap {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: 'track';
+    }
+    .vbtn {
+      display: none;
+    }
   }
 
   /* One row, always moving. No scroll snap: mandatory snapping and a continuous
