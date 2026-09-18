@@ -133,7 +133,10 @@ const vignettes = WWD_QUESTIONS.vignettes;
 
     {/* The specification band: three facts between two rules, the way a printed
         report states its own terms on the page before the findings. It is the
-        first thing a principal wants and the smallest thing on the section. */}
+        first thing a principal wants and the smallest thing on the section.
+
+        The labels carry the section's accent — a set of three marks, one
+        device, the way the homepage sets its ordinals. */}
     <div class="spec" data-reveal>
       <span class="spec__rule r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
       <dl class="spec__band">
@@ -147,7 +150,6 @@ const vignettes = WWD_QUESTIONS.vignettes;
         }
       </dl>
       <span class="spec__rule r" data-catch="line" aria-hidden="true" style="--i: 4"></span>
-      <p class="spec__note r" style="--i: 5">{WWD_ASSESSMENT.note}</p>
     </div>
 
     {/* The output, hung off one vertical thread. Four statements at display
@@ -724,9 +726,13 @@ const vignettes = WWD_QUESTIONS.vignettes;
       padding: 1rem 0;
     }
   }
+  /* Ember, not cream-dim. Terracotta is a MARK on this site — an index, a rule,
+     a strike — and three 13px caps naming the terms of the quote is exactly
+     that: the thing you look for, in the colour the site reserves for the
+     things you look for. Measured 4.83:1 on the ink ground. */
   .spec__label {
     margin: 0;
-    color: var(--color-cream-dim);
+    color: var(--color-ember);
   }
   .spec__value {
     margin: 0.5rem 0 0;
@@ -735,19 +741,6 @@ const vignettes = WWD_QUESTIONS.vignettes;
     letter-spacing: var(--tracking-display);
     color: var(--color-cream);
     text-wrap: balance;
-  }
-  /* The qualification, under the band's closing rule rather than inside it as a
-     fourth column: it is a note on the price, and a column would have claimed
-     it was a fourth fact. */
-  .spec__note {
-    margin: 0.85rem 0 0;
-    /* 16px, not 13. At the caption size it read as small print under a price,
-       which is exactly the wrong signal from a firm whose pitch is that it
-       shows its working. It is a condition of the quote, so it is set at
-       reading size. */
-    font-size: var(--text-md);
-    line-height: 1.6;
-    color: var(--color-cream-dim);
   }
 
   /* --- Section 3 — what you walk away with ------------------------------- */
@@ -865,10 +858,12 @@ const vignettes = WWD_QUESTIONS.vignettes;
     height: 1px;
     background-color: var(--color-line);
   }
-  /* The index keeps the mono, which on this site is what numbers are set in.
-     It counts the commitments; it does not order them. */
+  /* The index keeps the mono, which on this site is what numbers are set in,
+     and the ember, which is what the homepage sets an ordinal in — the stages
+     and the verticals both. It counts the commitments; it does not order them.
+     Measured 4.83:1 on the ink ground at 13px. */
   .ledger__n {
-    color: var(--color-wire-lit);
+    color: var(--color-ember);
   }
   .ledger__t {
     font-size: clamp(1rem, 0.9rem + 0.45vw, 1.3125rem);
