@@ -16,6 +16,14 @@
 export const WWD_HERO = {
   heading: 'We make AI simple to buy.',
   body: 'Whether you’re exploring what AI could do, stuck choosing between a hundred tools, or already running AI and want to know what’s next, we work it out for you with the Knotless Assessment, then build solutions that pay back. It starts with a free 30-minute Fit Call.',
+  /**
+   * The phrase the page carries the site's emphasis mark under — the logo's
+   * strike, applied to a word. It has to appear in `body` verbatim and exactly
+   * once; the hero splits on it, and renders the body unmarked if it does not
+   * find it. Chosen because it is the claim: everything else in the paragraph
+   * is the situation the reader is in.
+   */
+  emphasis: 'pay back',
   cta: { label: 'Book a free Fit Call', href: '/contact' },
 } as const;
 

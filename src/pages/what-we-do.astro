@@ -52,6 +52,20 @@ const schema = graph([
    anything visibly moving. The copy is aria-hidden — it is the same six
    statements, and a screen reader should be read them once. */
 const vignettes = WWD_QUESTIONS.vignettes;
+
+/* The hero's one accent: the logo's strike, applied to the phrase that carries
+   the claim. Split rather than marked up in the data, so the copy stays one
+   readable sentence in the file it lives in — and if the phrase ever stops
+   matching, the paragraph simply renders unmarked rather than breaking. */
+const heroCut = WWD_HERO.body.indexOf(WWD_HERO.emphasis);
+const heroBody =
+  heroCut < 0
+    ? null
+    : {
+        before: WWD_HERO.body.slice(0, heroCut),
+        mark: WWD_HERO.emphasis,
+        after: WWD_HERO.body.slice(heroCut + WWD_HERO.emphasis.length),
+      };
 ---
 
 <BaseLayout title="What We Do" description={WWD_META.description} schema={schema}>
@@ -68,24 +82,22 @@ const vignettes = WWD_QUESTIONS.vignettes;
   <section class="whero" data-reveal>
     <div class="whero__intro">
       <h1 class="whero__h r" style="--i: 0">{WWD_HERO.heading}</h1>
-      <p class="whero__body r" style="--i: 1">{WWD_HERO.body}</p>
+      {/* One line, deliberately: a newline between the span and the text after
+          it emits a real space, and the sentence would read "pay back . It
+          starts" — the same trap as a <wbr> on its own line. */}
+      <p class="whero__body r" style="--i: 1">{heroBody ? (<>{heroBody.before}<span class="strike">{heroBody.mark}</span>{heroBody.after}</>) : WWD_HERO.body}</p>
     </div>
 
     <div class="whero__ask">
-      {/* ONE line, one sentence. Two goes at this failed the same way for the
-          same reason: a heading with a second, smaller thing set apart from it
-          reads as two objects, and the reader has to work out what the second
-          one is for. Pushed to opposite ends of a rule they were not even
-          adjacent.
-
-          So they stop being two objects. The question and what answers it are
-          one line at one size, and the only thing that separates them is tone —
-          the question in cream, the answer a step back in dim. Nothing to
-          relate, nothing to span, and the row below hangs off a single line
-          rather than off a construction. */}
-      <h2 class="ask__h r" style="--i: 2">
-        {WWD_QUESTIONS.heading} <span class="ask__lead">{WWD_QUESTIONS.lead}</span>
-      </h2>
+      {/* Question, then what answers it on the line beneath, one step smaller.
+          What made the earlier versions read as two disconnected objects was
+          DISTANCE, not the size difference — a rule between them, or opposite
+          ends of the column. Directly underneath, a step down in size is just
+          hierarchy, which is what it was always meant to be. */}
+      <div class="ask r" style="--i: 2">
+        <h2 class="ask__h">{WWD_QUESTIONS.heading}</h2>
+        <p class="ask__lead">{WWD_QUESTIONS.lead}</p>
+      </div>
 
       {/* The controls flank the row rather than sitting above it: they belong at
           the ends of the thing they move, and the row is the thing. On a phone
@@ -131,7 +143,11 @@ const vignettes = WWD_QUESTIONS.vignettes;
   {/* --- Section 3 — the Assessment -------------------------------------- */}
   <section class="sect">
     <div data-reveal>
-      <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
+      {/* The accent rule, DESIGN §06: a short terracotta lead-in at the head of
+          the section's thread, once per composition. It is this section's only
+          ember — the statements' thread is wire, the beads are glass. */}
+      <span class="rule-thread thread--accent r" data-catch="line" aria-hidden="true" style="--i: 0"
+      ></span>
       <h2 class="h-section sect__h r" style="--i: 1">{WWD_ASSESSMENT.heading}</h2>
     </div>
 
@@ -399,6 +415,19 @@ const vignettes = WWD_QUESTIONS.vignettes;
   .sect__h {
     margin: 1.25rem 0 0;
   }
+  /* The thread draws its hairline as a background layer 2px down, so the accent
+     sits at the same offset and reads as the first 3.5rem of that same line
+     rather than as a second rule above it. ::before, because ::after is the
+     cursor-light catcher. */
+  .thread--accent::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 3.5rem;
+    height: 1px;
+    background-color: var(--color-ember);
+  }
 
   /* --- Section 1 — hero -------------------------------------------------- */
   /* The full screen, and nothing else on it, exactly as the homepage's hero
@@ -481,7 +510,7 @@ const vignettes = WWD_QUESTIONS.vignettes;
   @media (min-width: 48rem) and (min-height: 50rem) {
     .whero {
       --hero-top: clamp(2.5rem, 7vh, 6rem);
-      --hero-gap: clamp(3rem, 7vh, 6rem);
+      --hero-gap: clamp(2.75rem, 5.5vh, 5rem);
     }
   }
   /* No min-height once the content is taller than the screen can hold it —
@@ -518,19 +547,31 @@ const vignettes = WWD_QUESTIONS.vignettes;
     /* 30px against the headline's 72: the line that introduces the row, never
        a second claim. */
     font-size: clamp(1.375rem, 1.05rem + 1.15vw, 1.875rem);
-    line-height: 1.3;
+    line-height: 1.25;
     letter-spacing: var(--tracking-display);
     font-weight: 600;
     color: var(--color-cream);
-    /* It is one sentence of about 48 characters; balanced it breaks in the
-       middle rather than dropping two words onto a second line. */
-    text-wrap: balance;
   }
-  /* The answer, in the same type at the same size. Only the tone steps back —
-     which is what makes it read as the rest of the sentence rather than as a
-     caption that has come loose. */
+  /* 24 under 30: one step, close enough that the two read as one block and the
+     smaller one is plainly the second thing rather than a stray caption. */
   .ask__lead {
+    margin: 0.3rem 0 0;
+    font-size: clamp(1.125rem, 0.95rem + 0.8vw, 1.5rem);
+    line-height: 1.3;
+    letter-spacing: var(--tracking-tight);
     color: var(--color-cream-dim);
+  }
+  /* The question steps down with the headline on a short screen — and it has to
+     be declared HERE, after the sizes it overrides. The same block up in the
+     hero section is earlier in the file, so at equal specificity it loses.
+     Two lines of 30 and 24 cost a 700px viewport 34px it has not got. */
+  @media (max-height: 50rem) {
+    .ask__h {
+      font-size: clamp(1.25rem, 1rem + 0.9vw, 1.5rem);
+    }
+    .ask__lead {
+      font-size: clamp(1rem, 0.9rem + 0.45vw, 1.1875rem);
+    }
   }
 
   /* --- Section 2 — the vignettes ----------------------------------------- */
@@ -538,7 +579,7 @@ const vignettes = WWD_QUESTIONS.vignettes;
      60px on a row of buttons above the cards; the lead and the first quote are
      one thought and were reading as two. */
   .vwrap {
-    margin-top: clamp(1rem, 1.6vw, 1.5rem);
+    margin-top: clamp(0.75rem, 1vw, 1.125rem);
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     grid-template-areas: 'prev track next';
@@ -767,6 +808,10 @@ const vignettes = WWD_QUESTIONS.vignettes;
        is not the same as being the biggest thing in it. */
     font-size: clamp(1.0625rem, 0.95rem + 0.55vw, 1.3125rem);
   }
+  /* Wire, not ember. Ember here was tried and is wrong: a saturated vertical bar
+     down the left of a block of text is the convention for an error or a
+     callout, and the glass beads punched holes in it. The section's accent goes
+     on its heading rule instead, which is what the accent rule is for. */
   .deliv__spine {
     position: absolute;
     left: 0.25rem; /* the bead's centre: half of its 0.5rem width */
@@ -854,10 +899,12 @@ const vignettes = WWD_QUESTIONS.vignettes;
     height: 1px;
     background-color: var(--color-line);
   }
-  /* The index keeps the mono, which on this site is what numbers are set in.
-     It counts the commitments; it does not order them. */
+  /* The index keeps the mono, which on this site is what numbers are set in,
+     and the ember, which is what the homepage sets an ordinal in — the stages
+     and the verticals both. It counts the commitments; it does not order them.
+     Measured 4.74:1 on the ink ground at 13px. */
   .ledger__n {
-    color: var(--color-wire-lit);
+    color: var(--color-ember);
   }
   .ledger__t {
     font-size: clamp(1rem, 0.9rem + 0.45vw, 1.3125rem);
