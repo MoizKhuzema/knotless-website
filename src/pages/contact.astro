@@ -12,8 +12,11 @@
  * section; here it is the form the page exists for, and a hero that pushes the
  * first field under the fold is a hero that costs enquiries.
  *
- * Fields are ruled, not boxed. A bordered input is a box, four of them are four
- * boxes, and the page already has a vocabulary for "a thing on a line".
+ * Fields are glass — the same material as the vignette cards and the delivery
+ * pane, and catchers like them, so an edge lights as the cursor passes it. They
+ * were hairline-ruled first, which is the quieter answer and the wrong one: the
+ * page has one job, and the thing you type into should look like a surface you
+ * can put something on.
  *
  * FORM HANDLING — Netlify Forms (no third-party service):
  *   - The <form> carries `data-netlify="true"`, a matching hidden `form-name`
@@ -80,17 +83,18 @@ const FORM_ACTION = withBase('/contact');
               <label class="meta field__label" for={field.id}>
                 {field.label}
               </label>
-              <input
-                class="field__input"
-                id={field.id}
-                name={field.id}
-                type={field.type}
-                inputmode={field.inputmode}
-                autocomplete={field.autocomplete}
-                placeholder={field.placeholder || undefined}
-                required
-              />
-              <span class="field__rule" data-catch="line" aria-hidden="true" />
+              <span class="field__box" data-catch="ring">
+                <input
+                  class="field__input"
+                  id={field.id}
+                  name={field.id}
+                  type={field.type}
+                  inputmode={field.inputmode}
+                  autocomplete={field.autocomplete}
+                  placeholder={field.placeholder || undefined}
+                  required
+                />
+              </span>
             </div>
           ))
         }
@@ -280,27 +284,52 @@ const FORM_ACTION = withBase('/contact');
     }
   }
 
-  /* A field is a label, a line, and what you write on it. The bordered box it
-     replaces was a rectangle inside a page that has no other rectangles, and
-     three of them read as a form bolted to the design rather than set in it. */
   .field {
-    position: relative;
     display: grid;
   }
   .field__label {
     color: var(--color-cream-dim);
     transition: color var(--dur-fast) var(--ease-out);
   }
+  .field:focus-within .field__label {
+    color: var(--color-cream);
+  }
+
+  /* The site's glass, on the thing you type into: low-alpha fill, hairline
+     edge, specular top line, blur, and no drop shadow — the same material the
+     vignette cards and the delivery pane are made of. The material carries the
+     box now, which is why the box is allowed to exist.
+
+     It is also a catcher, so the edge lights as the cursor passes it, exactly
+     as a card's does. */
+  .field__box {
+    position: relative;
+    display: block;
+    /* No padding here. The input fills the box, so its focus ring traces the
+       glass edge instead of a rectangle floating somewhere inside it. */
+    padding: 0;
+    border-radius: var(--radius-sm);
+    background-color: var(--color-glass-soft);
+    border: 1px solid var(--color-glass-soft-edge);
+    box-shadow: inset 0 1px 0 var(--color-glass-soft-spec);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    transition: border-color var(--dur-fast) var(--ease-out);
+  }
+  .field__box:focus-within {
+    border-color: var(--color-glass-edge);
+  }
   .field__input {
-    margin-top: 0.7rem;
-    padding: 0 0 0.7rem;
     width: 100%;
+    /* The glass pane's own padding, at the scale of a single line. 0.85rem top
+       and bottom puts the box at 52px on a phone, well over the 44px floor. */
+    padding: 0.85rem 1rem;
     background: none;
     border: 0;
-    border-radius: 0;
+    border-radius: inherit;
     font-family: var(--font-sans);
-    /* 16px is the floor at which iOS Safari stops zooming the page on focus,
-       and it is the design's mobile body minimum as well. */
+    /* Over 16px, which is the point at which iOS Safari stops zooming the page
+       on focus, and the design's mobile body minimum as well. */
     font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
     line-height: 1.4;
     letter-spacing: var(--tracking-tight);
@@ -311,33 +340,29 @@ const FORM_ACTION = withBase('/contact');
     color: var(--color-wire-lit);
   }
   .field__input:focus {
-    outline: none; /* replaced below — never simply removed (§11.7) */
+    outline: none; /* replaced immediately below — never simply removed (§11.7) */
   }
   .field__input:focus-visible {
     outline: 2px solid var(--color-ember);
-    outline-offset: 6px;
-    border-radius: 2px;
+    outline-offset: 3px;
   }
-  /* The rule is an element, not a border, so it catches the cursor light like
-     every other rule on the site — and so it can brighten on focus without the
-     input's own box changing size. */
-  .field__rule {
-    display: block;
-    height: 1px;
-    background-color: var(--color-line);
-    transition: background-color var(--dur-fast) var(--ease-out);
+  /* Chrome paints its own solid fill behind an autofilled field, which would
+     put a flat blue rectangle where the glass is. The huge transition delay is
+     the standard way to keep that fill from ever arriving; the text colour has
+     to be set through -webkit-text-fill-color, which autofill overrides. */
+  .field__input:-webkit-autofill,
+  .field__input:-webkit-autofill:hover,
+  .field__input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-cream);
+    -webkit-box-shadow: 0 0 0 100px transparent inset;
+    transition: background-color 100000s ease-in-out 0s;
+    caret-color: var(--color-cream);
   }
-  .field:focus-within .field__rule {
-    background-color: var(--color-cream);
-  }
-  .field:focus-within .field__label {
-    color: var(--color-cream);
-  }
-  /* The browser's own invalid state, shown only once the reader has been told —
+  /* The browser's own invalid state, and only once the reader has been told —
      :user-invalid fires after they have interacted, not while they are typing
      the first character of an email address. */
-  .field__input:user-invalid ~ .field__rule {
-    background-color: var(--color-wire-lit);
+  .field__box:has(.field__input:user-invalid) {
+    border-color: var(--color-wire-lit);
   }
 
   /* The action. The pill every other call to action on the site wears, as a
