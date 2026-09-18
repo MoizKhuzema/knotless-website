@@ -110,7 +110,7 @@ export const WWD_IMPLEMENTATION = {
   heading: 'Implementation',
   points: [
     'Step-by-step roadmap from design to development to delivery',
-    'ROI on each build shown before you sign anything',
+    'Predicted ROI on each build shown before you sign anything',
     'Built to meet the laws and professional obligations',
     'Built to scale responsibly',
     'Built to fit how your team already works',
