@@ -34,6 +34,17 @@ const NAV_LINKS = [
   { label: 'Contact us', href: '/contact' },
 ];
 
+/**
+ * The drawer carries Home as well.
+ *
+ * The bar does not, and should not: there the wordmark IS the home link, sitting
+ * an inch from where a "Home" entry would go. In the drawer the wordmark is
+ * behind the panel that just covered it, so the only way back to the homepage
+ * was to close the menu first and then find the mark — a step that exists for
+ * no reason on the one screen size where the mark is hardest to hit.
+ */
+const MENU_LINKS = [{ label: 'Home', href: '/' }, ...NAV_LINKS];
+
 interface Props {
   /** See the note above. Requires a [data-nav-sentinel] in the page. */
   navReveal?: boolean;
@@ -41,7 +52,11 @@ interface Props {
 const { navReveal = false } = Astro.props;
 
 const here = Astro.url.pathname;
-const isActive = (path: string) => here.startsWith(href(path));
+/* '/' needs an exact match: every path on the site startsWith it, so the prefix
+   test would mark Home as the current page on every page there is. */
+const trim = (p: string) => (p.length > 1 ? p.replace(/\/$/, '') : p);
+const isActive = (path: string) =>
+  path === '/' ? trim(here) === trim(href('/')) : here.startsWith(href(path));
 ---
 
 <nav class="nav" data-nav-reveal={navReveal ? '' : undefined}>
@@ -91,9 +106,13 @@ const isActive = (path: string) => here.startsWith(href(path));
     <div class="shell">
       <ul>
         {
-          NAV_LINKS.map((link, i) => (
+          MENU_LINKS.map((link, i) => (
             <li style={`--i: ${i}`}>
-              <a href={href(link.href)} class="nav__menu-link display">
+              <a
+                href={href(link.href)}
+                aria-current={isActive(link.href) ? 'page' : undefined}
+                class="nav__menu-link display"
+              >
                 {link.label}
               </a>
             </li>
@@ -479,7 +498,13 @@ const isActive = (path: string) => here.startsWith(href(path));
     padding-block: 2rem;
   }
   .nav__menu-link {
-    display: block;
+    /* 44px minimum, which is the tap floor (§11.9) and not what this was: the
+       type is 28px at 390 and 0.4rem of padding made the anchor 38. The extra
+       six pixels are given to the target, not to the gap, so the rhythm of the
+       list is unchanged. */
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
     padding: 0.4rem 0;
     /* Was clamp(2.25rem, 11vw, 3.5rem) — 43px at 390, set for a drawer that
        filled the screen. It is a compact sheet now, and three routes do not
