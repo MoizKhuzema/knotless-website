@@ -1,186 +1,288 @@
 ---
 /**
- * /about — "Two careers. One conclusion."
+ * /about
  *
- * Built entirely from the site's editorial system, left-aligned throughout:
- * eyebrow + typewriter H1 hero (matching the homepage / what-we-do), then
- * accent-rule + h2 sections. The two careers are 12-column bordered rows with
- * terracotta markers (the homepage stages pattern); the conclusion is its own
- * standfirst beat; the founders sit under a full-width combined-portrait band.
- * Copy lives in src/data/about.ts; founder names/titles in src/config/site.ts.
+ * Rebuilt on the system /what-we-do established: a hero that holds the screen
+ * on its own, sections opened by the measured thread, the shared type ladder
+ * with its short-viewport step-down, the cursor-light variants, and the one
+ * reversed panel to close.
+ *
+ * What went with the old page: the typewriter H1, the eyebrow, the hero CTA,
+ * the ember dot markers, the twelve-column career rows, the founder bios, and
+ * the commented-out portrait band. The page is four sections of copy now, and
+ * that is what it is set as.
+ *
+ * Each section takes the shape its own content asks for, which is the other
+ * half of that system — not the same block three times:
+ *
+ *   2 · the careers   two columns of observation resolving into one statement
+ *                     across the measure, which is what the heading says
+ *   3 · delivery      the claim at statement size, the mechanics beneath it
+ *   4 · the close     the page's single reversed panel
+ *
+ * Copy lives in src/data/about.ts; founder names and titles in site.ts.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaButton from '../components/CtaButton.astro';
-import { SITE } from '../config/site';
-import { ABOUT_INTRO, ABOUT_FOUNDERS, ABOUT_FINAL_CTA } from '../data/about';
 import { graph, webPage, founderPersons } from '../lib/schema';
+import { ABOUT_META, ABOUT_HERO, ABOUT_CAREERS, ABOUT_DELIVER, ABOUT_CLOSE } from '../data/about';
 
 const origin = Astro.site!.origin;
 const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
 
-// A Person node per founder (from SITE.founders), plus this WebPage.
+/* A Person node per founder, plus this WebPage. The page names both founders in
+   its prose, so the structured data still has something to describe. */
 const schema = graph([
-  webPage(origin, {
-    url: pageUrl,
-    name: 'About Us',
-    description: ABOUT_INTRO.metaDescription,
-  }),
+  webPage(origin, { url: pageUrl, name: 'About Us', description: ABOUT_META.description }),
   ...founderPersons(origin),
 ]);
 ---
 
-<BaseLayout title="About Us" description={ABOUT_INTRO.metaDescription} schema={schema}>
-  <!-- Section 1 — hero (same register as the homepage / what-we-do heroes).
-       On mobile it fills the first screen (content centred) so the next section
-       sits below the fold and reveals on scroll; top-aligned from sm up. -->
-  <section class="hero-screen sm:pt-28">
-    <p class="meta text-cream">{ABOUT_INTRO.eyebrow}</p>
-    <h1 class="mt-5 text-[2.4rem] leading-[1.02] tracking-[-0.035em] text-cream min-[420px]:text-[2.9rem] sm:text-[3.75rem] md:text-[4.25rem] lg:text-[5.75rem] xl:text-[6.75rem]">
-      Two careers.<br /><span class="one-emph">One</span> <span class="emph-type" data-word="conclusion."
-        ><span class="sr-only">conclusion.</span><span class="ew" aria-hidden="true"
-          ><span class="ew-sizer">conclusion.</span><span class="ew-live"><span class="ew-typed">conclusion.</span><span class="ew-caret"></span></span></span
-        ></span
-      ></span>
-    </h1>
+<BaseLayout title="About Us" description={ABOUT_META.description} schema={schema}>
+  {/* --- Section 1 — hero ------------------------------------------------ */}
+  {/* No opening thread: the thread marks a section within a page, and the top
+      of a page is not one.
 
-    <p class="mt-8 max-w-text text-base text-cream sm:text-lg">
-      {ABOUT_INTRO.lead.pre}<strong class="font-semibold text-cream">{ABOUT_INTRO.lead.strong}</strong
-      >{ABOUT_INTRO.lead.post}
-    </p>
-
-    <div class="mt-8">
-      <CtaButton href={ABOUT_INTRO.cta.href}>{ABOUT_INTRO.cta.label}</CtaButton>
-    </div>
+      Weighted to the bottom, where /what-we-do's hero is weighted to the top —
+      not an inconsistency but the same rule applied to different content. That
+      hero has a row of cards to stand on the floor, so its type sits above the
+      air; this one is two elements, and two elements pinned to the top of a
+      screen with 60% of it empty underneath read as a page that has not
+      finished loading. Low and left is where the homepage puts a hero that is
+      only type. */}
+  <section class="ahero" data-reveal>
+    <h1 class="ahero__h r" style="--i: 0">{ABOUT_HERO.heading}</h1>
+    <p class="ahero__body r" style="--i: 1">{ABOUT_HERO.body}</p>
   </section>
 
-  <!-- Section 2 — where this comes from: the two careers as bordered rows -->
-  <section class="pt-section-lg">
+  {/* --- Section 2 — two careers, one conclusion -------------------------- */}
+  <section class="sect">
     <div data-reveal>
-      <span class="accent-rule"></span>
-      <h2 class="mt-6 text-2xl tracking-tight text-cream sm:text-3xl">
-        {ABOUT_INTRO.careersHeading}
-      </h2>
+      <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
+      <h2 class="h-section sect__h r" style="--i: 1">{ABOUT_CAREERS.heading}</h2>
     </div>
 
-    <!-- Each career: a terracotta marker + name + teaser in the left column, the
-         full experience in the right column (stacked on mobile). The homepage
-         stages pattern, so it reads as native and stays left-aligned. -->
-    <div class="mt-10 border-t border-line sm:mt-14">
+    {/* The layout is the heading. Two columns of observation, each under its own
+        rule, and then one statement spanning the width both of them sat over —
+        so the reader watches two things become one rather than being told they
+        did. */}
+    <div class="careers" data-reveal>
       {
-        ABOUT_INTRO.careers.map((c) => (
-          <article
-            data-reveal
-            class="border-b border-line py-6 sm:grid sm:grid-cols-12 sm:items-baseline sm:gap-8 sm:py-7"
-          >
-            <div class="sm:col-span-4">
-              <h3 class="flex items-center gap-3 text-lg font-semibold tracking-tight text-cream">
-                <span aria-hidden="true" class="h-2 w-2 shrink-0 rounded-full bg-ember" />
-                {c.name}
-              </h3>
-              <p class="label mt-2 pl-5 text-cream-dim">{c.teaser}</p>
-            </div>
-            <p class="mt-3 prose-measure text-cream sm:col-span-8 sm:mt-0">{c.experience}</p>
-          </article>
-        ))
-      }
-    </div>
-
-    <!-- One conclusion: the payoff, closing the same section the careers open. -->
-    <div data-reveal class="mt-12 max-w-text sm:mt-14">
-      <p class="label text-cream-dim">{ABOUT_INTRO.conclusionHeading}</p>
-      <p class="mt-4 text-base text-cream sm:text-lg">
-        <strong class="font-semibold text-cream">{ABOUT_INTRO.conclusion.lead}</strong
-        >{ABOUT_INTRO.conclusion.body}
-      </p>
-    </div>
-  </section>
-
-  <!-- Section 3 — the names on the door -->
-  <section class="pt-section-lg">
-    <div data-reveal class="max-w-text">
-      <span class="accent-rule"></span>
-      <h2 class="mt-6 text-2xl tracking-tight text-cream sm:text-3xl">
-        {ABOUT_FOUNDERS.heading}
-      </h2>
-    </div>
-
-    <!-- Combined founder portrait band hidden for now (no photo yet). To bring
-         it back, un-comment the block below and drop an
-         <img class="h-full w-full object-cover"> inside it.
-    <div
-      data-reveal
-      class="relative mt-10 flex aspect-[4/3] items-end overflow-hidden rounded-sm border border-line sm:mt-14 sm:aspect-[16/9]"
-    >
-      <span class="label m-5 text-cream-dim">Insiya &amp; Huzefa</span>
-    </div>
-    -->
-
-    <!-- Founder details: two left-aligned columns, name + title + bio. -->
-    <div class="mt-12 grid gap-10 sm:mt-14 sm:grid-cols-2 sm:gap-12">
-      {
-        SITE.founders.map((founder, i) => (
-          <div data-reveal>
-            <h3 class="text-lg font-semibold tracking-tight text-cream sm:text-xl">{founder.name}</h3>
-            <p class="label mt-2 text-cream">{founder.title}</p>
-            <p class="mt-4 prose-measure text-base text-cream">{ABOUT_FOUNDERS.bios[i]}</p>
+        ABOUT_CAREERS.observations.map((observation, i) => (
+          <div class="careers__col r" style={`--i: ${i}`}>
+            <span class="careers__rule" data-catch="line" aria-hidden="true" />
+            <p class="careers__body">{observation}</p>
           </div>
         ))
       }
     </div>
 
-    <p data-reveal class="label mt-8 text-cream-dim">{ABOUT_FOUNDERS.location}</p>
+    <p class="conclusion r" data-reveal style="--i: 0">{ABOUT_CAREERS.conclusion}</p>
+  </section>
 
-    <!-- How we deliver: a titled block (same content-block header as the rest). -->
-    <div data-reveal class="mt-12 max-w-text sm:mt-16">
-      <p class="text-base font-semibold text-cream">{ABOUT_FOUNDERS.deliverHeading}</p>
-      <div class="mt-3 space-y-4">
-        {ABOUT_FOUNDERS.deliverBody.map((para) => <p class="text-base text-cream">{para}</p>)}
-      </div>
+  {/* --- Section 3 — how we deliver --------------------------------------- */}
+  <section class="sect">
+    <div data-reveal>
+      <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
+      <h2 class="h-section sect__h r" style="--i: 1">{ABOUT_DELIVER.heading}</h2>
+    </div>
+
+    {/* The claim at statement size, the mechanics under it — the same shape the
+        Assessment's deliverables take, and for the same reason: the sentence
+        that commits to something should not be the same size as the sentence
+        that explains how it works. */}
+    <div class="deliver" data-reveal>
+      <p class="deliver__statement r" style="--i: 0">{ABOUT_DELIVER.statement}</p>
+      <p class="deliver__body r" style="--i: 1">{ABOUT_DELIVER.body}</p>
     </div>
   </section>
 
-  <!-- Section 5 — final CTA (reversed Ink panel; the page's one dark moment) -->
-  <section class="pt-section-lg">
-    <div data-reveal class="on-ink flex flex-col items-center rounded-sm px-6 py-20 text-center">
-      <span class="accent-rule"></span>
-      <h2 class="mt-6 text-2xl tracking-tight sm:text-3xl">{ABOUT_FINAL_CTA.heading}</h2>
-      <div class="mt-9">
-        <CtaButton href={ABOUT_FINAL_CTA.cta.href} variant="inverse">
-          {ABOUT_FINAL_CTA.cta.label}
-        </CtaButton>
+  {/* --- Section 4 — the close -------------------------------------------- */}
+  <section class="sect">
+    <div class="aclose" data-reveal>
+      <div class="aclose__inner">
+        <span class="rule-thread aclose__rule r" data-catch="line" aria-hidden="true" style="--i: 0"
+        ></span>
+        <h2 class="h-section aclose__h r" style="--i: 1">{ABOUT_CLOSE.heading}</h2>
+        <p class="aclose__body r" style="--i: 2">{ABOUT_CLOSE.body}</p>
+        <div class="aclose__cta r" style="--i: 3">
+          <CtaButton href={ABOUT_CLOSE.cta.href} variant="inverse">{ABOUT_CLOSE.cta.label}</CtaButton>
+        </div>
       </div>
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  /* Terracotta strike under "One" — the single accent in the heading. Draws in
-     on load; shown resolved under reduced motion. */
-  .one-emph {
+  /* --- Section rhythm, shared with /what-we-do ---------------------------- */
+  .sect {
+    padding-top: var(--spacing-section-lg);
+  }
+  .sect__h {
+    margin: 1.25rem 0 0;
+  }
+
+  /* --- Section 1 — hero -------------------------------------------------- */
+  /* The full screen and nothing else on it: 100svh MINUS main's own clearance,
+     because this section starts below that padding and a full 100svh would put
+     its floor one clearance below the fold. Both come from --main-clear, so they
+     cannot drift apart.
+
+     svh, deliberately, not lvh or dvh. svh is the viewport with the browser
+     chrome showing, which is the state a page loads in; lvh would make the hero
+     taller than the screen at load, and dvh would resize it as the chrome
+     retracts, moving the words while they are being read. */
+  .ahero {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: calc(100svh - var(--main-clear));
+    padding-bottom: clamp(4rem, 16vh, 11rem);
+  }
+  /* Below 34rem of height the composition stops being a composition and starts
+     pushing the headline into the bar. */
+  @media (max-height: 34rem) {
+    .ahero {
+      min-height: 0;
+      padding-bottom: clamp(3rem, 8vh, 5rem);
+    }
+  }
+  .ahero__h {
+    margin: 0;
+    /* The local display step, as on /what-we-do: 72px at 1440, a fifth above the
+       section headings it has to lead, and nowhere near --text-display, which is
+       the size the homepage sets a wordmark at rather than a sentence. */
+    font-size: clamp(2.5rem, 1.4rem + 3.9vw, 4.5rem);
+    line-height: 1.02;
+    letter-spacing: var(--tracking-display);
+    font-weight: 600;
+    color: var(--color-cream);
+    text-wrap: balance;
+    max-width: 18ch;
+  }
+  .ahero__body {
+    margin: clamp(1.75rem, 3vw, 2.5rem) 0 0;
+    font-size: var(--text-lead);
+    line-height: 1.5;
+    color: var(--color-cream-dim);
+    /* 52ch measures about 69 characters, the target the design sets. */
+    max-width: 52ch;
+  }
+  /* A laptop is a WIDE screen and a SHORT one — a 1440x900 display is a 1440x760
+     viewport once the browser takes its chrome — so the type steps down by
+     HEIGHT, which is the constraint that actually binds there. */
+  @media (max-height: 50rem) {
+    .ahero__h {
+      font-size: clamp(2.25rem, 1.6rem + 2vw, 3.25rem);
+    }
+    .ahero__body {
+      font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
+      margin-top: clamp(1rem, 2vh, 1.5rem);
+    }
+  }
+
+  /* --- Section 2 — the two careers --------------------------------------- */
+  .careers {
+    margin-top: clamp(2rem, 3vw, 3rem);
+    display: grid;
+    gap: 2rem;
+  }
+  /* Two columns only where each of them is still a readable column. At 768 they
+     measured 34 characters a line — a newspaper column, for prose written as
+     paragraphs — so below 64rem the two observations stack and take the full
+     measure. */
+  @media (min-width: 64rem) {
+    .careers {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--grid-cell);
+    }
+  }
+  /* One rule per column, as an element rather than a border so it catches the
+     cursor light like every other rule on the site. */
+  .careers__rule {
+    display: block;
+    height: 1px;
+    background-color: var(--color-line);
+  }
+  .careers__body {
+    margin: 1.1rem 0 0;
+    /* 18px, the body step, not the 16px card step. At 16 the column ran 68
+       characters a line, which is the right measure at the wrong size: correct
+       on the ruler, thin on the page, and reading as a caption under a 60px
+       heading. At 18 the same column is 61. */
+    font-size: var(--text-base);
+    line-height: 1.65;
+    color: var(--color-cream-dim);
+    /* 52ch — the site's prose measure, and calibrated rather than assumed: a ch
+       is the width of a ZERO, which in Inter is 0.63em, while the average
+       character is nearer 0.5em. 62ch reads as 77 characters, not 62. */
+    max-width: 52ch;
+  }
+
+  /* The conclusion: one measure across the width the two columns sat over, a
+     step up in size and in tone, because it is what they are for. */
+  .conclusion {
+    margin: clamp(2.5rem, 5vw, 4rem) 0 0;
+    font-size: clamp(1.0625rem, 0.95rem + 0.55vw, 1.3125rem);
+    line-height: 1.5;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-cream);
+    max-width: 52ch;
+  }
+
+  /* --- Section 3 — how we deliver ---------------------------------------- */
+  .deliver {
+    margin-top: clamp(2rem, 3vw, 3rem);
+  }
+  .deliver__statement {
+    margin: 0;
+    /* 32px over the body's 21 — the same pair the Assessment's heading and its
+       statements use. */
+    font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+    line-height: 1.2;
+    letter-spacing: var(--tracking-display);
+    font-weight: 600;
+    color: var(--color-cream);
+    max-width: 20ch;
+  }
+  .deliver__body {
+    margin: clamp(1.25rem, 2vw, 1.75rem) 0 0;
+    font-size: clamp(1.0625rem, 0.95rem + 0.55vw, 1.3125rem);
+    line-height: 1.55;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-cream-dim);
+    max-width: 52ch;
+  }
+
+  /* --- Section 4 — the close --------------------------------------------- */
+  .aclose {
+    background-color: var(--color-invert-bg);
+    color: var(--color-invert-fg);
+    border-radius: var(--radius-lg);
+    padding: clamp(1.75rem, 5vw, 6rem);
     position: relative;
-    white-space: nowrap;
   }
-  .one-emph::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0.04em;
-    height: 0.08em;
-    background-color: var(--color-ember);
-    transform: scaleX(0);
-    transform-origin: left;
-    animation: one-strike 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards;
+  .aclose__inner {
+    position: relative;
   }
-  @keyframes one-strike {
-    to {
-      transform: scaleX(1);
-    }
+  /* Ink on paper, keeping .rule-thread's tick pattern so it takes the shared
+     line variant and catches the light like every other rule. */
+  .aclose__rule {
+    color: var(--color-invert-line);
   }
-  @media (prefers-reduced-motion: reduce) {
-    .one-emph::after {
-      transform: scaleX(1);
-      animation: none;
-    }
+  .aclose__h {
+    margin: 1.25rem 0 0;
+    color: var(--color-invert-fg);
+  }
+  .aclose__body {
+    margin: 1.5rem 0 0;
+    font-size: var(--text-lead);
+    line-height: 1.5;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-invert-fg-dim);
+    max-width: 52ch;
+  }
+  .aclose__cta {
+    margin-top: clamp(2.5rem, 4vw, 3.25rem);
   }
 </style>

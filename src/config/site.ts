@@ -22,8 +22,8 @@ export interface Founder {
    * first names is the weakest moment on the page. Surnames at minimum."
    *
    * Note this is the FORMAL credit, used on the founder cards and in JSON-LD.
-   * /about's career rows deliberately use first names on their own
-   * (ABOUT_INTRO.careers) — a narrative register, not this one.
+   * /about's prose uses first names on their own — a narrative register, not
+   * this one — and writes them into the copy rather than reading them here.
    */
   name: string;
   /** Role / title, e.g. "Co-Founder & CEO". */
