@@ -2,11 +2,14 @@
 /**
  * Shared shell for the long-form legal pages (Privacy, Terms).
  *
- * Renders the page in the site's editorial register: eyebrow + H1, a
- * version/last-updated line, a "Contents" jump-list built from the document's
- * H2s, then the policy body (markdown compiled to HTML and injected). A small
- * footer cross-links the sibling document. The body markup is styled by the
- * `.legal-prose` rules in global.css.
+ * Rebuilt on the system the rest of the site uses: the shared display step for
+ * the title, the measured thread, the prose measure, and the ruled schedule
+ * from /what-we-do's implementation section — which is what a numbered contents
+ * list wants to be. The eyebrow, the bordered contents box and the utility
+ * classes are gone.
+ *
+ * The body is markdown compiled to HTML and injected, so its styling cannot be
+ * scoped here: the `.legal-prose` rules live in global.css.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { href } from '../lib/href';
@@ -18,7 +21,6 @@ interface Heading {
 }
 
 interface Props {
-  eyebrow: string;
   title: string;
   description: string;
   version: string;
@@ -28,57 +30,178 @@ interface Props {
   sibling: { label: string; href: string };
 }
 
-const { eyebrow, title, description, version, lastUpdated, headings, html, sibling } =
-  Astro.props;
+const { title, description, version, lastUpdated, headings, html, sibling } = Astro.props;
 
-// Numbered sections only (skip the document H1; the "Plain English first" intro
-// is an H2 and stays in the list as the opening item).
+/* Numbered sections only — the document H1 is set by the page, and every H3 is
+   a sub-point inside a section rather than a place to jump to. */
 const toc = headings.filter((h) => h.depth === 2);
+
+/* The documents number their own sections, and the contents list shows THOSE
+   numbers rather than counting the rows: "Plain English first" opens both
+   documents without a number, so a generated index would be one ahead of the
+   heading it points at for the whole list. */
+const entries = toc.map((h) => {
+  const m = /^(\d+)\.\s+(.*)$/.exec(h.text);
+  return { slug: h.slug, index: m ? m[1].padStart(2, '0') : '', label: m ? m[2] : h.text };
+});
+
+/* Two columns that read DOWN, not across. */
+const rows = Math.ceil(entries.length / 2);
 ---
 
 <BaseLayout title={title} description={description}>
-  <section class="pt-20 sm:pt-28">
-    <p class="meta text-cream">{eyebrow}</p>
-    <h1
-      class="mt-5 text-[2.4rem] font-semibold leading-[1.04] tracking-[-0.035em] text-cream min-[420px]:text-[2.9rem] sm:text-[3.75rem] lg:text-[4.5rem]"
-    >
-      {title}
-    </h1>
-    <p class="label mt-6 text-cream-dim">Version {version} · Last updated {lastUpdated}</p>
+  {/* --- Title ------------------------------------------------------------ */}
+  {/* No eyebrow. "Privacy Policy" at display size does not need a 13px label
+      above it saying Legal. */}
+  <section class="ldoc" data-reveal>
+    <h1 class="ldoc__h r" style="--i: 0">{title}</h1>
+    <p class="ldoc__meta meta r" style="--i: 1">Version {version} · Last updated {lastUpdated}</p>
+  </section>
 
-    <!-- Contents: jump links to each section. Two compact columns from sm up so
-         the full list stays scannable without pushing the body far down. -->
-    <nav aria-label="Contents" class="mt-12 border-y border-line py-8 sm:mt-14">
-      <p class="label text-cream-dim">On this page</p>
-      <ol class="mt-4 grid gap-x-10 gap-y-2.5 sm:grid-cols-2">
+  {/* --- Contents --------------------------------------------------------- */}
+  <section class="sect sect--first">
+    <nav class="toc" aria-label="Contents" data-reveal>
+      <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
+      <p class="meta toc__label r" style="--i: 1">On this page</p>
+      <ol class="toc__list" style={`--rows: ${rows}`}>
         {
-          toc.map((h) => (
-            <li>
-              <a
-                href={`#${h.slug}`}
-                class="text-base text-cream underline decoration-warm-grey underline-offset-4 transition-colors hover:decoration-ink"
-              >
-                {h.text}
+          entries.map((entry, i) => (
+            <li class="toc__row r" style={`--i: ${i + 2}`}>
+              <span class="toc__rule" data-catch="line" aria-hidden="true" />
+              <span class="toc__n meta--num" aria-hidden="true">
+                {entry.index}
+              </span>
+              <a class="toc__link" href={`#${entry.slug}`}>
+                {entry.label}
               </a>
             </li>
           ))
         }
       </ol>
     </nav>
+  </section>
 
-    <!-- Policy body (markdown → HTML, tokens already substituted). -->
-    <div class="legal-prose mt-12 max-w-text sm:mt-14" set:html={html}></div>
+  {/* --- The document ----------------------------------------------------- */}
+  {/* Tokens already substituted by the page. Styled by `.legal-prose`. */}
+  <section class="sect">
+    <div class="legal-prose" set:html={html} />
+  </section>
 
-    <!-- Cross-link to the sibling document. -->
-    <div class="mt-16 border-t border-line pt-8">
-      <p class="text-base text-cream">
-        See also{' '}
-        <a
-          href={href(sibling.href)}
-          class="font-semibold text-cream underline decoration-warm-grey underline-offset-4 transition-colors hover:decoration-ink"
-          >{sibling.label}</a
-        >.
-      </p>
-    </div>
+  {/* --- The other document ----------------------------------------------- */}
+  <section class="sect sect--first">
+    <p class="also" data-reveal>
+      <span class="r" style="--i: 0">
+        See also <a class="also__link" href={href(sibling.href)}>{sibling.label}</a>.
+      </span>
+    </p>
   </section>
 </BaseLayout>
+
+<style>
+  /* --- Section rhythm, shared with the rest of the site ------------------- */
+  .sect {
+    padding-top: var(--spacing-section-lg);
+  }
+  .sect--first {
+    padding-top: var(--spacing-section);
+  }
+
+  /* --- Title ------------------------------------------------------------- */
+  .ldoc__h {
+    margin: 0;
+    /* The local display step the inner pages share, one notch down: a policy
+       title is a label on a document, not the page's claim. */
+    font-size: clamp(2.25rem, 1.4rem + 3vw, 3.75rem);
+    line-height: 1.04;
+    letter-spacing: var(--tracking-display);
+    font-weight: 600;
+    color: var(--color-cream);
+    text-wrap: balance;
+    max-width: 18ch;
+  }
+  .ldoc__meta {
+    margin: clamp(1.25rem, 2vw, 1.75rem) 0 0;
+    color: var(--color-cream-dim);
+  }
+
+  /* --- Contents ---------------------------------------------------------- */
+  /* A numbered list of sections is a schedule, so it is set as one — the same
+     ruled rows the implementation section on /what-we-do uses. The bordered box
+     it replaces was a rectangle holding two columns of underlined links, which
+     is a table of contents drawn as a form. */
+  .toc__label {
+    margin: 1.25rem 0 0;
+    color: var(--color-cream-dim);
+  }
+  .toc__list {
+    list-style: none;
+    margin: clamp(1.25rem, 2vw, 1.75rem) 0 0;
+    padding: 0;
+  }
+  @media (min-width: 64rem) {
+    .toc__list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(var(--rows), auto);
+      grid-auto-flow: column;
+      column-gap: var(--grid-cell);
+    }
+  }
+  .toc__row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: 0 1rem;
+    padding: 0.7rem 0;
+  }
+  /* The rule runs the full measure, unfaded — a schedule's rules reach both
+     margins. An element, not a border, so it catches the cursor light. */
+  .toc__rule {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1px;
+    background-color: var(--color-line);
+  }
+  .toc__n {
+    color: var(--color-wire-lit);
+    font-size: var(--text-sm);
+  }
+  .toc__link {
+    font-size: var(--text-md);
+    line-height: 1.4;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-cream);
+    text-decoration: none;
+    /* The row is the target, so the link fills it: a 16px line of text in a
+       44px row is a tap target of 16px unless the anchor grows to the row. */
+    display: flex;
+    align-items: center;
+    min-height: 1.75rem;
+  }
+  .toc__link:hover,
+  .toc__link:focus-visible {
+    text-decoration: underline;
+    text-decoration-color: var(--color-wire-lit);
+    text-underline-offset: 0.3em;
+  }
+
+  /* --- The other document ------------------------------------------------ */
+  .also {
+    margin: 0;
+    font-size: var(--text-md);
+    line-height: 1.6;
+    color: var(--color-cream-dim);
+  }
+  .also__link {
+    color: var(--color-cream);
+    text-decoration: underline;
+    text-decoration-color: var(--color-wire);
+    text-underline-offset: 0.3em;
+    transition: text-decoration-color var(--dur-fast) var(--ease-out);
+  }
+  .also__link:hover,
+  .also__link:focus-visible {
+    text-decoration-color: var(--color-cream);
+  }
+</style>

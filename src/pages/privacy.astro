@@ -4,8 +4,11 @@
  *
  * The copy lives in src/legal/privacy-policy.md (compiled to HTML here). The
  * bracketed [tokens] in that file are substituted from src/config/site.ts so
- * the ABN, address and contact email stay single-sourced. Layout/styling is in
- * LegalDoc.astro + the `.legal-prose` rules in global.css.
+ * the ABN and the contact addresses stay single-sourced. There is no address
+ * token: the registered-address line was removed from both documents rather
+ * than shipped as a placeholder, and the substitution for it went with it.
+ * Layout/styling is in LegalDoc.astro + the `.legal-prose` rules in
+ * global.css.
  */
 import LegalDoc from '../components/LegalDoc.astro';
 import { SITE } from '../config/site';
@@ -18,7 +21,6 @@ const mail = (addr: string) => `<a href="mailto:${addr}">${addr}</a>`;
 
 const substitutions: Record<string, string> = {
   '[ABN]': SITE.abn,
-  '[Registered address, City, State, Postcode, Australia]': SITE.registeredAddress,
   '[PRIVACY_EMAIL]': mail(SITE.privacyEmail),
   '[CONTACT_EMAIL]': mail(SITE.contactEmail),
   '[DATE]': LAST_UPDATED,
@@ -31,7 +33,6 @@ for (const [token, value] of Object.entries(substitutions)) {
 ---
 
 <LegalDoc
-  eyebrow="Legal"
   title="Privacy Policy"
   description="How Knotless AI collects, uses, holds and discloses personal information, in line with the Australian Privacy Principles."
   version={VERSION}
