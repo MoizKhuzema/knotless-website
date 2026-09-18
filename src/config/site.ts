@@ -55,11 +55,10 @@ export interface SiteConfig {
   /** General contact email. */
   contactEmail: string;
   /**
-   * PLACEHOLDER — a support line for the footer, standing in until a real
-   * number exists. §11.17 forbids placeholder data reaching production, so
-   * this is deliberately an obviously-unassigned number rather than something
-   * that could be mistaken for real and quietly shipped. Replace before the
-   * site goes live, or empty the string and the footer drops the row.
+   * The support line in the footer. Insiya's direct number, at the client's
+   * instruction — it was an obviously-unassigned placeholder until then, which
+   * §11.17 would not have let ship. It is a real person's mobile published on
+   * a public page: empty the string and the footer drops the row entirely.
    */
   supportPhone: string;
   /** Email for privacy / data requests. */
@@ -87,6 +86,13 @@ export interface SiteConfig {
   deliveryLocations: readonly string[];
 }
 
+/**
+ * Insiya's direct line, declared once because two places publish it: her founder
+ * record, and the footer's support row. A number typed twice is a number that
+ * gets changed once.
+ */
+const INSIYA_PHONE = '+61 416 588 531';
+
 export const SITE = {
   legalEntityName: 'Knotless AI Pty Ltd',
   tagline: 'AI Untangled.',
@@ -99,7 +105,7 @@ export const SITE = {
   // the value here AND restore the token line in both markdown files.
   registeredAddress: '',
   contactEmail: 'hello@knotless.com.au',
-  supportPhone: '+61 400 000 000', // PLACEHOLDER — see the interface note
+  supportPhone: INSIYA_PHONE,
 
   privacyEmail: 'privacy@knotless.com.au',
   /* Empty until the page exists. It was a guessed URL carrying a TODO, and it
@@ -115,7 +121,7 @@ export const SITE = {
       name: 'Insiya Karbalai',
       title: 'Co-Founder & CEO',
       email: 'insiya.karbalai@knotless.com.au',
-      phone: '+61 416 588 531',
+      phone: INSIYA_PHONE,
       linkedinUrl: '', // no confirmed profile yet — omitted from JSON-LD
     },
     {
