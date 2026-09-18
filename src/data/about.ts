@@ -42,7 +42,13 @@ export const ABOUT_META = {
  * conclusion across both — and that shape is the argument.
  */
 export const ABOUT_HERO = {
-  heading: 'We built the firm we couldn’t find.',
+  /**
+   * Two halves of one sentence: `lead` + ' ' + `tail` is the heading as
+   * written. It is split because the page sets it as two lines and choosing
+   * where a headline breaks is the difference between a headline and a sentence
+   * that happens to wrap.
+   */
+  heading: { lead: 'We built the firm', tail: 'we couldn’t find.' },
   observations: [
     'Insiya kept seeing capable people stuck on repetitive work, with budgets too thin to fix it. The problem was rarely the technology. It was that nobody was solving it at a price these businesses could pay.',
     'Huzefa kept seeing firms lose money on AI because the vendor never surfaced blockers, overcharged, and wrote the ROI case to justify the sale.',
@@ -54,15 +60,21 @@ export const ABOUT_HERO = {
 /**
  * Section 2 — how the work is actually delivered.
  *
- * One paragraph as supplied. The first sentence is lifted out as the section's
- * statement and the rest set beneath it — the same shape the Assessment's
- * deliverables take on /what-we-do. That is a formatting decision, not an edit:
- * put back together, `statement` + ' ' + `body` is the paragraph as written.
+ * One paragraph as supplied, set in three parts: the claim it opens with, the
+ * mechanics, and the commitment it ends on. That is a formatting decision, not
+ * an edit — the three fields concatenated are the paragraph as written — and it
+ * is what stops 90 words of prose being a wall.
  */
 export const ABOUT_DELIVER = {
   heading: 'How we deliver',
   statement: 'We’re founder-led by design.',
-  body: 'We run every assessment, scope every engagement and oversee every build personally. For technical delivery we work with a small set of vetted partner firms, disclosed to you up front, with every data flow handled under the Australian Privacy Act. That model is deliberate: you get senior judgement on every decision and specialist hands on the build, without paying for a bench. Nothing reaches you without passing through us first.',
+  body: 'We run every assessment, scope every engagement and oversee every build personally. For technical delivery we work with a small set of vetted partner firms, disclosed to you up front, with every data flow handled under the Australian Privacy Act. That model is deliberate: you get senior judgement on every decision and specialist hands on the build, without paying for a bench.',
+  /**
+   * The paragraph's last sentence, set apart as the section's closing line so
+   * the block opens and closes on a commitment with the mechanics between them.
+   * `statement` + ' ' + `body` + ' ' + `closer` is the paragraph as supplied.
+   */
+  closer: 'Nothing reaches you without passing through us first.',
 } as const;
 
 /** Section 3 — the close. The page's single reversed panel. */

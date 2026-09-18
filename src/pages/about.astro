@@ -48,25 +48,37 @@ const schema = graph([
       finished loading. It now carries the whole argument, so there is nothing
       to weight: the content fills the screen and the air goes above it. */}
   <section class="ahero" data-reveal>
-    <h1 class="ahero__h r" style="--i: 0">{ABOUT_HERO.heading}</h1>
+    {/* Broken where the sentence turns, not where the box runs out. Six words
+        wrapping on their own read as a paragraph that happens to be large; two
+        deliberate lines read as a headline. */}
+    <h1 class="ahero__h r" style="--i: 0">
+      <span>{ABOUT_HERO.heading.lead}</span>{' '}<span>{ABOUT_HERO.heading.tail}</span>
+    </h1>
 
-    {/* Two observations beside each other, one conclusion across both. The
-        argument is the shape: the reader watches two careers become one
-        position rather than being told under a heading that they did. */}
+    {/* Each observation under its own rule, then one rule across both and the
+        conclusion under that. The rules are what make the change of tone
+        legible: dim, dim, then cream reads as an accident when three paragraphs
+        simply follow each other, and as an argument when a line separates the
+        evidence from what it adds up to. */}
     <div class="ahero__careers">
       {
         ABOUT_HERO.observations.map((observation, i) => (
-          <p class="ahero__obs r" style={`--i: ${i + 1}`}>
-            {observation}
-          </p>
+          <div class="ahero__col r" style={`--i: ${i + 1}`}>
+            <span class="ahero__rule" data-catch="line" aria-hidden="true" />
+            <p class="ahero__obs">{observation}</p>
+          </div>
         ))
       }
     </div>
-    <p class="ahero__conclusion r" style="--i: 3">{ABOUT_HERO.conclusion}</p>
+
+    <div class="ahero__end r" style="--i: 3">
+      <span class="ahero__rule ahero__rule--full" data-catch="line" aria-hidden="true"></span>
+      <p class="ahero__conclusion">{ABOUT_HERO.conclusion}</p>
+    </div>
   </section>
 
   {/* --- Section 2 — how we deliver --------------------------------------- */}
-  <section class="sect">
+  <section class="sect sect--first">
     <div data-reveal>
       <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
       <h2 class="h-section sect__h r" style="--i: 1">{ABOUT_DELIVER.heading}</h2>
@@ -78,7 +90,17 @@ const schema = graph([
         that explains how it works. */}
     <div class="deliver" data-reveal>
       <p class="deliver__statement r" style="--i: 0">{ABOUT_DELIVER.statement}</p>
-      <p class="deliver__body r" style="--i: 1">{ABOUT_DELIVER.body}</p>
+
+      {/* The mechanics in glass — the page's only surface, and the site's own
+          material rather than a new one. It does two things ninety words of
+          prose on a bare page could not: it says where the explanation starts
+          and stops, and it gives the page a middle register between the bare
+          type above it and the cream slab below. */}
+      <div class="deliver__pane r" data-catch="ring" style="--i: 1">
+        <p class="deliver__body">{ABOUT_DELIVER.body}</p>
+        <span class="deliver__rule" data-catch="line" aria-hidden="true"></span>
+        <p class="deliver__closer">{ABOUT_DELIVER.closer}</p>
+      </div>
     </div>
   </section>
 
@@ -102,6 +124,13 @@ const schema = graph([
   /* --- Section rhythm, shared with /what-we-do ---------------------------- */
   .sect {
     padding-top: var(--spacing-section-lg);
+  }
+  /* The first section after the hero clears less. The hero already ends on its
+     own floor of screen, so the full section rhythm on top of that put 150px of
+     nothing between the conclusion and the next heading — a gap that reads as a
+     missing section rather than as a break. */
+  .sect--first {
+    padding-top: var(--spacing-section);
   }
   .sect__h {
     margin: 1.25rem 0 0;
@@ -130,13 +159,13 @@ const schema = graph([
      out of the conclusion at the bottom. */
   @media (min-width: 48rem) and (min-height: 46rem) {
     .ahero {
-      padding-top: clamp(1.5rem, 5vh, 4rem);
+      padding-top: clamp(2rem, 7vh, 5rem);
     }
   }
   @media (min-width: 48rem) and (min-height: 50rem) {
     .ahero {
-      padding-top: clamp(2.5rem, 7vh, 6rem);
-      gap: clamp(2.5rem, 5vh, 4.5rem);
+      padding-top: clamp(3.5rem, 10vh, 8rem);
+      gap: clamp(2.25rem, 4.5vh, 4rem);
     }
   }
   /* Below 34rem of height the composition stops being a composition and starts
@@ -149,16 +178,22 @@ const schema = graph([
   }
   .ahero__h {
     margin: 0;
-    /* The local display step, as on /what-we-do: 72px at 1440, a fifth above the
-       section headings it has to lead, and nowhere near --text-display, which is
-       the size the homepage sets a wordmark at rather than a sentence. */
-    font-size: clamp(2.5rem, 1.4rem + 3.9vw, 4.5rem);
-    line-height: 1.02;
+    /* 80px at 1440, up from 72, and set as two lines rather than balanced into
+       them — the size and the leading are doing the work that the word count
+       will not. */
+    font-size: clamp(2.5rem, 1.35rem + 4.3vw, 5rem);
+    /* 0.96, not 1.02: two short lines of display type want to sit as a block,
+       and the gap between them was reading as the space between paragraphs. */
+    line-height: 0.96;
     letter-spacing: var(--tracking-display);
     font-weight: 600;
     color: var(--color-cream);
-    text-wrap: balance;
-    max-width: 18ch;
+  }
+  /* The break is the markup's, not the box's. Each half on its own line, so the
+     headline reads the same at 1440 and at 390 instead of rewrapping into
+     whatever the column allows. */
+  .ahero__h span {
+    display: block;
   }
   /* The two observations, side by side where there is width for it. Below 64rem
      they stack: measured, a half column at 768 ran 34 characters a line, which
@@ -173,8 +208,21 @@ const schema = graph([
       gap: var(--grid-cell);
     }
   }
+  /* An element, not a border, so it catches the cursor light like every other
+     rule on the site. */
+  .ahero__rule {
+    display: block;
+    height: 1px;
+    background-color: var(--color-line);
+  }
+  .ahero__end {
+    margin-top: clamp(1.75rem, 3.5vh, 3rem);
+  }
+  .ahero__end .ahero__conclusion {
+    margin-top: 1.1rem;
+  }
   .ahero__obs {
-    margin: 0;
+    margin: 1.1rem 0 0;
     font-size: clamp(1rem, 0.9rem + 0.45vw, 1.125rem);
     line-height: 1.6;
     color: var(--color-cream-dim);
@@ -189,6 +237,7 @@ const schema = graph([
   .ahero__conclusion {
     margin: 0;
     font-size: clamp(1.0625rem, 0.95rem + 0.55vw, 1.3125rem);
+    max-width: 52ch;
     line-height: 1.5;
     letter-spacing: var(--tracking-tight);
     color: var(--color-cream);
@@ -224,13 +273,41 @@ const schema = graph([
     color: var(--color-cream);
     max-width: 20ch;
   }
+  /* The page's one surface: low-alpha fill, hairline edge, specular top line,
+     blur, and no drop shadow — the same pane /what-we-do sets its quotes in. A
+     shadow is what makes the nav read as floating, and this sits IN the page. */
+  .deliver__pane {
+    position: relative;
+    margin-top: clamp(1.5rem, 3vw, 2.25rem);
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-glass-soft);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid var(--color-glass-soft-edge);
+    box-shadow: inset 0 1px 0 var(--color-glass-soft-spec);
+    max-width: 62ch;
+  }
   .deliver__body {
-    margin: clamp(1.25rem, 2vw, 1.75rem) 0 0;
-    font-size: clamp(1.0625rem, 0.95rem + 0.55vw, 1.3125rem);
-    line-height: 1.55;
-    letter-spacing: var(--tracking-tight);
+    margin: 0;
+    font-size: clamp(1rem, 0.9rem + 0.45vw, 1.125rem);
+    line-height: 1.65;
     color: var(--color-cream-dim);
-    max-width: 52ch;
+  }
+  .deliver__rule {
+    display: block;
+    height: 1px;
+    margin: clamp(1.1rem, 2vw, 1.5rem) 0;
+    background-color: var(--color-line);
+  }
+  /* The commitment the paragraph ends on, set as the pane's last word: cream, a
+     step up, and on its own line. */
+  .deliver__closer {
+    margin: 0;
+    font-size: clamp(1.0625rem, 0.95rem + 0.55vw, 1.3125rem);
+    line-height: 1.45;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-cream);
   }
 
   /* --- Section 3 — the close --------------------------------------------- */
