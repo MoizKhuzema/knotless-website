@@ -32,6 +32,14 @@ interface Props {
 
 const { title, description, version, lastUpdated, headings, html, sibling } = Astro.props;
 
+/* The rules between sections become catchers, like every other rule on the
+   site. They come out of the markdown as bare <hr>, so the attribute is added
+   here rather than in the document — the documents are copy, and which rules
+   light under the cursor is not a thing a policy should have an opinion about.
+   Added before render, so the one pointer rAF picks them up with everything
+   else at load. */
+const body = html.replaceAll('<hr>', '<hr data-catch="line" />');
+
 /* Numbered sections only — the document H1 is set by the page, and every H3 is
    a sub-point inside a section rather than a place to jump to. */
 const toc = headings.filter((h) => h.depth === 2);
@@ -84,7 +92,7 @@ const rows = Math.ceil(entries.length / 2);
   {/* --- The document ----------------------------------------------------- */}
   {/* Tokens already substituted by the page. Styled by `.legal-prose`. */}
   <section class="sect">
-    <div class="legal-prose" set:html={html} />
+    <div class="legal-prose" set:html={body} />
   </section>
 
   {/* --- The other document ----------------------------------------------- */}
@@ -163,8 +171,10 @@ const rows = Math.ceil(entries.length / 2);
     height: 1px;
     background-color: var(--color-line);
   }
+  /* Ember, the same ordinal idiom as the homepage's stages and the schedule on
+     /what-we-do. Measured 4.83:1 on the ink ground at 13px. */
   .toc__n {
-    color: var(--color-wire-lit);
+    color: var(--color-ember);
     font-size: var(--text-sm);
   }
   .toc__link {
