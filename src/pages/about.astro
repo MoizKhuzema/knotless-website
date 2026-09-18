@@ -9,23 +9,22 @@
  *
  * What went with the old page: the typewriter H1, the eyebrow, the hero CTA,
  * the ember dot markers, the twelve-column career rows, the founder bios, and
- * the commented-out portrait band. The page is four sections of copy now, and
- * that is what it is set as.
+ * the commented-out portrait band. Three sections now.
  *
  * Each section takes the shape its own content asks for, which is the other
  * half of that system — not the same block three times:
  *
- *   2 · the careers   two columns of observation resolving into one statement
- *                     across the measure, which is what the heading says
- *   3 · delivery      the claim at statement size, the mechanics beneath it
- *   4 · the close     the page's single reversed panel
+ *   1 · the hero      the whole argument: two observations side by side and the
+ *                     conclusion across both, which is the shape of the claim
+ *   2 · delivery      the claim at statement size, the mechanics beneath it
+ *   3 · the close     the page's single reversed panel
  *
  * Copy lives in src/data/about.ts; founder names and titles in site.ts.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaButton from '../components/CtaButton.astro';
 import { graph, webPage, founderPersons } from '../lib/schema';
-import { ABOUT_META, ABOUT_HERO, ABOUT_CAREERS, ABOUT_DELIVER, ABOUT_CLOSE } from '../data/about';
+import { ABOUT_META, ABOUT_HERO, ABOUT_DELIVER, ABOUT_CLOSE } from '../data/about';
 
 const origin = Astro.site!.origin;
 const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
@@ -43,44 +42,30 @@ const schema = graph([
   {/* No opening thread: the thread marks a section within a page, and the top
       of a page is not one.
 
-      Weighted to the bottom, where /what-we-do's hero is weighted to the top —
-      not an inconsistency but the same rule applied to different content. That
-      hero has a row of cards to stand on the floor, so its type sits above the
-      air; this one is two elements, and two elements pinned to the top of a
-      screen with 60% of it empty underneath read as a page that has not
-      finished loading. Low and left is where the homepage puts a hero that is
-      only type. */}
+      Top-aligned, like /what-we-do's. It was weighted to the bottom while it
+      held two elements — a headline and a standfirst pinned to the top of a
+      screen with 60% of it empty underneath read as a page that had not
+      finished loading. It now carries the whole argument, so there is nothing
+      to weight: the content fills the screen and the air goes above it. */}
   <section class="ahero" data-reveal>
     <h1 class="ahero__h r" style="--i: 0">{ABOUT_HERO.heading}</h1>
-    <p class="ahero__body r" style="--i: 1">{ABOUT_HERO.body}</p>
-  </section>
 
-  {/* --- Section 2 — two careers, one conclusion -------------------------- */}
-  <section class="sect">
-    <div data-reveal>
-      <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
-      <h2 class="h-section sect__h r" style="--i: 1">{ABOUT_CAREERS.heading}</h2>
-    </div>
-
-    {/* The layout is the heading. Two columns of observation, each under its own
-        rule, and then one statement spanning the width both of them sat over —
-        so the reader watches two things become one rather than being told they
-        did. */}
-    <div class="careers" data-reveal>
+    {/* Two observations beside each other, one conclusion across both. The
+        argument is the shape: the reader watches two careers become one
+        position rather than being told under a heading that they did. */}
+    <div class="ahero__careers">
       {
-        ABOUT_CAREERS.observations.map((observation, i) => (
-          <div class="careers__col r" style={`--i: ${i}`}>
-            <span class="careers__rule" data-catch="line" aria-hidden="true" />
-            <p class="careers__body">{observation}</p>
-          </div>
+        ABOUT_HERO.observations.map((observation, i) => (
+          <p class="ahero__obs r" style={`--i: ${i + 1}`}>
+            {observation}
+          </p>
         ))
       }
     </div>
-
-    <p class="conclusion r" data-reveal style="--i: 0">{ABOUT_CAREERS.conclusion}</p>
+    <p class="ahero__conclusion r" style="--i: 3">{ABOUT_HERO.conclusion}</p>
   </section>
 
-  {/* --- Section 3 — how we deliver --------------------------------------- */}
+  {/* --- Section 2 — how we deliver --------------------------------------- */}
   <section class="sect">
     <div data-reveal>
       <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
@@ -97,7 +82,7 @@ const schema = graph([
     </div>
   </section>
 
-  {/* --- Section 4 — the close -------------------------------------------- */}
+  {/* --- Section 3 — the close -------------------------------------------- */}
   <section class="sect">
     <div class="aclose" data-reveal>
       <div class="aclose__inner">
@@ -135,16 +120,31 @@ const schema = graph([
   .ahero {
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: flex-start;
+    gap: clamp(1.75rem, 4vh, 3rem);
     min-height: calc(100svh - var(--main-clear));
-    padding-bottom: clamp(4rem, 16vh, 11rem);
+    padding-bottom: clamp(1rem, 2vh, 3rem);
+  }
+  /* The air above the headline is spent only where there is screen to spend it,
+     as on /what-we-do: on a phone or any short viewport it would come straight
+     out of the conclusion at the bottom. */
+  @media (min-width: 48rem) and (min-height: 46rem) {
+    .ahero {
+      padding-top: clamp(1.5rem, 5vh, 4rem);
+    }
+  }
+  @media (min-width: 48rem) and (min-height: 50rem) {
+    .ahero {
+      padding-top: clamp(2.5rem, 7vh, 6rem);
+      gap: clamp(2.5rem, 5vh, 4.5rem);
+    }
   }
   /* Below 34rem of height the composition stops being a composition and starts
      pushing the headline into the bar. */
   @media (max-height: 34rem) {
     .ahero {
       min-height: 0;
-      padding-bottom: clamp(3rem, 8vh, 5rem);
+      gap: clamp(1.25rem, 3vh, 2rem);
     }
   }
   .ahero__h {
@@ -160,12 +160,38 @@ const schema = graph([
     text-wrap: balance;
     max-width: 18ch;
   }
-  .ahero__body {
-    margin: clamp(1.75rem, 3vw, 2.5rem) 0 0;
-    font-size: var(--text-lead);
-    line-height: 1.5;
+  /* The two observations, side by side where there is width for it. Below 64rem
+     they stack: measured, a half column at 768 ran 34 characters a line, which
+     is a newspaper column for prose written as paragraphs. */
+  .ahero__careers {
+    display: grid;
+    gap: 1.5rem;
+  }
+  @media (min-width: 64rem) {
+    .ahero__careers {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--grid-cell);
+    }
+  }
+  .ahero__obs {
+    margin: 0;
+    font-size: clamp(1rem, 0.9rem + 0.45vw, 1.125rem);
+    line-height: 1.6;
     color: var(--color-cream-dim);
-    /* 52ch measures about 69 characters, the target the design sets. */
+    /* 52ch — the site's prose measure, and calibrated rather than assumed: a ch
+       is the width of a ZERO, which in Inter is 0.63em, while the average
+       character is nearer 0.5em. */
+    max-width: 52ch;
+  }
+  /* The conclusion: cream, a step up, across the width both observations sat
+     over. The turn from what each of us saw to what we did about it is carried
+     by tone and size, so it needs no heading to announce it. */
+  .ahero__conclusion {
+    margin: 0;
+    font-size: clamp(1.0625rem, 0.95rem + 0.55vw, 1.3125rem);
+    line-height: 1.5;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-cream);
     max-width: 52ch;
   }
   /* A laptop is a WIDE screen and a SHORT one — a 1440x900 display is a 1440x760
@@ -175,62 +201,15 @@ const schema = graph([
     .ahero__h {
       font-size: clamp(2.25rem, 1.6rem + 2vw, 3.25rem);
     }
-    .ahero__body {
-      font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
-      margin-top: clamp(1rem, 2vh, 1.5rem);
+    .ahero__obs {
+      font-size: clamp(0.9375rem, 0.9rem + 0.25vw, 1.0625rem);
+    }
+    .ahero__conclusion {
+      font-size: clamp(1rem, 0.95rem + 0.3vw, 1.1875rem);
     }
   }
 
-  /* --- Section 2 — the two careers --------------------------------------- */
-  .careers {
-    margin-top: clamp(2rem, 3vw, 3rem);
-    display: grid;
-    gap: 2rem;
-  }
-  /* Two columns only where each of them is still a readable column. At 768 they
-     measured 34 characters a line — a newspaper column, for prose written as
-     paragraphs — so below 64rem the two observations stack and take the full
-     measure. */
-  @media (min-width: 64rem) {
-    .careers {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: var(--grid-cell);
-    }
-  }
-  /* One rule per column, as an element rather than a border so it catches the
-     cursor light like every other rule on the site. */
-  .careers__rule {
-    display: block;
-    height: 1px;
-    background-color: var(--color-line);
-  }
-  .careers__body {
-    margin: 1.1rem 0 0;
-    /* 18px, the body step, not the 16px card step. At 16 the column ran 68
-       characters a line, which is the right measure at the wrong size: correct
-       on the ruler, thin on the page, and reading as a caption under a 60px
-       heading. At 18 the same column is 61. */
-    font-size: var(--text-base);
-    line-height: 1.65;
-    color: var(--color-cream-dim);
-    /* 52ch — the site's prose measure, and calibrated rather than assumed: a ch
-       is the width of a ZERO, which in Inter is 0.63em, while the average
-       character is nearer 0.5em. 62ch reads as 77 characters, not 62. */
-    max-width: 52ch;
-  }
-
-  /* The conclusion: one measure across the width the two columns sat over, a
-     step up in size and in tone, because it is what they are for. */
-  .conclusion {
-    margin: clamp(2.5rem, 5vw, 4rem) 0 0;
-    font-size: clamp(1.0625rem, 0.95rem + 0.55vw, 1.3125rem);
-    line-height: 1.5;
-    letter-spacing: var(--tracking-tight);
-    color: var(--color-cream);
-    max-width: 52ch;
-  }
-
-  /* --- Section 3 — how we deliver ---------------------------------------- */
+  /* --- Section 2 — how we deliver ---------------------------------------- */
   .deliver {
     margin-top: clamp(2rem, 3vw, 3rem);
   }
@@ -254,7 +233,7 @@ const schema = graph([
     max-width: 52ch;
   }
 
-  /* --- Section 4 — the close --------------------------------------------- */
+  /* --- Section 3 — the close --------------------------------------------- */
   .aclose {
     background-color: var(--color-invert-bg);
     color: var(--color-invert-fg);
