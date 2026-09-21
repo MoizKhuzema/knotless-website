@@ -13,8 +13,10 @@ import Footer from '../components/Footer.astro';
 import '../styles/global.css';
 // Imported through Vite so the URLs are hashed and base-aware (needed for the
 // GitHub Pages sub-path deploy).
-import interFont from '../assets/fonts/inter-variable.woff2';
-import monoFont from '../assets/fonts/mono-variable.woff2';
+import plexSans from '../assets/fonts/plex-sans-variable.woff2';
+import plexSerif from '../assets/fonts/plex-serif-600.woff2';
+import plexMono400 from '../assets/fonts/plex-mono-400.woff2';
+import plexMono500 from '../assets/fonts/plex-mono-500.woff2';
 
 interface Props {
   title: string;
@@ -72,9 +74,15 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL(href('/og-default.png'), Astro.site);
 
 // @font-face here, not in CSS, so the URLs carry Astro's `base`.
+// Sans is variable (wght 100-700, measured from the binary - there is no 800).
+// Serif and Mono ship static: Fontsource has no variable build of either, and
+// this site needs exactly one serif weight and two mono weights, so a variable
+// file would be paying for axes nothing uses.
 const fontFace = [
-  `@font-face{font-family:'Inter Variable';font-style:normal;font-display:swap;font-weight:100 900;src:url('${interFont}') format('woff2-variations');}`,
-  `@font-face{font-family:'JetBrains Mono Variable';font-style:normal;font-display:swap;font-weight:100 800;src:url('${monoFont}') format('woff2-variations');}`,
+  `@font-face{font-family:'Plex Sans';font-style:normal;font-display:swap;font-weight:100 700;src:url('${plexSans}') format('woff2-variations');}`,
+  `@font-face{font-family:'Plex Serif';font-style:normal;font-display:swap;font-weight:600;src:url('${plexSerif}') format('woff2');}`,
+  `@font-face{font-family:'Plex Mono';font-style:normal;font-display:swap;font-weight:400;src:url('${plexMono400}') format('woff2');}`,
+  `@font-face{font-family:'Plex Mono';font-style:normal;font-display:swap;font-weight:500;src:url('${plexMono500}') format('woff2');}`,
 ].join('');
 ---
 
@@ -91,8 +99,11 @@ const fontFace = [
     {noindex && <meta name="robots" content="noindex, nofollow" />}
 
     <style set:html={fontFace}></style>
-    <link rel="preload" href={interFont} as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href={monoFont} as="font" type="font/woff2" crossorigin />
+    {/* Sans and Serif only. Both are above the fold - the hero headline is
+        Serif and everything around it is Sans. Mono is small labels and the
+        arithmetic further down, so it swaps rather than blocking. */}
+    <link rel="preload" href={plexSans} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={plexSerif} as="font" type="font/woff2" crossorigin />
 
     <link rel="icon" href={href('/favicon.ico')} sizes="any" />
     <link rel="icon" type="image/png" sizes="32x32" href={href('/favicon-32.png')} />

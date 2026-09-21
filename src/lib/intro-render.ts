@@ -35,10 +35,13 @@ import {
 import {
   fig8Ctrl,
   fig8Points,
+  fig8Crossings,
   arcTable,
   uAtArc,
   FIG8_X0,
   FIG8_X1,
+  FIG8_Y_MAX,
+  type Fig8Crossing,
 } from "./fig8";
 import { clamp01, lerp, ribbonOutline, selfCrossings, type Pt } from "./knot";
 
@@ -64,7 +67,7 @@ export interface SeqOpts {
 }
 
 export const SEQ_DEFAULTS: SeqOpts = {
-  cover: 0.6,
+  cover: 0.88,
   wave: FIELD.AMP,
   briefOverUnder: false,
   rows: 13,
@@ -124,20 +127,50 @@ const TOTAL_MS = P3_END + CINCH_MS;
  * remove. This leaves at a little over a third of full speed and accelerates,
  * like a knot pulling tight.
  */
-const cinchCurve = (t: number) => 0.38 * t + 0.62 * t * t;
+const cinchCurve = (t: number) => {
+  /* The pull, accelerating. */
+  const base = 0.3 * t + 0.7 * t * t;
+  /* The jam. A rope pulled tight does not coast to a stop: it snatches through
+     the last of the slack, binds, and then eases the final fraction as the
+     turns bed down. This borrows a little of the end and gives it back — zero
+     at both ends of the window, so the sequence still finishes on exactly the
+     bar the FLIP hands over to. */
+  const j = clamp01((t - 0.76) / 0.24);
+  return base + 0.06 * Math.sin(Math.PI * j);
+};
 
-/* Thickness is tied to the KNOT's scale, not the viewport's height. A line
+/* 0.10 of the width. Measured off the reference: a 335px strand on a 3200px
+   artwork, 0.105 — and openings of 870x521 and 462x345 around it, so 1:1.55 and
+   1:1.03 of strand to opening. It was 0.05 (1:2.1, which reads as wire) and
+   then 0.062.
+
+   Thickness is tied to the KNOT's scale, not the viewport's height. A line
    sized as a fraction of height is a reasonable bar on a desktop and a third
    of the knot's total height on a phone, where the knot is short because it
    has to span the width. Phase 2 uses the same number so the handover does
    not step. */
-const lineHalf = (W: number) => (0.05 * W) / 2;
+const lineHalf = (W: number) => (0.1 * W) / 2;
 
-/** Vertical stretch needed for the knot to cover `frac` of the viewport
- *  height while spanning its full width. Capped: past 2 the lobes turn into
- *  vertical slots and it stops reading as rope. */
+/** Vertical stretch needed for the KNOT AS DRAWN — strand included — to cover
+ *  `frac` of the viewport height while spanning its full width.
+ *
+ *  It used to divide by a hardcoded 2.05, a guess at twice the body's half
+ *  height. The body's real half height is FIG8_Y_MAX, 0.8931, and the strand
+ *  adds its own width on top, so `cover: 0.6` actually drew 63% and `cover`
+ *  meant nothing in particular. Now it means what it says.
+ *
+ *  Capped at 2: past that the lobes turn into vertical slots and it stops
+ *  reading as rope. On a phone the cap is what is doing the work, which is why
+ *  the knot is shorter there than `cover` asks for — correctly. */
 const knotStretch = (W: number, H: number, frac: number) =>
-  Math.max(1, Math.min(2, (frac * H * (FIG8_X1 - FIG8_X0)) / (2.05 * W)));
+  Math.max(
+    1,
+    Math.min(
+      2,
+      ((frac * H - 2 * lineHalf(W)) * (FIG8_X1 - FIG8_X0)) /
+        (2 * FIG8_Y_MAX * W),
+    ),
+  );
 
 /* Minimal, as asked: six segments, six colours, widths deliberately uneven so
    the eye has something to measure the speed against. */
@@ -346,6 +379,7 @@ let knotCache: {
   pts: Pt[];
   arc: number[];
   tailArc: number;
+  cross: Fig8Crossing[];
 } | null = null;
 
 function knotGeom(W: number, H: number, frac: number) {
@@ -364,13 +398,29 @@ function knotGeom(W: number, H: number, frac: number) {
       break;
     }
   }
-  /* No precomputed crossing table. There was one, and it cost 53ms on the
-     FIRST FRAME OF PHASE 3 — a self-intersection search over 900 points is
-     about 404,000 segment-pair tests — for a value nothing read: the occlusion
-     finds its crossings per frame on the polyline actually drawn, because
-     mid-draw there may be one, two or none. Measured as a 66ms frame at 4x
-     throttle, at the exact moment the knot starts. */
-  knotCache = { key, pts, arc, tailArc };
+  /* The crossing table IS precomputed now, and over/under is read from it.
+     It has to be. The old code found the crossings on the morphed polyline
+     every frame, sorted them, and assigned over/under from the crossing's
+     INDEX in that frame's list (`ci % 2 === 0`). The list grows 2 -> 3 -> 4 as
+     the strand draws, so a crossing born earlier in the sort order pushed every
+     later one down a slot and INVERTED it. Logged at 1440x810: at 1780ms a
+     fourth crossing appeared at x=1182 and the crossing at x=685 went from over
+     to under in a single frame. Over/under is a property of the strand, not of
+     a position in a list.
+
+     It was removed once for cost — a self-intersection search over 900 points
+     is about 404,000 segment-pair tests, measured at 53ms. So it runs on a
+     220-point decimation instead: ~24,000 tests, and the crossings are 0.09
+     apart in curve parameter while 220 samples locate them to about 0.005.
+     Forty times finer than it needs to be. And knotGeom is built on the FIRST
+     frame of the whole sequence, during the field, where nothing is tracked —
+     not at the phase-3 boundary, which is what made the old cost visible. */
+  const COARSE = 220;
+  const coarse: Pt[] = [];
+  for (let i = 0; i < COARSE; i++)
+    coarse.push(pts[Math.round((i * (pts.length - 1)) / (COARSE - 1))]);
+  const cross = fig8Crossings(coarse, true);
+  knotCache = { key, pts, arc, tailArc, cross };
   return knotCache;
 }
 
@@ -448,6 +498,32 @@ function drawKnot(
    * a knot actually does. */
   const cinch = 1 - cinchCurve(clamp01((ms - P3_END) / CINCH_MS));
 
+  /* THE LOOPS DO NOT CLOSE TOGETHER.
+     A uniform scale closes all four openings at exactly the same rate, which is
+     the one thing a real knot never does: whichever bight has least slack in it
+     binds first and drags the other closed after. So the left of the shape runs
+     a little ahead of the right for the middle of the cinch, and the two meet
+     again at the end. Zero at both ends of the window, so the shape is
+     undistorted where it matters — at full size, and at the bar. */
+  const lag =
+    0.085 * Math.sin(Math.PI * clamp01((ms - P3_END) / CINCH_MS));
+  const cinchAt = (x: number) => cinch * (1 + lag * (x / FIG8_X1));
+
+  /* And it thickens as it binds. Rope under tension at a jam swells where the
+     turns press on each other. Peaks at three quarters of the cinch and is back
+     to nothing by the end, because the bar the FLIP takes over has to be
+     exactly `finalBar`. */
+  /* Back to nothing by 88% of the cinch, not by the end of it. The FLIP takes
+     over from `finalBar`, which is exactly `halfW` thick; a bulge still
+     unwinding on the handover frame would pop the bar by a couple of pixels as
+     the div took over. The last ~90ms is the true width, settled. */
+  const bulge =
+    1 +
+    0.05 *
+      Math.sin(
+        Math.PI * clamp01(((ms - P3_END) / CINCH_MS - 0.42) / 0.46),
+      );
+
   const tailEndX = project(onCurveArc(g, g.tailArc))[0];
   const off = (W / 2 - tailEndX) * (1 - pull);
   const tailScale = tailEndX > 0 ? (tailEndX + off) / tailEndX : 1;
@@ -455,6 +531,11 @@ function drawKnot(
   const N = 620;
   const pts: Pt[] = [];
   const cols: string[] = [];
+  /* The CURVE PARAMETER each drawn point came from. Carried all the way
+     through the dedupe and the resample, because it is the only stable name a
+     crossing has: the drawn array's own index means nothing from one frame to
+     the next while the strand is still growing and then shrinking. */
+  const us: number[] = [];
   /* The extensions are sampled, not a single point each.
    *
    * They used to be one vertex apiece, and at full cinch the dedupe left the
@@ -468,27 +549,32 @@ function drawKnot(
    * the vertices are therefore worth spending. */
   const EXT = 28;
   if (cinch < 1) {
-    const inner = project([FIG8_X0 * cinch, 0])[0];
+    const inner = project([FIG8_X0 * cinchAt(FIG8_X0), 0])[0];
     for (let j = 0; j < EXT; j++) {
       const f = Math.pow(j / EXT, 1.6);
       pts.push([lerp(project([FIG8_X0, 0])[0], inner, f), H / 2]);
       cols.push(knotColour(0, flowAt(ms)));
+      us.push(0);
     }
   }
   for (let i = 0; i < N; i++) {
     const sArc = (head * i) / (N - 1);
+    const uCurve = uAtArc(g.arc, sArc);
     const raw = onCurveArc(g, sArc);
     // Scaled about the middle of the knot, which is shape-space (0, 0).
-    const q = project([raw[0] * cinch, raw[1] * cinch]);
+    const c = cinchAt(raw[0]);
+    const q = project([raw[0] * c, raw[1] * c]);
     pts.push([sArc <= g.tailArc ? q[0] * tailScale : q[0] + off, q[1]]);
     cols.push(knotColour(sArc, flowAt(ms)));
+    us.push(uCurve);
   }
   if (cinch < 1) {
-    const inner = project([FIG8_X1 * cinch, 0])[0];
+    const inner = project([FIG8_X1 * cinchAt(FIG8_X1), 0])[0];
     for (let j = 1; j <= EXT; j++) {
       const f = 1 - Math.pow(1 - j / EXT, 1.6);
       pts.push([lerp(inner, project([FIG8_X1, 0])[0], f), H / 2]);
       cols.push(knotColour(1, flowAt(ms)));
+      us.push(1);
     }
   }
 
@@ -504,8 +590,48 @@ function drawKnot(
     ) {
       pts.splice(i, 1);
       cols.splice(i, 1);
+      us.splice(i, 1);
     }
   }
+  /* Resampled to an even spacing along the strand before anything is drawn.
+     The centre line is sampled by CURVE PARAMETER, and curve parameter is not
+     distance: consecutive samples on the finished shape sit anywhere from
+     0.0044 to 0.0416 apart, a 9.5:1 spread. Nothing downstream wants that. The
+     crossing window below is +/- 0.024 of the strand, and on the old spacing
+     that was a different physical length at each of the four crossings — so the
+     contact shadow would have been a different size at each one. */
+  {
+    const acc = [0];
+    for (let i = 1; i < pts.length; i++)
+      acc.push(acc[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+    const total = acc[acc.length - 1];
+    if (total > 1) {
+      const n = pts.length;
+      const rp: Pt[] = [];
+      const rc: string[] = [];
+      const ru: number[] = [];
+      let j = 1;
+      for (let i = 0; i < n; i++) {
+        const want = (total * i) / (n - 1);
+        while (j < acc.length - 1 && acc[j] < want) j++;
+        const span = acc[j] - acc[j - 1] || 1;
+        const f = clamp01((want - acc[j - 1]) / span);
+        rp.push([
+          lerp(pts[j - 1][0], pts[j][0], f),
+          lerp(pts[j - 1][1], pts[j][1], f),
+        ]);
+        rc.push(cols[f < 0.5 ? j - 1 : j]);
+        ru.push(lerp(us[j - 1], us[j], f));
+      }
+      pts.length = 0;
+      cols.length = 0;
+      us.length = 0;
+      pts.push(...rp);
+      cols.push(...rc);
+      us.push(...ru);
+    }
+  }
+
   const M = pts.length;
 
   /* Quarter-ellipse ends, matching the corners the landing div will have once
@@ -527,33 +653,162 @@ function drawKnot(
     return halfW - amp + amp * Math.sqrt(Math.max(0, 1 - (1 - d) * (1 - d)));
   };
 
-  let runStart = 0;
-  for (let i = 1; i <= M; i++) {
-    if (i < M && cols[i] === cols[runStart]) continue;
-    const seg = pts.slice(runStart, Math.min(M, i + 1));
-    if (seg.length > 1) {
-      ctx.beginPath();
-      const poly = ribbonOutline(
-        seg,
-        seg.map((q) => halfAt(q[0])),
-      );
-      poly.forEach((q, j) =>
-        j ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]),
-      );
-      ctx.closePath();
-      ctx.fillStyle = cols[runStart];
-      ctx.fill();
-    }
-    runStart = i;
+  /* ---------------------------------------------------------------------
+     ONE OUTLINE, ONE CLIP.
+
+     Every colour segment used to be its own filled polygon, butted against its
+     neighbour. Each was antialiased against the ink underneath, so at the join
+     the ink showed through as a dark hairline straight across the rope — six of
+     them down the strand, plus two more per crossing from the re-fill. They
+     read as cracks.
+
+     So nothing is butted any more. Clip once to the strand's own outline, then
+     paint the colours as bands WIDER than the strand and overlapping their
+     neighbours. The clip draws the edge; the overlaps mean there is no edge
+     between bands left to get wrong.
+     --------------------------------------------------------------------- */
+  const halfs = pts.map((q) => halfAt(q[0]) * bulge);
+  /* Mean spacing between samples. The strand is resampled by arc length above,
+     so this is the same everywhere and converts a distance in pixels into a
+     number of points. */
+  let step = 1;
+  if (M > 1) {
+    let len = 0;
+    for (let i = 1; i < M; i++)
+      len += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+    step = len / (M - 1) || 1;
   }
 
-  /* Crossings are found on the MORPHED polyline every frame, not read from a
-     table of the finished shape. They have to be: mid-morph there may be one,
-     or two, or none, and a gap punched where a crossing has not happened yet
-     is a notch in open air. */
+  const path = (poly: Pt[]) => {
+    const p = new Path2D();
+    for (let j = 0; j < poly.length; j++)
+      j ? p.lineTo(poly[j][0], poly[j][1]) : p.moveTo(poly[j][0], poly[j][1]);
+    p.closePath();
+    return p;
+  };
+
+  /* The light. ONE raking source, up and to the left, and it never moves.
+     A rope is a cylinder, and the eye reads roundness from a bright band down
+     one side and a body that falls off toward the other. It needs nothing else.
+
+     Both are built by shifting the CENTRE LINE by a constant vector in SCREEN
+     space, not along the local normal. A directional light does not care which
+     way the strand happens to be running, and following the normal would swap
+     the highlight to the other side every time the rope turned back on itself.
+
+     And it is a RAMP, not two tones. A single dark band and a single light band
+     gave the rope a crisp horizontal edge down its middle — two flat colours,
+     which is the thing this is meant to fix. Eight faint passes at increasing
+     offset accumulate into a smooth falloff instead, because each one covers a
+     slightly smaller crescent than the last. */
+  const LX = -0.40 * halfW;
+  const LY = -0.54 * halfW;
+  const OVERLAP = 3;
+
+  const paintColour = (a: number, b: number) => {
+    if (b - a < 2) return;
+    const seg = pts.slice(a, b);
+    const segH = halfs.slice(a, b);
+    ctx.save();
+    ctx.clip(path(ribbonOutline(seg, segH)));
+    let rs = a;
+    for (let i = a + 1; i <= b; i++) {
+      if (i < b && cols[i] === cols[rs]) continue;
+      const lo = Math.max(a, rs - OVERLAP);
+      const hi = Math.min(b, i + OVERLAP);
+      if (hi - lo > 1) {
+        const band = pts.slice(lo, hi);
+        ctx.fillStyle = cols[rs];
+        // 1.7x the strand's own width: the band overflows the clip on both
+        // sides, so the clip is the only thing that ever draws an edge.
+        ctx.fill(path(ribbonOutline(band, band.map(() => halfW * 1.7))));
+      }
+      rs = i;
+    }
+    ctx.restore();
+  };
+
+  /* IT STOPS BEING A ROPE.
+
+     Phase 5 hands the bar to a FLIP'd div filled flat with the strike's own
+     #a04a2c — no light, no shading, because the strike in the wordmark is a
+     graphic mark and not a photograph of one. A lit cylinder swapped for a flat
+     rectangle pops on the handover frame. So the light ramps off over the last
+     300ms, which is also the window in which the knot stops being a knot: the
+     rope resolves into the mark as the shape resolves into the bar, and the two
+     read as one move rather than as a dissolve followed by a swap.
+
+     It finishes 60ms BEFORE the sequence does, not on the last frame, so the
+     handover cannot land on a frame that is still half lit. */
+  const lit = 1 - clamp01((ms - (TOTAL_MS - 340)) / 280);
+
+  /* Applied ONCE, to the whole strand, after every occlusion is resolved.
+     Per-run it was applied twice wherever a crossing window was repainted, and
+     the double dose showed as a lighter rectangle with hard vertical edges
+     sitting on the rope. */
+  const applyLight = () => {
+    ctx.save();
+    ctx.clip(path(ribbonOutline(pts, halfs)));
+    if (lit <= 0.001) {
+      ctx.restore();
+      return;
+    }
+    /* Ten passes spread across the FULL width of the strand, not the middle
+       half of it. The offset runs along a screen-space vector, and only its
+       component across the strand moves the shade — so a spread that looked
+       like it reached the far edge stopped short of it, and the outer third of
+       the dark side sat at maximum with no gradient in it at all. That is a
+       flat dark body with a bright edge, which is what it looked like once the
+       rope got big. */
+    const SHADE = 10;
+    ctx.fillStyle = `rgba(0,0,0,${(0.031 * lit).toFixed(4)})`;
+    for (let k = 1; k <= SHADE; k++) {
+      const d = (3.1 * k) / SHADE;
+      ctx.fill(
+        path(
+          ribbonOutline(
+            pts.map((q): Pt => [q[0] - LX * d, q[1] - LY * d]),
+            halfs,
+          ),
+        ),
+      );
+    }
+    const LIT = 6;
+    ctx.fillStyle = `rgba(255,255,255,${(0.030 * lit).toFixed(4)})`;
+    for (let k = 1; k <= LIT; k++) {
+      const d = 0.28 + (0.95 * k) / LIT;
+      ctx.fill(
+        path(
+          ribbonOutline(
+            pts.map((q): Pt => [q[0] + LX * d, q[1] + LY * d]),
+            halfs.map((h) => h * 0.62),
+          ),
+        ),
+      );
+    }
+    ctx.restore();
+  };
+
+  /* The head is round. It was a square chop on a slant for the whole 1540ms of
+     the draw, which is the one shape a cut rope never has. Drawn under the
+     strand so only the protruding half-disc shows. */
+  if (head < 1 && M > 1) {
+    const tip = pts[M - 1];
+    ctx.beginPath();
+    ctx.arc(tip[0], tip[1], halfs[M - 1] * 0.99, 0, Math.PI * 2);
+    ctx.fillStyle = cols[M - 1];
+    ctx.fill();
+  }
+
+  paintColour(0, M);
+
+  /* Crossings are still FOUND per frame on the morphed polyline — mid-draw
+     there may be one, two or none, and a gap punched where a crossing has not
+     happened yet is a notch in open air. What is no longer decided per frame is
+     which strand passes over: that is looked up in the table built from the
+     finished shape, matched by curve parameter. See `knotGeom`. */
   /* Below this the loops are smaller than the ribbon is thick, so there are
-     no holes left to punch — and a gap the width of the strand cut into a
-     lump the size of the strand is a hole in the middle of nothing. */
+     no holes left to punch. */
   const probe: Pt[] = [];
   let live: { first: number; second: number; at: Pt }[] = [];
   if (cinch > 0.42) {
@@ -571,59 +826,82 @@ function drawKnot(
             (o, j) =>
               j < i && Math.hypot(o.at[0] - c.at[0], o.at[1] - c.at[1]) < 14,
           ),
-      )
-      .sort((a, b) => a.first - b.first);
+      );
 
-    for (let ci = 0; ci < live.length; ci++) {
-      const c = live[ci];
-      // Alternating over/under; the checkbox swaps in the brief's sequence.
-      const firstOver = opts.briefOverUnder
-        ? ci === 0 || ci === 3
-        : ci % 2 === 0;
-      const over = firstOver ? c.first : c.second;
-      const halfWin = 0.022;
-      const n = 24;
-      const win: Pt[] = [];
-      const gap: number[] = [];
-      const wCols: string[] = [];
-      for (let i = 0; i < n; i++) {
-        const u = clamp01(over - halfWin + (2 * halfWin * i) / (n - 1));
-        const f = u * (M - 1);
-        const a = Math.floor(f);
-        const b = Math.min(M - 1, a + 1);
-        win.push([
-          lerp(pts[a][0], pts[b][0], f - a),
-          lerp(pts[a][1], pts[b][1], f - a),
-        ]);
-        gap.push(halfW + halfW * 0.5 * Math.sin((i / (n - 1)) * Math.PI));
-        wCols.push(cols[a]);
+    /* How much of the contact shadow is showing. It ramps in with the crossing
+       rather than appearing at full strength the frame the strands meet. */
+    const shade = clamp01((cinch - 0.42) / 0.16) * lit;
+
+    for (const c of live) {
+      /* The lookup, and the whole point of carrying `us`.
+         `c.first` and `c.second` are positions in THIS FRAME'S array, and that
+         array is a growing prefix of the strand during the draw and a shrinking
+         one during the cinch — so the same crossing's normalised index wanders
+         by more than the gap between two crossings. Matching on it put crossing
+         2 against crossing 1's row for twenty frames, and the strand flipped.
+         `us` converts back to the curve parameter the point actually came from,
+         which never moves, and the match is then exact. */
+      const uf = us[Math.round(clamp01(c.first) * (M - 1))];
+      const usd = us[Math.round(clamp01(c.second) * (M - 1))];
+      let ref = g.cross[0];
+      let bestD = Infinity;
+      for (const r of g.cross) {
+        const d = Math.abs(r.first - uf) + Math.abs(r.second - usd);
+        if (d < bestD) {
+          bestD = d;
+          ref = r;
+        }
       }
-      const fill = (poly: Pt[], col: string) => {
-        ctx.beginPath();
-        poly.forEach((q, j) =>
-          j ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]),
-        );
-        ctx.closePath();
-        ctx.fillStyle = col;
-        ctx.fill();
-      };
-      fill(ribbonOutline(win, gap), "#0d0c0a");
-      let rs = 0;
-      for (let i = 1; i <= n; i++) {
-        if (i < n && wCols[i] === wCols[rs]) continue;
-        const sub = win.slice(rs, Math.min(n, i + 1));
-        if (sub.length > 1)
-          fill(
-            ribbonOutline(
-              sub,
-              sub.map((q) => halfAt(q[0])),
-            ),
-            wCols[rs],
-          );
-        rs = i;
-      }
+      const over = ref.overIsFirst ? c.first : c.second;
+
+      const halfWin = 0.024;
+      const i0 = Math.max(0, Math.round((over - halfWin) * (M - 1)));
+      const i1 = Math.min(M, Math.round((over + halfWin) * (M - 1)) + 1);
+      if (i1 - i0 < 2) continue;
+      const win = pts.slice(i0, i1);
+      const winH = halfs.slice(i0, i1);
+
+      /* THE CONTACT SHADOW, and the reason the hard slot is gone.
+         The old code cut an ink-coloured gutter 1.5x the strand's width through
+         whatever lay under the crossing. On the ink ground it read as a gap,
+         which is honest, but a gap is a hole — it carries no information about
+         WHICH strand is nearer, only that something was removed. A shadow does:
+         the near strand casts it, the far strand receives it, and on the ink
+         ground it costs nothing because black on black is invisible. So the
+         ground still shows a clean separation and the rope now shows depth. */
+      ctx.save();
+      /* Tight. The blur is a fraction of the strand, so when the rope got to
+         0.10 of the viewport the shadow grew with it and turned into a haze
+         that made the near strand look translucent. A contact shadow is short
+         by definition — it is the gap between two things that are touching. */
+      ctx.shadowColor = `rgba(0,0,0,${(0.55 * shade).toFixed(3)})`;
+      ctx.shadowBlur = halfW * 0.26;
+      ctx.shadowOffsetX = halfW * 0.07;
+      ctx.shadowOffsetY = halfW * 0.11;
+      ctx.fillStyle = "#000";
+      /* Inset by a whisker. This black is a shadow-CASTER and nothing else —
+         the repaint below covers it exactly. Except at the edge, where both are
+         antialiased: the caster laid black at half coverage and the repaint
+         restored only half of it, leaving a dark hairline across the rope at
+         every window boundary. Shrinking the caster inside the repaint's clip
+         puts its soft edge where the repaint is already solid. */
+      ctx.fill(path(ribbonOutline(win, winH.map((h) => h - 1.25))));
+      ctx.restore();
+
+      /* The near strand, repainted crisp on top of its own shadow — and over a
+         WIDER span than the shadow was cast from. `shadowBlur` throws the
+         shadow in every direction, including back along the strand that casts
+         it, so a dark band appeared on the over strand just past each end of
+         the window and the window itself read as a lighter rectangle with hard
+         edges. The repaint has to reach past the blur to wipe it. */
+      const pad = Math.ceil((halfW * 0.9) / Math.max(1, step));
+      paintColour(Math.max(0, i0 - pad), Math.min(M, i1 + pad));
     }
   }
+
+  /* Last, and once. Every crossing is resolved by now, so the light lands on
+     the finished rope rather than on each piece as it is laid down. */
+  applyLight();
 }
 
 /** Point on the knot at normalised ARC length. */

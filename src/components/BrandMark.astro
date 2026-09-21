@@ -22,9 +22,9 @@
  * mark's strike is #A04A2C whatever the ground, and that exact value is what
  * the intro has to match.
  */
-import wordmarkLight from '../assets/logo/wordmark_secondary/Wordmark_Secondary.svg';
-import wordmarkDark from '../assets/logo/wordmark_secondary/Reverse_Wordmark_Secondary.svg';
-import lockupRaw from '../assets/logo/wordmark_primary/Wordmark_Flush.svg?raw';
+import wordmarkLight from '../assets/logo/knotless-secondary.svg';
+import wordmarkDark from '../assets/logo/knotless-secondary-reverse.svg';
+import lockupRaw from '../assets/logo/knotless-lockup-inline.svg?raw';
 
 interface Props {
   /** "wordmark" = the name alone. "lockup" = the name with the tagline under it. */
@@ -42,20 +42,29 @@ interface Props {
 }
 const { variant = 'wordmark', alt = '', class: className = '', sentinel = false } = Astro.props;
 
-/* Prepare the inline lockup once, at build time:
- *  - ink glyphs -> currentColor, so the theme drives them
- *  - the terracotta RECT gets data-strike (the tagline PATH must not, and is
- *    the only other #A04A2C element in the file)
- *  - strip the fixed width/height so CSS sizes it; keep the viewBox
- *  - drop the XML comment the _Flush derivation added                          */
+/* Prepare the inline lockup once, at build time. Almost nothing is left to do
+ * here, because the asset now ships in the right shape:
+ *
+ *  - the glyphs are already `currentColor`, so the theme drives them
+ *  - the strike is already `var(--color-ember)` and the tagline already
+ *    `var(--color-accent-type)`, which is the DESIGN.md rule enforced in the
+ *    asset rather than remembered at the call site: the strike is a MARK and
+ *    may take ember's 4.83:1, the tagline is TYPE and may not
+ *  - the measurement rect is already there, carrying `data-strike`
+ *
+ * That rect is the one place an asset and a piece of motion code are coupled.
+ * The drawn strike is a boolean intersection of a bar with the `o`, so it is a
+ * path with no width/height/rx to read; the rect sits invisibly at exactly its
+ * bounding box so the hero intro can land a flying bar on it with
+ * getBoundingClientRect. Redraw the wordmark and the rect moves with it.
+ *
+ * Only the sizing attributes have to go, so CSS can size it.                   */
 const lockupSvg = lockupRaw
   .replace(/<!--[\s\S]*?-->/g, '')
   /* Scoped to the OPENING TAG, not the whole file. A global strip also eats
-   * width="35" height="5" off the strike <rect> and collapses the one element
-   * this whole exercise exists to measure. */
+   * width and height off the strike <rect> and collapses the one element this
+   * whole exercise exists to measure. */
   .replace(/<svg[^>]*>/, (tag) => tag.replace(/\s(width|height)="[\d.]+"/g, ''))
-  .replace(/fill="#1F1F1D"/g, 'fill="currentColor"')
-  .replace(/<rect([^>]*?)fill="#A04A2C"/, '<rect data-strike$1fill="#A04A2C"')
   .replace('<svg', '<svg class="brand__svg" preserveAspectRatio="xMidYMid meet"');
 
 const light = wordmarkLight;
@@ -79,16 +88,16 @@ const dark = wordmarkDark;
         src={light.src}
         alt={alt}
         aria-hidden={alt ? undefined : 'true'}
-        width="266"
-        height="48"
+        width="3585"
+        height="752"
       />
       <img
         class="brand__img brand__img--dark"
         src={dark.src}
         alt={alt}
         aria-hidden={alt ? undefined : 'true'}
-        width="266"
-        height="48"
+        width="3585"
+        height="752"
       />
     </span>
   )

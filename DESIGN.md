@@ -20,104 +20,143 @@ Three pillars, in order. **Simple** is load-bearing; the other two qualify it.
 
 ### What we are not
 
-Not a SaaS product site. Not an agency showreel. Not a tech startup. The register is **a printed document set by someone who cared** — an editorial white paper, not a landing page.
+Not a SaaS product site. Not an agency showreel. Not a tech startup. The register is **an engineering drawing and an audit register** — the working, shown. Hairline grids and index labels are *structure*, never decoration, and never invented: a label on this site points at something real, or it is deleted.
 
 ---
 
 ## 02 · Colour
 
-Five values. No tints, no shades, no transparencies, no gradients, no sixth colour.
+**One palette, two polarities.** The site is the dark polarity. The register — the printed
+deliverable, which is photocopied and read round a table — is the light one. Not a rebrand and not
+a theme toggle for its own sake: the same five values, inverted, because a dark document is bad on
+toner and worse projected.
 
-| Token | Hex | Role |
+Five values. No tints, no shades, no gradients, no sixth colour. `global.css` wipes Tailwind's
+palette with `--color-*: initial` before defining them, which makes off-brand colour literally
+unavailable. **Keep that.**
+
+| | Hex | Role |
 |---|---|---|
-| `--color-ink` | `#1F1F1D` | All type, line work, reversed surfaces. Warm near-black, never pure black |
-| `--color-terracotta` | `#A04A2C` | Accent only. One per composition |
-| `--color-cream` | `#EFE9DD` | Page and default surface |
-| `--color-white` | `#FFFFFF` | Form fields and inset panels only. Never a page background |
-| `--color-warm-grey` | `#8A8580` | Secondary text, captions, metadata, rules |
+| Ink | `#0D0C0A` | The page, dark polarity. Warm near-black, never pure black |
+| Cream | `#EFE9DD` | Type on ink; the page in the light polarity |
+| Dim | `#A29B91` | Secondary text, captions, metadata |
+| **Oxide** | `#9E3418` | **The accent on a LIGHT ground.** Type, rules, fills |
+| **Ember** | `#CF5B30` | **The accent on a DARK ground — graphic marks only, ≥24px** |
+| Ember, lifted | `#E0764D` | **The accent on a DARK ground — type, ≥14px** |
 
-`global.css` wipes Tailwind's default palette with `--color-*: initial` before defining these. **Keep that.** It makes off-brand colour literally unavailable, which is the cheapest possible enforcement mechanism.
+### The accent rule
 
-### Terracotta discipline
+One hue, three values, each with a stated job. Measured, not asserted (WCAG 2.2, computed from the
+hex):
 
-Terracotta is a **mark**, not a UI colour. Permitted uses, exhaustively:
+| Pair | Ratio | Verdict |
+|---|---|---|
+| Cream on Ink — body copy | **16.17 : 1** | APCA Lc −93.6. The dark ground was never the problem |
+| Dim on Ink — secondary | 7.11 : 1 | Passes AA and AAA |
+| Oxide on Cream | **5.87 : 1** | The light polarity's accent. Passes AA |
+| `#E0764D` on Ink | **6.39 : 1** | The dark polarity's accent **as type** |
+| Ember `#CF5B30` on Ink | 4.83 : 1 | Marks only — a 1px rule, an index, a caret |
+| Terracotta `#A04A2C` on Ink | **3.27 : 1** | **Fails AA. Never type.** |
 
-- The logo strike
-- The accent rule above a section heading (one per composition)
-- The tagline in lockup form
-- The left rule on a form status message
-- Inline text links within body prose
-
-**Never:** a button fill, a background, body type, an icon fill, a hover state, a border on more than one element per view, or any semantic role (error / success / warning). Errors are Ink with a terracotta rule, not terracotta text.
+**Terracotta and ember are never type on the dark ground.** This is absolute. It is the one real
+accessibility defect the old system carried, and it is a usage rule, not a reason to flip the page.
+Accent type on ink is `#E0764D` or it does not exist.
 
 ### Combinations
 
-- **Ink on Cream** — the default register. Most of the site.
-- **Cream on Ink** — reversed. One panel per page maximum, the closing CTA.
-- **Terracotta on Cream** or **on Ink** — accent only.
-- **Never:** Terracotta on White, Cream on White, Ink on Terracotta.
+- **Cream on Ink** — the default register. Most of the site.
+- **Ink on Cream** — the inverted panel. One per page maximum, and the register's own ground.
+- **`#E0764D` on Ink** / **Oxide on Cream** — accent type, respectively.
+- **Ember on Ink** — marks at 24px and above. Rules, indices, carets, the logo strike.
+- **Never:** terracotta or ember as type on ink, cream on white, ink on terracotta.
 
 ---
 
 ## 03 · Typography
 
-**This section overrides Brand Guidelines v2.1 §04**, which specifies a single family. The site now uses two.
+**This section overrides Brand Guidelines v2.1 §04 and every earlier version of this file.** The
+site used Inter with Lora, then Inter with JetBrains Mono. It now uses one superfamily in three
+registers.
 
-### The split
+### IBM Plex — Serif, Sans, Mono
 
-| Face | Applies to |
-|---|---|
-| **Inter** (variable, self-hosted) | Wordmark, h1–h3, nav, buttons, labels, eyebrows, captions, metadata, the industries grid, form labels, footer |
-| **Lora** (variable, self-hosted) | Body paragraphs, standfirst/lead lines, pull quotes, legal prose |
+| Face | Applies to | Never |
+|---|---|---|
+| **IBM Plex Serif** | Display only — hero, section headings, pull moments. Above 32px | Body, UI, anything small |
+| **IBM Plex Sans** | Everything a reader actually reads, plus all UI: body, nav, buttons, labels, captions | — |
+| **IBM Plex Mono** | **Rendered arithmetic only.** Figures, the working, table columns | Running words, labels, nav, eyebrows |
 
-### Why two, and why these two
+Mono on running words is the failure mode to watch. The moment it leaves the arithmetic, the
+technicality becomes costume — and this firm sells the rigour, not a picture of it.
 
-The wordmark is **Inter SemiBold 600 with a custom knot-o** — confirmed by outline overlay, every glyph within 0.5% of Inter 600. Headings therefore cannot leave Inter without orphaning the logo on its own site.
+### Why this family
 
-Lora carries the body because an all-Inter page reads as framework default to precisely the audience most primed to notice. Restricting Lora to prose means the serif never appears adjacent to the mark, so the logo relationship stays exact.
+Measured from the binaries with fontTools, not taken from the specimen:
 
-**Rule:** Lora must never sit adjacent to the wordmark. Nav, footer and any lockup context stay wholly Inter.
+| Face | Digit widths | Tabular by default | `I` vs `l` |
+|---|---|---|---|
+| **IBM Plex Sans** | 600–600 | **yes** | **distinct** |
+| **IBM Plex Serif** | 600–600 | **yes** | **distinct** |
+| **IBM Plex Mono** | 600–600 | **yes** | **distinct** |
+| Inter *(what we shipped)* | **407–646** | **no** | **identical forms** |
+
+Plex is the only family measured that is tabular across sans, serif and mono **with no CSS at all**,
+and that disambiguates `I` from `l`. For a firm whose deliverable is a column of figures a sceptic
+checks by hand, that is the whole argument. Inter's digits swing 59% and its `I` and `l` are the
+same rectangle.
+
+It also releases the old lock. The previous system said headings could not leave Inter without
+orphaning the wordmark. The wordmark is now drawn, so the UI type is chosen freely.
+
+*Caveat on record: no `zero` (slashed-zero) feature was found in the Fontsource latin subsets. If a
+slashed zero is ever wanted, verify against the full upstream binary first.*
 
 ### Scale
 
-Desktop / mobile. Mobile breakpoint is `max-width: 639px`, applied by overriding the tokens — not by adding `sm:` variants at call sites.
+Desktop / mobile. The mobile breakpoint is `max-width: 639px`, applied by overriding tokens — never
+by adding `sm:` variants at call sites.
 
-| Role | Desktop | Mobile | Face | Weight | Line-height | Tracking |
-|---|---|---|---|---|---|---|
-| Hero h1 | fluid to 108px | 38px | Inter | 600 | 1.02 | −3.5% |
-| Section h2 | 52px | 24px | Inter | 600 | 1.1 | −2% |
-| Sub-heading h3 | 22px | 16px | Inter | 600 | 1.5 | −2% |
-| Standfirst / lead | 22px | 16px | Lora | 400 | 1.5 | 0 |
-| **Body** | **18px** | **16px** | **Lora** | 400 | 1.6 | 0 |
-| Pull quote | 28px | 20px | Lora | 400 italic | 1.4 | 0 |
-| Content sub-head | 18px | 16px | Inter | 600 | 1.5 | 0 |
-| Label / eyebrow / nav | 12px | 11px | Inter | 500 | 1.4 | +8% |
-| Tagline (lockup) | — | — | Inter | 500 | — | +15% |
-| Caption / metadata | 14px | 13px | Inter | 400 | 1.5 | 0 |
+| Role | Desktop | Mobile | Face | Weight | Tracking |
+|---|---|---|---|---|---|
+| Hero h1 | fluid to 104px | 44px | **Serif** | 600 | −4.5% |
+| Section h2 | fluid to 60px | 34px | **Serif** | 600 | −3% |
+| Sub-heading h3 | 24px | 20px | Sans | 600 | −1.5% |
+| Standfirst / lead | fluid to 26px | 17px | Sans | 400 | 0 |
+| **Body** | **18px** | **16px** | **Sans** | 400 | 0 |
+| Label / eyebrow / nav | 12px | 11px | Sans | 500 | +8.5% |
+| Caption / metadata | 13px | 13px | Sans | 400 | 0 |
+| **Figures, the working** | — | — | **Mono** | 400–500 | 0 |
 
-**Mobile body is 16px, not 14px.** The previous 14px was below comfortable reading size, and a serif needs more room than a sans. This is not negotiable downward.
+**Mobile body is 16px and never lower.** Not negotiable downward.
+
+Carry `font-variant-numeric: tabular-nums lining-nums` on every table and figure. Plex is tabular by
+default, so this is belt and braces rather than the mechanism — but it survives a family change.
 
 ### Measure
 
-Body copy holds **68–70 characters** at desktop.
-
-`--container-prose` must be corrected. It is currently declared `38rem` but never emitted, because `max-w-prose` resolves to Tailwind's built-in `65ch` — producing 84–88 characters at 1440px, well past the target.
-
-Fix by defining an explicit utility rather than relying on `max-w-prose`. Starting value: **40rem (640px)**, then measure and adjust — Lora is wider than Inter, so the Inter-derived 38rem will undershoot.
-
-**Verify empirically at 1440px before accepting.** Report the achieved character count.
-
-Below 640px the container caps the measure and 68 characters is physically unreachable. That is expected; do not compensate by shrinking type.
-
-### Italics
-
-Lora's italics are its strongest feature and give the site an emphasis device it currently lacks — one that is neither bold, nor terracotta, nor a strike.
-
-**Reserve italics for pull quotes and for a single emphasised phrase within a paragraph.** Not for captions, not for UI, not for whole paragraphs.
+Body holds **62–70 characters** at desktop. `--container-prose` is the control. Verify empirically
+at 1440px and report the achieved count; do not trust `max-w-prose`, which resolves to Tailwind's
+`65ch` and overshoots.
 
 ### Delivery
 
-Both faces self-hosted as variable woff2, subset, preloaded, `font-display: swap`, with a metric-matched fallback. **No Google Fonts CDN and no third-party font request** — this is a privacy-posture requirement, not a performance preference, for a firm that sells compliance assessment.
+Four files, self-hosted as woff2 in `src/assets/fonts/`, declared as `@font-face` in
+`BaseLayout.astro` so the URLs carry Astro's `base`:
+
+| File | Axis / weight | Size |
+|---|---|---|
+| `plex-sans-variable.woff2` | `wght` 100–700 | 45.7 KB |
+| `plex-serif-600.woff2` | 600 | 20.5 KB |
+| `plex-mono-400.woff2` | 400 | 14.7 KB |
+| `plex-mono-500.woff2` | 500 | 14.9 KB |
+
+Sans and Serif are preloaded — both are above the fold. Mono is not; it swaps.
+
+**The variable axis stops at 700.** Anything asking for 800 or 900 gets a synthesised weight, so
+those are forbidden.
+
+**No Google Fonts and no third-party font request.** This is a privacy-posture requirement, not a
+performance preference, for a firm that sells compliance assessment.
 
 ---
 
@@ -125,33 +164,41 @@ Both faces self-hosted as variable woff2, subset, preloaded, `font-display: swap
 
 ### Assets
 
-All logo SVGs are **transparent and cropped to the ink bounding box**. They no longer carry a baked-in background rect or empty artboard padding. Clear space lives in CSS.
+Twelve SVGs, all transparent, all cropped to the ink bounding box. Clear space lives in CSS.
 
-| Variant | Use |
-|---|---|
-| `wordmark_secondary/Wordmark_Secondary.svg` | Nav and footer, on cream |
-| `wordmark_primary/Wordmark.svg` | OG image, lockup contexts where the tagline appears |
-| `wordmark_secondary/Reverse_Wordmark_Secondary.svg` | On Ink panels |
-| `mark/Reverse_Mark.svg` | Favicons, app icons |
+| | Normal | Reverse | Mono | Mono reverse |
+|---|---|---|---|---|
+| **Primary** — wordmark + `AI UNTANGLED` | ink + oxide | cream + ember | ink | cream |
+| **Secondary** — wordmark alone | ink + oxide | cream + ember | ink | cream |
+| **Icon** — the struck `o` | ink + oxide | cream + ember | ink | cream |
+
+On this site: **reverse** everywhere, because the page is ink. Mono variants exist for
+single-colour reproduction — embroidery, fax, a client's own template.
 
 ### Rules
 
-- Wordmark is **lowercase, always**. Never `Knotless`, never `KNOTLESS`.
-- Clear space equals the cap height of the lowercase `k` on all sides. For the icon mark, half the `o` height.
-- Minimum icon mark size: 16px. Below this the strike may not resolve; accept a strikeless knot rather than thickening the strike, which would break the letter-weight-to-strike-weight relationship.
-- The strike is never a standalone graphic. The **accent rule** (§06) is a separate device.
-- No containing shape, no effects, no rotation, no stretching, no italicising.
+- Lowercase, always. Never `Knotless`, never `KNOTLESS`.
+- The company is **Knotless**. `AI` appears in the tagline, never inside the wordmark.
+- Clear space equals the cap height of the `k` on all sides; half the `o` height for the icon.
+- The strike sits inside the `o`'s boundary and never extends past it, at any size.
+- The strike is present at **every** size. It is not optional below a threshold.
+- The strike is never a standalone graphic. The accent rule (§06) is a separate device.
+- No containing shape *except* where a platform forces one (iOS, Android, app stores) — then
+  specify it rather than pretend it will not happen.
+- No effects, no rotation, no stretching, no italicising.
 
-### Wordmark metrics — corrected
+### The strike and the hero intro
 
-Brand Guidelines v2.1 states Bold 700 and −3% letterspacing. Both are wrong against the shipping asset.
+`BrandMark.astro` inlines the primary lockup as SVG rather than shipping an `<img>`, because the
+hero intro flies a bar onto the strike and an `<img>` cannot be measured from the outside. The
+strike therefore carries `data-strike` and is measured with `getBoundingClientRect`.
 
-| | v2.1 says | Measured from SVG |
-|---|---|---|
-| Weight | Bold 700 | **SemiBold 600** |
-| Tracking | −3% | **+1.9%** (open, not tight) |
+In the drawn wordmark the visible strike is a **boolean intersection** of a bar with the `o`, so it
+is a path with no `width`/`height`/`rx` to read. The SVG therefore also carries an invisible
+`<rect data-strike>` at exactly the visible strike's bounding box, purely as the measurement target.
 
-`--tracking-wordmark: -0.03em` in `global.css` is unused and has the wrong sign. Correct it to `+0.019em` or delete it.
+**If the wordmark is ever redrawn, that rect has to move with it.** It is the one place where an
+asset and a piece of motion code are coupled.
 
 ---
 
@@ -185,11 +232,11 @@ Brand Guidelines v2.1 states Bold 700 and −3% letterspacing. Both are wrong ag
 
 ### The accent rule
 
-A ~3.5rem terracotta horizontal rule above a section heading, drawing left-to-right on reveal. **Once per composition.** It echoes the logo strike without reusing it.
+A ~3.5rem **ember `#CF5B30`** horizontal rule above a section heading, drawing left-to-right on reveal. **Once per composition.** It echoes the logo strike without reusing it. Ember because it is a mark, not type — see §02.
 
 ### Buttons
 
-- Primary: Ink fill, cream text, Inter 500, uppercase, +8% tracking. Minimum 44px tall.
+- Primary: terracotta `#B0461F` fill, cream text, Plex Sans 500, uppercase, +8.5% tracking. Minimum 44px tall. A **fill** is not type, so the fill may carry the brand value; the label on it must clear AA against it.
 - Secondary: Ink outline, transparent fill.
 - Inverse: for Ink panels.
 - **Terracotta is never a button fill.**
@@ -305,9 +352,10 @@ Recorded so the guidelines can be amended to match.
 
 | # | v2.1 | Here | Reason |
 |---|---|---|---|
-| 1 | One typeface family across the brand; face mixing forbidden | Inter + Lora | An all-Inter page reads as framework default. Restricting Lora to prose preserves the logo relationship |
-| 2 | Wordmark weight Bold 700 | SemiBold 600 | Measured from the shipping SVG |
-| 3 | Wordmark tracking −3% | +1.9% | Measured from the shipping SVG |
+| 1 | One typeface family across the brand; face mixing forbidden | **IBM Plex superfamily — Serif, Sans, Mono** | One family, three registers. Measured tabular by default across all three, and `I` ≠ `l`. Inter's digits swing 59% |
+| 2 | Wordmark set in a typeface | **Drawn** | Set in Inter 600, the wordmark was the default face of every AI product the buyer distrusts. Drawing it breaks the dependency between the logo and the UI type |
+| 3 | Wordmark tracking −3% | Drawn, so not applicable | The shipping asset measured +1.9% against a stated −3%. That the two disagreed was the diagnosis: nobody owned the letterforms |
+| 3a | Terracotta as the single accent | **Three values of one hue, by job** | Terracotta as type on ink measures 3.27:1 and fails AA. Oxide on light, ember for marks on dark, `#E0764D` for type on dark |
 | 4 | Mobile body 14px | 16px | Below comfortable reading size, more so for a serif |
 | 5 | "SMEs in professional services and property management" | Size qualifier removed | Open to all business sizes. Vertical focus retained |
 
@@ -318,10 +366,12 @@ Recorded so the guidelines can be amended to match.
 A flat list. Any of these in a diff is a defect.
 
 1. A sixth colour, or any tint, shade, gradient or transparency of the five.
-2. Terracotta as a button fill, background, body type, or semantic state colour.
+2. Terracotta or ember **as type on the dark ground**. Accent type on ink is `#E0764D` or it does not exist.
 3. More than one terracotta element per composition.
-4. A typeface other than Inter or Lora.
-5. Lora in the nav, footer, buttons, labels, or adjacent to the wordmark.
+4. A typeface other than IBM Plex Serif, Sans or Mono.
+5. Plex Mono on running words — labels, nav, eyebrows, prose. Mono is rendered arithmetic only.
+5a. Plex Serif below 32px.
+5b. A font weight above 700. The variable axis stops there; anything higher is synthesised.
 6. Mobile body type below 16px.
 7. `outline: none` without a replacement focus style.
 8. A hover state on a non-interactive element.

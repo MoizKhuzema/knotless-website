@@ -11,11 +11,20 @@
  * process resolves into. Curves mean people, right angles mean machines, and
  * the whole site is the moment between them.
  *
- * Type is Inter — the wordmark's own face — carrying display and reading,
- * against JetBrains Mono for every number, label and index. Sans plus mono is
- * the register of an instrument, not a magazine. There is no display serif:
- * a high-contrast serif reads as editorial luxury, which is not what an
- * automation firm sells.
+ * Type is the IBM PLEX superfamily in three registers: Serif carries display
+ * above 32px, Sans carries everything a reader actually reads plus all UI, and
+ * Mono is reserved for rendered arithmetic ONLY — the moment it lands on
+ * running words the technicality becomes costume.
+ *
+ * Plex rather than Inter because it was MEASURED, not chosen: Plex Sans, Serif
+ * and Mono are all tabular by default with no CSS at all, and all distinguish
+ * `I` from `l`. Inter's digit advances swing from 407 to 646 units and its `I`
+ * and `l` are the same rectangle. For a firm whose deliverable is a column of
+ * figures a sceptic checks by hand, that is the whole argument.
+ *
+ * The serif is here for the reason the old comment denied one: it separates
+ * the ARGUMENT register from the EVIDENCE register. It is not editorial
+ * luxury because it is the same family as the interface, not a contrast to it.
  * ===================================================================== */
 
 @import 'tailwindcss';
@@ -33,7 +42,18 @@
   --color-ink-panel: #1a1815; /* cards, insets                     */
   --color-cream: #efe9dd; /* primary text                          */
   --color-cream-dim: #a29b91; /* secondary text, metadata          */
-  --color-ember: #cf5b30; /* MARKS on ink: rules, indices, carets  */
+  /* MARKS on ink, at 24px and above: rules, indices, carets, the logo strike.
+     4.83:1 against the page — enough for a graphic, NOT enough for type. */
+  --color-ember: #cf5b30;
+  /* ACCENT TYPE on ink, 14px and above. 6.39:1.
+     The absolute rule this token exists to enforce: terracotta measures 3.27:1
+     as type on this ground and fails AA outright, and ember at 4.83:1 only just
+     clears it at large sizes. That was the one real accessibility defect the
+     old palette carried, and it is a usage rule rather than a reason to flip
+     the page — cream on ink measures 16.17:1 and APCA Lc -93.6, which is above
+     the ideal for body text. So: accent type on the dark ground is THIS value
+     or it does not exist. */
+  --color-accent-type: #e0764d;
   /* FILLS. The brand terracotta, exactly as the logo sets it. It is a separate
      token from --color-ember because the two cannot be one value: ember is
      lifted so a 1px rule and an 11px index stay legible on the near-black
@@ -109,18 +129,27 @@
   --color-invert-bg: #efe9dd;
   --color-invert-fg: #16150f;
   --color-invert-fg-dim: #2c2a22;
-  --color-invert-accent: #b4491f;
+  /* The inverted panel is CREAM, so its accent is the light polarity's:
+     oxide, measured 5.87:1 on this cream. */
+  --color-invert-accent: #9e3418;
   --color-invert-line: rgba(22, 21, 15, 0.2);
   --color-invert-texture: rgba(22, 21, 15, 0.055);
 
   /* --- Type families -------------------------------------------------
    * Instrument Serif carries display only — hero, section headings, pull
-   * moments. Inter carries everything a reader actually reads, plus all UI,
-   * which keeps it adjacent to the wordmark it matches. */
-  --font-sans: 'Inter Variable', 'Inter Fallback', system-ui, -apple-system,
+   * moments, and never below 32px. Sans carries everything a reader actually
+   * reads plus all UI. Mono is rendered arithmetic only — never a label, never
+   * the nav, never an eyebrow.
+   *
+   * The variable axis on Sans is wght 100-700, measured from the binary. There
+   * is no 800 and no 900: asking for one gets a synthesised weight, so
+   * DESIGN.md forbids them. */
+  --font-serif: 'Plex Serif', 'Plex Serif Fallback', Georgia, 'Times New Roman',
+    serif;
+  --font-sans: 'Plex Sans', 'Plex Sans Fallback', system-ui, -apple-system,
     'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono Variable', 'Mono Fallback', ui-monospace,
-    'SF Mono', Menlo, monospace;
+  --font-mono: 'Plex Mono', 'Plex Mono Fallback', ui-monospace, 'SF Mono', Menlo,
+    monospace;
 
   /* --- Type scale ----------------------------------------------------
    * Deliberately wide dynamic range. The display sizes are fluid and go far
@@ -189,7 +218,7 @@
   --spacing-section-lg: 9.5rem;
 
   /* --- Containers ------------------------------------------------------ */
-  --container-prose: 36rem; /* reading measure, ~68ch at Inter 18px  */
+  --container-prose: 36rem; /* reading measure — VERIFY at 1440 in Plex */
   --container-text: 46rem;
   --container-page: 80rem; /* wider shell — the design needs the air  */
 
@@ -201,6 +230,19 @@
   --dur-mid: 620ms;
   --dur-slow: 1100ms;
 }
+
+/* Tailwind v4 tree-shakes theme variables no utility references, and nothing
+   uses `font-serif` yet — so `var(--font-serif)` resolved to an empty string
+   and any raw CSS asking for it silently fell back to the browser default.
+   Re-declaring it on :root guarantees the value exists whether it is reached
+   through a utility or through raw CSS. Delete this once a call site uses the
+   `font-serif` utility, or leave it: it costs one declaration and removes a
+   class of silent failure. */
+:root {
+  --font-serif: 'Plex Serif', 'Plex Serif Fallback', Georgia, 'Times New Roman',
+    serif;
+}
+
 
 /* =====================================================================
  * LIGHT GROUND — set data-theme="light" on <html>.
@@ -222,7 +264,8 @@
   --color-ink-panel: #e4dbc8; /* cards sit deeper than the page      */
   --color-cream: #1f1f1d; /* the brand ink, as the type              */
   --color-cream-dim: #6b645a;
-  --color-ember: #a04a2c; /* the brand terracotta, unlifted          */
+  --color-ember: #9e3418; /* oxide — the accent on a light ground, 5.87:1 */
+  --color-accent-type: #9e3418; /* on cream one value does both jobs      */
   --color-line: #cfc4ae;
   --color-wire: #b3a893; /* hairlines need more bite on paper than on ink */
   --color-wire-lit: #7d7263;
@@ -245,7 +288,7 @@
   --color-invert-bg: #1f1f1d;
   --color-invert-fg: #efe9dd;
   --color-invert-fg-dim: #c2bbaf;
-  --color-invert-accent: #cf5b30;
+  --color-invert-accent: #e0764d; /* the panel is ink, so: accent TYPE value */
   --color-invert-line: rgba(239, 233, 221, 0.22);
   --color-invert-texture: rgba(239, 233, 221, 0.055);
 }
@@ -254,19 +297,35 @@
  * Metric-matched fallbacks (zero-download, local fonts only) so the first
  * paint doesn't reflow when the real faces swap in.
  * ------------------------------------------------------------------- */
+/* Derived, not guessed. Plex's hhea metrics are ascent 1025, descent -275,
+   line gap 0 on a 1000 upm, and the average lowercase advance is 0.5050 em for
+   Sans, 0.5582 for Serif, 0.6000 for Mono. size-adjust is that advance over the
+   fallback's; the ascent and descent overrides are Plex's own, divided by it. */
 @font-face {
-  font-family: 'Inter Fallback';
+  font-family: 'Plex Sans Fallback';
   src: local('Arial'), local('Helvetica Neue'), local('Helvetica');
-  ascent-override: 90.2%;
-  descent-override: 22.48%;
+  ascent-override: 101.37%;
+  descent-override: 27.2%;
   line-gap-override: 0%;
-  size-adjust: 107.4%;
+  size-adjust: 101.1%;
 }
 
 @font-face {
-  font-family: 'Mono Fallback';
+  font-family: 'Plex Serif Fallback';
+  src: local('Georgia'), local('Times New Roman'), local('Times');
+  ascent-override: 91.69%;
+  descent-override: 24.6%;
+  line-gap-override: 0%;
+  size-adjust: 111.8%;
+}
+
+@font-face {
+  font-family: 'Plex Mono Fallback';
   src: local('SF Mono'), local('Menlo'), local('Consolas');
-  size-adjust: 100%;
+  ascent-override: 102.81%;
+  descent-override: 27.58%;
+  line-gap-override: 0%;
+  size-adjust: 99.7%;
 }
 
 /* ---------------------------------------------------------------------
@@ -297,7 +356,10 @@
 
   html {
     font-family: var(--font-sans);
-    font-feature-settings: 'cv11', 'ss01';
+    /* `cv11` and `ss01` were Inter's single-storey-l and alternate-digit sets.
+       Plex has neither, and it needs neither: it ships tabular figures and a
+       distinct `I`/`l` by default, which is why it was chosen. */
+    font-variant-numeric: tabular-nums lining-nums;
     font-optical-sizing: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -676,7 +738,7 @@
    * global for that reason, not by preference.
    */
   .legal-prose {
-    /* The site's prose measure. A ch is the width of a ZERO, which in Inter is
+    /* The site's prose measure. A ch is the width of a ZERO, which in Plex is
        0.63em against an average character nearer 0.5, so this sets about 68
        characters a line rather than 56. */
     max-width: 56ch;
@@ -717,7 +779,7 @@
     text-underline-offset: 0.25em;
   }
   .legal-prose a:hover,
-  .legal-prose a:focus-visible { color: var(--color-ember); }
+  .legal-prose a:focus-visible { color: var(--color-accent-type); }
   .legal-prose ul, .legal-prose ol { margin-top: 1.1rem; padding-left: 1.5rem; }
   .legal-prose ul { list-style: disc; }
   .legal-prose ol { list-style: decimal; }

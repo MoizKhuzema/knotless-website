@@ -37,7 +37,7 @@
       the two read as one opaque ground until this one lifts. */}
   <div class="intro__bg"></div>
   <canvas class="intro__canvas" data-intro-canvas></canvas>
-  {/* The landing bar. Two layers: the strike's literal #A04A2C underneath, the
+  {/* The landing bar. Two layers: the strike's own value underneath, the
       ember the canvas resolved to on top. Fading the top one shifts the colour
       using opacity alone, so the colour handover never touches a paint property
       the brief rules out. */}
@@ -213,7 +213,14 @@
 
     function draw(t: number) {
       drawSequence(ctx!, W, H, t * 1000, {
-        cover: 0.6,
+        /* The knot fills the viewport. `cover` is the share of the height the
+           knot occupies AS DRAWN, strand included — see `knotStretch`, which
+           used to divide by a hardcoded guess at the body's height and so meant
+           nothing in particular. At 0.88 on a 16:9 hero the knot stands 90% of
+           the height and the tails run off both edges, which is the proportion
+           in the reference. On a phone the stretch cap takes over and it sits
+           shorter, correctly — past that the lobes become vertical slots. */
+        cover: 0.88,
         wave: 0.038,
         briefOverUnder: false,
         rows: 13,
@@ -268,7 +275,7 @@
         easing: ease,
         fill: 'forwards',
       });
-      // Ember -> the strike's literal #A04A2C, by opacity alone.
+      // Ember -> the strike's own value, by opacity alone.
       ember!.animate([{ opacity: 1 }, { opacity: 0 }], {
         duration: T.fly * 0.8,
         easing: 'linear',
@@ -371,7 +378,10 @@
     position: absolute;
     opacity: 0;
     transform-origin: 0 0;
-    background-color: #a04a2c; /* the strike's literal value, from the asset */
+    /* The strike's value, from the asset. It used to be the literal #a04a2c;
+       the drawn wordmark takes its strike from --color-ember, so this follows
+       the token or the handover frame changes colour. */
+    background-color: var(--color-ember);
     will-change: transform, opacity;
   }
   .intro__bar-ember {

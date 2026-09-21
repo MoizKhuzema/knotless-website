@@ -30,33 +30,47 @@
 
 import { onCurve, selfCrossings, type Pt } from './knot';
 
-/** The knot body, CENTRED on x=0 and spanning 2.70 either side — just over two
- *  thirds of the width, leaving a short tail at each edge. It sat in the right
- *  half with a half-width tail, which left far more straight line than loop and
- *  read as a knot tied at the end of a rope rather than as the shape itself. */
+/**
+ * The knot body, CENTRED on the origin and symmetric under a 180° rotation
+ * about it: point `i` is the exact negation of point `21 - i`.
+ *
+ * That symmetry is the whole point. The previous 22 points were placed by hand
+ * and were symmetric under nothing — measured on the rendered knot, the four
+ * openings ran 432x258 down to 210x141, a 2.73:1 spread by area, and the right
+ * half of the shape enclosed 1.86x the area of the left. A figure-eight diagram
+ * HAS a two-fold rotational symmetry; a drawing of one that does not reads as a
+ * mistake, because the eye knows the two halves should answer each other.
+ *
+ * These are the odd part of the old curve — resampled by arc length, centred,
+ * and averaged against its own 180° rotation — so the shape language survives
+ * and the asymmetry does not. Measured residual under 180° rotation: 0.00%,
+ * at every stretch. The 1.67:1 that remains between the two SIZES of opening is
+ * intrinsic to the figure-eight, and is now an exact pair rather than four
+ * different numbers.
+ */
 const BODY: Pt[] = [
-  [-1.335, 0.1],
-  [-0.446, 0.6],
-  [0.504, 0.95],
-  [1.454, 1.02],
-  [2.284, 0.7],
-  [2.676, 0.0],
-  [2.249, -0.68],
-  [1.394, -1.0],
-  [0.504, -0.92],
-  [-0.244, -0.48],
-  [-0.682, 0.16],
-  [-1.038, 0.66],
-  [-1.572, 0.95],
-  [-2.285, 0.8],
-  [-2.7, 0.2],
-  [-2.522, -0.46],
-  [-1.81, -0.9],
-  [-0.979, -0.84],
-  [-0.149, -0.5],
-  [0.8, -0.1],
-  [1.75, 0.26],
-  [2.7, 0.36],
+  [-2.0175, -0.13],
+  [-1.2709, 0.1061],
+  [-0.5396, 0.386],
+  [0.2034, 0.6317],
+  [0.9716, 0.7782],
+  [1.7473, 0.736],
+  [2.3267, 0.2612],
+  [2.2146, -0.4831],
+  [1.5658, -0.8931],
+  [0.7957, -0.83],
+  [0.206, -0.3329],
+  [-0.206, 0.3329],
+  [-0.7957, 0.83],
+  [-1.5658, 0.8931],
+  [-2.2146, 0.4831],
+  [-2.3267, -0.2612],
+  [-1.7473, -0.736],
+  [-0.9716, -0.7782],
+  [-0.2034, -0.6317],
+  [0.5396, -0.386],
+  [1.2709, -0.1061],
+  [2.0175, 0.13],
 ];
 
 /**
@@ -69,24 +83,32 @@ const BODY: Pt[] = [
  * letterbox sliver on a phone. Affine, so it cannot destroy a crossing — but
  * that is verified rather than argued.
  */
+/** The entry tail: flat at the edge, easing on a smoothstep into the body's
+ *  first point. The exit tail is this rotated 180°, built in `fig8Ctrl`. */
+const TAIL: Pt[] = [
+  [-4.0, 0.0],
+  [-3.5, -0.0206],
+  [-3.0, -0.0659],
+  [-2.5, -0.1106],
+];
+
 export function fig8Ctrl(stretch = 1.6): Pt[] {
-  const s = (p: Pt): Pt => [p[0], p[1] * stretch];
+  /* The tails are the 180° rotation of each other, like the body. The old pair
+     were not: the left ran flat at y=0 to x=-2.5 and the right eased down from
+     0.24 in four steps, so even with a symmetric body the two ends of the rope
+     entered and left differently. Both now ease from the edge to the body's
+     first point on the same smoothstep, mirrored. */
   return [
-    // Left tail: short, flat, just enough to reach the edge.
-    [-4.0, 0],
-    [-3.5, 0],
-    [-3.0, 0.01 * stretch],
-    [-2.5, 0.03 * stretch],
-    ...BODY.map(s),
-    /* Right tail, out to the edge. Eased down in four steps rather than two:
-       two left the Catmull-Rom overshooting off the last body point and the
-       strand finished on a visible upward wedge instead of running out flat. */
-    [3.0, 0.24 * stretch],
-    [3.4, 0.13 * stretch],
-    [3.75, 0.05 * stretch],
-    [4.0, 0.0],
+    ...TAIL.map((p): Pt => [p[0], p[1] * stretch]),
+    ...BODY.map((p): Pt => [p[0], p[1] * stretch]),
+    ...TAIL.map((p): Pt => [-p[0], -p[1] * stretch]).reverse(),
   ];
 }
+
+/** The body's greatest |y| at stretch 1. The knot's drawn height is derived
+ *  from this, so a coverage target means what it says rather than what a
+ *  hardcoded guess at the body's height said. */
+export const FIG8_Y_MAX = 0.8931;
 
 /** Shape-space x at the far left and far right. The full strand spans these. */
 export const FIG8_X0 = -4.0;

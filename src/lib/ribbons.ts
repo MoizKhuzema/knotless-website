@@ -32,6 +32,19 @@ export type Hex = string;
 /**
  * The palette — ONE set, used by the ribbon field AND by the line's segments.
  *
+ * Every colour is the brand's. It did not used to be: the field ran marigold,
+ * green, periwinkle, rose and mint alongside ember and cream, and those five
+ * covered 46.8% of the screen — measured, at 200ms — while appearing nowhere
+ * else in the identity. The first half-second of the brand was a colour system
+ * the brand does not have.
+ *
+ * What the field needs from a palette is not hue variety but VALUE separation:
+ * enough steps between light and dark that a dozen overlapping ribbons stay
+ * countable. So this is a ramp, L* 92.5 down to 26.3, against a ground at 13.7.
+ * The one pair that sits close in value — cream-dim at 64.3 and light ember at
+ * 61.1 — separates on chroma instead, a flat neutral against a saturated
+ * orange, which is the same trick the site's own type uses.
+ *
  * They were separate, and the field's was nineteen earth tones. Two problems:
  * the field read as shades of terracotta rather than as colour, and the field
  * and the line looked like two different pieces of work, because they were
@@ -46,17 +59,21 @@ export type Hex = string;
  * Nothing here is available to the page.
  */
 export const FIELD_PALETTE: Hex[] = [
-  '#cf5b30', // ember — the brand's orange
-  '#e8a93a', // marigold
   '#efe9dd', // cream
-  '#2f8a5f', // green
-  '#7b6bc4', // periwinkle
-  '#e08aa0', // rose
-  '#8fc9b0', // mint
+  '#d8ccb6', // sand — cream carried toward the ground
+  '#a29b91', // cream-dim
+  '#e0764d', // ember, light
+  '#cf5b30', // ember
+  '#9e3418', // oxide
+  '#5a3524', // bark
 ];
 
 /** What every colour resolves to at the end. */
-export const RESOLVE: Hex = '#a04a2c';
+/* What every ribbon resolves to, and what the final bar is. It must equal the
+   wordmark strike's own value, because phase 5 hands this bar to a FLIP'd div
+   that lands on the strike - the two are the same object across the swap. The
+   strike is now --color-ember, so this is ember. */
+export const RESOLVE: Hex = '#cf5b30';
 
 /** What the canvas is cleared to. Never the page's #0d0c0a: a sub-pixel
  *  antialiasing hairline grounded in the page colour is the page showing
@@ -356,7 +373,22 @@ export function collapseX(
    * over time. */
   const L = half * len;
   const s = Math.pow(clamp01n(u), COLLAPSE.POW);
-  return W - L + ((i + s) / rowCount) * L - slide * half;
+
+  /* The slot is keyed to the row's DISTANCE FROM THE AXIS, not to its index.
+     Keyed to the index, row 0 owned the leftmost slot and row 12 the rightmost,
+     so the top of the field and the bottom of it were aiming at points half a
+     screen apart and the two halves closed at visibly different rates. Measured
+     at 1440x810, 200px from the hole: the lower fan reached 102px from the axis
+     while the upper reached 64px — 1.6:1, every frame of the collapse. The eye
+     reads that as two vanishing points, and as the top sitting behind the
+     bottom.
+
+     Rows equidistant either side of the axis now share a slot, so they arrive
+     together and the fan closes as one shape. The outermost pair lands furthest
+     from the hole, which is also the furthest it has to travel. */
+  const mid = (rowCount - 1) / 2;
+  const rank = mid > 0 ? mid - Math.abs(i - mid) : 0;
+  return W - L + ((rank + s) / (mid + 1)) * L - slide * half;
 }
 
 /** Top and bottom of the finished line, in pixels. Every row collapses to the

@@ -77,16 +77,26 @@ No visual change is finished because the code looks right. Screenshot it, look a
 it is done. Check **1440px and 390px** — the mobile breakpoint is `max-width: 639px` and is
 driven by token overrides, so a desktop-only check proves nothing about phones.
 
-Playwright is **not yet a dependency**. Add it before relying on this rule:
-
-```bash
-npm install --save-dev playwright && npx playwright install chromium
-```
+Playwright **is** a dependency (`devDependencies`). `npm run shot` drives `scripts/screenshot.mjs`;
+if the browser binary is missing, `npx playwright install chromium`.
 
 Compare against `docs/baseline/` to see what actually changed. When `DESIGN.md` asks for an
 empirical check (e.g. the prose measure), report the measured number, not the intended one.
 
-### 3. Simple is the lead pillar — default to subtraction
+### 3. Tailwind v4, and the design system is the token file
+
+There is **no `tailwind.config.js`** and there will not be one. Tailwind is configured entirely in
+the `@theme` block in `src/styles/global.css`, CSS-first.
+
+- **No raw hex at a call site.** Colour comes from a `--color-*` token or it does not go in.
+  If a value is needed that no token names, the token is added first, in `global.css`, with the
+  reason in the comment — that is where the palette is enforced, and `--color-*: initial` is what
+  makes off-brand colour unavailable.
+- **No v3 spellings.** No `theme.extend`, no `@apply` chains standing in for a token.
+- Every installed design skill was written against v3 and will emit raw hex and v3 utilities.
+  That is the most likely way this rule gets broken. Translate before writing.
+
+### 4. Simple is the lead pillar — default to subtraction
 
 Of the three pillars (Simple, Honest, Safe), **Simple is load-bearing**. The reader is a busy
 principal who has stopped taking AI demos. Every element must earn its place.
