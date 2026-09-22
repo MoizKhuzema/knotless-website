@@ -8,7 +8,7 @@
  * reversed panel to close.
  *
  * What went with the old page: the typewriter H1, the eyebrow, the hero CTA,
- * the ember dot markers, the twelve-column career rows, the founder bios, and
+ * the ember dot markers, the twelve-column career rows, the personal bios, and
  * the commented-out portrait band. Three sections now.
  *
  * Each section takes the shape its own content asks for, which is the other
@@ -19,21 +19,21 @@
  *   2 · delivery      the claim at statement size, the mechanics beneath it
  *   3 · the close     the page's single reversed panel
  *
- * Copy lives in src/data/about.ts; founder names and titles in site.ts.
+ * Copy lives in src/data/about.ts.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaButton from '../components/CtaButton.astro';
-import { graph, webPage, founderPersons } from '../lib/schema';
+import { graph, webPage } from '../lib/schema';
 import { ABOUT_META, ABOUT_HERO, ABOUT_DELIVER, ABOUT_CLOSE } from '../data/about';
 
 const origin = Astro.site!.origin;
 const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
 
-/* A Person node per founder, plus this WebPage. The page names both founders in
-   its prose, so the structured data still has something to describe. */
+/* This WebPage only. The page names no individuals, so there is no Person to
+   describe — the canonical Organization node on the homepage carries the claim
+   about the business itself. */
 const schema = graph([
   webPage(origin, { url: pageUrl, name: 'About Us', description: ABOUT_META.description }),
-  ...founderPersons(origin),
 ]);
 ---
 

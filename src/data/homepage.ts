@@ -2,12 +2,10 @@
  * Homepage copy, lifted verbatim from the content brief.
  *
  * This is page CONTENT (the words on the homepage), kept separate from
- * src/config/site.ts, which holds site-WIDE values (legal entity, founders,
- * contacts). Founder names, titles, emails and phone numbers come from
- * site.ts, not here.
+ * src/config/site.ts, which holds site-WIDE values (legal entity, contacts).
  *
- * Four sections: hero, what you get, who you'll be talking to, how to get
- * started. Curly apostrophes throughout (§11.12).
+ * Three sections: hero, what you get, how to get started. Curly apostrophes
+ * throughout (§11.12).
  *
  * NEGATION BUDGET: §11.15 caps this page at ONE negation construction, and it
  * is spent in GET_STARTED.steps[0] — "No AI knowledge needed, no homework."
@@ -102,15 +100,8 @@ export const WHAT_YOU_GET = {
   ],
 } as const;
 
-/** Section 3 — who you'll be talking to. Founder details come from site.ts. */
-export const FOUNDERS_SECTION = {
-  heading: 'Who you’ll be talking to',
-  lead: 'Every Fit Call is taken by us. Every Assessment is run by us.',
-  readMore: { label: 'Read more about us', href: '/about' },
-} as const;
-
 /**
- * Section 4 — how to get started. The page's single reversed Ink panel.
+ * Section 3 — how to get started. The page's single reversed Ink panel.
  *
  * Two statements, not a numbered stepper: the copy describes one call and what
  * you leave with, which is a sequence of two, and numbering two things implies

@@ -2,8 +2,11 @@
  * /about page copy.
  *
  * Page CONTENT, kept separate from src/config/site.ts (site-WIDE values).
- * Founder names and titles live in site.ts; this file holds only the words on
- * the page. Curly apostrophes throughout (§11.12).
+ *
+ * The page names nobody. The two observations are told in the first person —
+ * "One of us", "The other" — because the argument needs two people who saw
+ * two different things, not two names: which of us saw which changes nothing
+ * about the conclusion. Curly apostrophes throughout (§11.12).
  *
  * NEGATION BUDGET — FLAGGED, NOT RESOLVED. §11.15 caps a page at ONE negation
  * construction. This copy, as supplied, carries ten: "the firm we couldn't
@@ -21,11 +24,11 @@
  */
 
 /**
- * Meta description. 118 characters, so a search result does not cut it off.
+ * Meta description. 111 characters, so a search result does not cut it off.
  */
 export const ABOUT_META = {
   description:
-    'Two careers, one conclusion: judgement before technology. Meet Insiya and Huzefa, the founders behind Knotless.',
+    'Two careers, one conclusion: judgement before technology. Meet the founders behind Knotless and how we deliver.',
 } as const;
 
 /**
@@ -50,8 +53,8 @@ export const ABOUT_HERO = {
    */
   heading: { lead: 'We built the firm', tail: 'we couldn’t find.' },
   observations: [
-    'Insiya kept seeing capable people stuck on repetitive work, with budgets too thin to fix it. The problem was rarely the technology. It was that nobody was solving it at a price these businesses could pay.',
-    'Huzefa kept seeing firms lose money on AI because the vendor never surfaced blockers, overcharged, and wrote the ROI case to justify the sale.',
+    'One of us kept seeing capable people stuck on repetitive work, with budgets too thin to fix it. The problem was rarely the technology. It was that nobody was solving it at a price these businesses could pay.',
+    'The other kept seeing firms lose money on AI because the vendor never surfaced blockers, overcharged, and wrote the ROI case to justify the sale.',
   ],
   conclusion:
     'Knotless is the firm neither of us could find: judgement before technology. We find AI opportunities and put a predicted ROI on each one. Every number comes with the working shown so you can check it yourself. If the arithmetic doesn’t support the build, we say so.',
@@ -80,6 +83,6 @@ export const ABOUT_DELIVER = {
 /** Section 3 — the close. The page's single reversed panel. */
 export const ABOUT_CLOSE = {
   heading: 'Say hello.',
-  body: 'Thirty minutes with Insiya or Huzefa. No preparation needed.',
+  body: 'Thirty minutes with the founders. No preparation needed.',
   cta: { label: 'Book a free Fit Call', href: '/contact' },
 } as const;

@@ -616,10 +616,9 @@
     font-weight: 620;
   }
 
-  /* Eyebrow / label. WORDS, so the sans — the mono was carrying "Get in touch",
-     "Co-Founder & CEO" and the copyright line, none of which are data, and a
-     monospaced face on running words is the loudest technical signal a page can
-     make. 13px rather than 11: a label smaller than the text it introduces is a
+  /* Eyebrow / label. WORDS, so the sans — the mono was carrying "Get in touch"
+     and the copyright line, neither of which is data, and a monospaced face on
+     running words is the loudest technical signal a page can make. 13px rather than 11: a label smaller than the text it introduces is a
      label nobody reads. */
   .meta {
     font-family: var(--font-sans);

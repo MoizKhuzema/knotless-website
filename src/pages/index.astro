@@ -1,36 +1,30 @@
 ---
 /**
- * Homepage — four sections: hero, what you get, who you'll be talking to, how
- * to get started. Copy lives in src/data/homepage.ts; founder names, titles,
- * emails and phones in src/config/site.ts.
+ * Homepage — three sections: hero, what you get, how to get started. Copy
+ * lives in src/data/homepage.ts.
  *
- * SECTION RHYTHM (§05, the two-tier rule). Three breaks, two tiers:
+ * SECTION RHYTHM (§05, the two-tier rule). Two breaks, both major:
  *
- *   hero            -> what you get        144px   major: the mark and the
- *                                                  promise end, the argument
- *                                                  begins
- *   what you get    -> who you'll be       96px    minor: one movement. §3 is
- *                      talking to                  the warranty on §2 — "every
- *                                                  Assessment is run by us"
- *                                                  only means something as the
- *                                                  answer to "who does the
- *                                                  thing you just described"
- *   who you'll be   -> how to get started  144px   major: the substance ends,
- *                      talking to                  the close begins
+ *   hero            -> what you get        144px   the mark and the promise
+ *                                                  end, the argument begins
+ *   what you get    -> how to get started  144px   the substance ends, the
+ *                                                  close begins
  *
  * Each section owns its own top break, so the rhythm reads down this file.
- * --spacing-section finally gets emitted; §05 notes it was "defined but never
- * emitted — when everything is a major movement, nothing is".
+ * There is no minor tier on this page: with the middle section gone, both
+ * remaining breaks are movements, and §05's warning cuts the other way — a
+ * 96px break between the only two things on the page would read as a stumble,
+ * not a rest.
  *
  * The pricing calculator §09 reserves a slot for drops in between What you get
- * and Who you'll be talking to, on the same .sidehead grid: one file here and
- * one line below, with the rhythm becoming 144/96/96/144.
+ * and How to get started, on the same .sidehead grid: one file here and one
+ * line below. That is where --spacing-section earns its place, taking the
+ * rhythm to 144/96/144.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import KnotIntro from '../components/KnotIntro.astro';
 import HeroSection from '../components/home/HeroSection.astro';
 import WhatYouGetSection from '../components/home/WhatYouGetSection.astro';
-import FoundersSection from '../components/home/FoundersSection.astro';
 import GetStartedSection from '../components/home/GetStartedSection.astro';
 import { META } from '../data/homepage';
 import { graph, organization, website, webPage } from '../lib/schema';
@@ -41,8 +35,6 @@ const origin = Astro.site!.origin;
 const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
 
 // Connected @graph: the canonical Organization + WebSite, plus this WebPage.
-// Founder Person nodes stay on /about — the @ids are origin-anchored, so
-// duplicating them here would add nothing.
 const schema = graph([
   organization(origin),
   website(origin),
@@ -60,6 +52,5 @@ const schema = graph([
   <KnotIntro />
   <HeroSection />
   <WhatYouGetSection />
-  <FoundersSection />
   <GetStartedSection />
 </BaseLayout>

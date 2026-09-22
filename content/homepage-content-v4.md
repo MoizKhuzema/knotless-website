@@ -95,22 +95,6 @@ Build: quoted separately.
 
 ---
 
-## SECTION 6: FOUNDERS
-
-H2: Meet the founders
-
-Card 1:
-Insiya Karbalai, Co-Founder & CEO
-insiya.karbalai@knotless.com.au
-+61 416 588 531
-
-Card 2:
-Huzefa Karbalai, Co-Founder & COO
-huzefa.karbalai@knotless.com.au
-+61 433 353 544
-
----
-
 ## SECTION 7: GET STARTED
 
 H2: How to get started
