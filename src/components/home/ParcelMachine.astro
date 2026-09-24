@@ -1,0 +1,631 @@
+---
+/**
+ * The parcel machine — an isometric diorama that lights the Industries copy.
+ *
+ * It is a LIGHT SOURCE first and an illustration second. The roof grille is
+ * the lamp; everything else in the scene exists to say where that light comes
+ * from and to give it a reason to pulse. The section's type is then lit from
+ * that exact point: the same radial, at the same origin, painted into the text
+ * with background-clip, so the words nearest the machine are warm and the far
+ * end of the heading falls away. Nothing here is a filter over the section —
+ * the falloff is computed from the grille's real position on screen.
+ *
+ * Without the script the section is untouched: no scene, no ambient layer, and
+ * the type keeps its own colours. Everything below is additive.
+ */
+---
+
+<div class="pm" data-parcel-machine data-avoid-badge aria-hidden="true"></div>
+
+<style>
+  /* Absolutely placed into the section's empty corner by the script, or left
+     in normal flow underneath the link when there is no corner to use. It
+     never participates in layout in the first case and never overlaps
+     anything in the second, so it cannot shift the copy either way. */
+  .pm {
+    pointer-events: none;
+  }
+  .pm svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .pm[data-mode='corner'] {
+    position: absolute;
+    z-index: 0;
+  }
+  .pm[data-mode='flow'] {
+    position: relative;
+    display: block;
+    margin-top: 30px;
+  }
+</style>
+
+<script>
+  /* ---- the camera -------------------------------------------------------
+     Not a true isometric: the vertical axes are shortened so the scene sits
+     about twice as wide as it is tall, which is the shape of the gap it has
+     to live in. */
+  const AX = 0.9, AY = 0.26, BX = -0.56, BY = 0.33, KZ = 0.86;
+  const P = (x: number, y: number, z: number): [number, number] => [
+    x * AX + y * BX,
+    x * AY + y * BY - z * KZ,
+  ];
+  const pts = (a: [number, number][]) => a.map((p) => p.join(',')).join(' ');
+
+  const C = {
+    topM: '#2b241d', frontM: '#1f1a15', rightM: '#171310',
+    topP: '#3b2d21', frontP: '#2c2119', rightP: '#211810',
+    topL: '#251e18', frontL: '#1b1610', rightL: '#15100b',
+    topC: '#262019', frontC: '#1c1712', rightC: '#15110d',
+    line: '#efe8dc', orange: '#c65a31', dark: '#0a0806',
+  };
+  let SW = 1.25;
+
+  /** +x face, +y face, top — the only three a cuboid ever shows this camera. */
+  function cub(x0: number, x1: number, y0: number, y1: number, z0: number, z1: number,
+               top: string, front: string, right: string, stroke = C.line) {
+    const p = (x: number, y: number, z: number) => P(x, y, z);
+    const R = [p(x1, y0, z0), p(x1, y1, z0), p(x1, y1, z1), p(x1, y0, z1)];
+    const F = [p(x0, y1, z0), p(x1, y1, z0), p(x1, y1, z1), p(x0, y1, z1)];
+    const T = [p(x0, y0, z1), p(x1, y0, z1), p(x1, y1, z1), p(x0, y1, z1)];
+    const s = `stroke="${stroke}" stroke-width="${SW}" stroke-linejoin="round"`;
+    return (
+      `<polygon points="${pts(R)}" fill="${right}" ${s}/>` +
+      `<polygon points="${pts(F)}" fill="${front}" ${s}/>` +
+      `<polygon points="${pts(T)}" fill="${top}" ${s}/>`
+    );
+  }
+
+  /** A circle living in one of the three world planes, sampled to a polygon. */
+  function ring(plane: 'z' | 'y' | 'x', cu: number, cv: number, w: number, r: number, n = 36) {
+    const out: [number, number][] = [];
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2;
+      const u = cu + Math.cos(a) * r, v = cv + Math.sin(a) * r;
+      out.push(plane === 'z' ? P(u, v, w) : plane === 'y' ? P(u, w, v) : P(w, u, v));
+    }
+    return pts(out);
+  }
+
+  /* TWO SCENES, ONE RENDERER.
+   *
+   * The desktop and tablet layouts draw the same diorama; the phone draws a
+   * shortened one — less belt, a nearer chute, a smaller deck, no drum — so it
+   * can sit beside the heading at a third of the viewport's width and still
+   * read. Everything that differs between them is data, so there is one set of
+   * drawing code and no second illustration to keep in step. Timing is part of
+   * the geometry: a shorter belt has to run a shorter cycle or the parcels
+   * crawl. */
+  type Geo = {
+    vb: { x: number; y: number; w: number; h: number };
+    kx1: number; legs: [number, number];
+    cx0: number; cx1: number; cy0: number; cy1: number;
+    px0: number; px1: number; py0: number; py1: number;
+    drum: boolean; slatY: number[] | null; slatN: number; ventZ: number[]; lever: boolean;
+    T: number; offs: number[]; tr: number; bx0: number; bx1: number; fall: number; fdx: number;
+  };
+  const G_FULL: Geo = {
+    vb: { x: -70, y: -76, w: 344, h: 220 },
+    kx1: 220, legs: [68, 208], cx0: 234, cx1: 266, cy0: 14, cy1: 46,
+    px0: -14, px1: 282, py0: -14, py1: 84,
+    drum: true, slatY: null, slatN: 6, ventZ: [14, 23, 32, 41], lever: true,
+    T: 4200, offs: [0, 2100], tr: 2600, bx0: 36, bx1: 212, fall: 550, fdx: 28,
+  };
+  const G_COMPACT: Geo = {
+    vb: { x: -62, y: -74, w: 238, h: 186 },
+    kx1: 122, legs: [68, 110], cx0: 132, cx1: 160, cy0: 14, cy1: 46,
+    px0: -14, px1: 174, py0: -14, py1: 70,
+    drum: false, slatY: [17, 25, 33, 41], slatN: 0, ventZ: [10, 17, 24], lever: false,
+    T: 3000, offs: [0, 1500], tr: 1250, bx0: 36, bx1: 114, fall: 450, fdx: 24,
+  };
+
+  type Clip = { x0: number; x1: number; z0: number; z1: number };
+  const FULL = { x0: -1e4, x1: 1e4, z0: -1e4, z1: 1e4 };
+
+  /** A parcel, clipped to a region, so the machine and the platform can swallow it. */
+  function parcel(px: number, pz: number, clip: Clip) {
+    const x0 = Math.max(px, clip.x0), x1 = Math.min(px + 20, clip.x1);
+    const z0 = Math.max(pz, clip.z0), z1 = Math.min(pz + 20, clip.z1);
+    if (x1 - x0 <= 0.2 || z1 - z0 <= 0.2) return '';
+    const y0 = 20, y1 = 40;
+    let s = cub(x0, x1, y0, y1, z0, z1, C.topP, C.frontP, C.rightP);
+    const st = `stroke="${C.orange}" stroke-width="2.4" fill="none" stroke-linecap="butt"`;
+    /* Tape over the top, only when this part actually holds the top face. */
+    if (z1 >= pz + 20 - 0.2) {
+      const cx = px + 10;
+      if (cx > x0 && cx < x1) {
+        s += `<polyline points="${pts([P(cx, y0, z1), P(cx, y1, z1)])}" ${st}/>`;
+      }
+    }
+    /* And down the front, at the parcel's centre, when that centre is in view. */
+    const cx = px + 10;
+    if (cx > x0 && cx < x1) {
+      s += `<polyline points="${pts([P(cx, y1, z1), P(cx, y1, z0)])}" ${st}/>`;
+    }
+    return s;
+  }
+
+  /* ---- where a parcel is at time t -------------------------------------- */
+  function boxState(t: number, off: number, g: Geo) {
+    const ph = (t + off) % g.T;
+    if (ph < g.tr) return { x: g.bx0 + ((g.bx1 - g.bx0) / g.tr) * ph, z: 14, ph };
+    if (ph < g.tr + g.fall) {
+      const s = (ph - g.tr) / g.fall;
+      return { x: g.bx1 + g.fdx * s, z: 14 + 10 * s - 72 * s * s, ph };
+    }
+    return null;
+  }
+
+  function init(host: HTMLElement) {
+    const host2 = host.closest('section');
+    if (!host2) return;
+    const section: HTMLElement = host2;
+    const uid = 'pm' + Math.random().toString(36).slice(2, 8);
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+
+    /* ---- the scene, rebuilt only when the layout changes shape --------- */
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('aria-hidden', 'true');
+    host.appendChild(svg);
+
+    const gX = 9, gX1 = 51, gY = 9, gY1 = 51, ROOF = 64;
+    const kx0 = 60, ky0 = 18, ky1 = 42, kz = 14;
+    const LIGHT = P(30, 30, ROOF);
+    const d = (a: [number, number][]) => 'M' + a.map((p) => p.join(' ')).join('L') + 'Z';
+
+    let G: Geo = G_FULL;
+    let built = '';
+    let R: Record<string, Element> = {};
+
+    function build(g: Geo, sw: number) {
+      const key = `${g === G_FULL ? 'f' : 'c'}:${sw}`;
+      if (key === built) return;
+      built = key;
+      G = g;
+      SW = sw;
+      svg.setAttribute('viewBox', `${g.vb.x} ${g.vb.y} ${g.vb.w} ${g.vb.h}`);
+
+      const defs =
+        `<defs>` +
+        `<radialGradient id="${uid}roof" cx="50%" cy="50%" r="50%">` +
+        `<stop offset="0" stop-color="#fff0d2" stop-opacity="1"/>` +
+        `<stop offset="0.55" stop-color="#ffcf8a" stop-opacity="0.55"/>` +
+        `<stop offset="1" stop-color="#ff9e45" stop-opacity="0"/>` +
+        `</radialGradient>` +
+        `<radialGradient id="${uid}haze" cx="50%" cy="50%" r="50%">` +
+        `<stop offset="0" stop-color="#ffd9a0" stop-opacity="0.55"/>` +
+        `<stop offset="1" stop-color="#ffd9a0" stop-opacity="0"/>` +
+        `</radialGradient>` +
+        `<filter id="${uid}blur" x="-60%" y="-60%" width="220%" height="220%">` +
+        `<feGaussianBlur stdDeviation="5"/></filter>` +
+        `</defs>`;
+
+      /* 1) chute interior */
+      const { cx0, cx1, cy0, cy1 } = g, cz0 = -32;
+      const chute =
+        `<polygon points="${pts([P(cx0, cy0, 0), P(cx1, cy0, 0), P(cx1, cy0, cz0), P(cx0, cy0, cz0)])}" fill="#050403"/>` +
+        `<polygon points="${pts([P(cx0, cy0, 0), P(cx0, cy1, 0), P(cx0, cy1, cz0), P(cx0, cy0, cz0)])}" fill="#0b0907"/>` +
+        `<polygon points="${pts([P(cx0, cy0, cz0), P(cx1, cy0, cz0), P(cx1, cy1, cz0), P(cx0, cy1, cz0)])}" fill="#020202"/>`;
+
+      /* 3) platform, chute cut out of its top face */
+      const { px0, px1, py0, py1 } = g, pz0 = -38;
+      const platform =
+        `<polygon points="${pts([P(px1, py0, pz0), P(px1, py1, pz0), P(px1, py1, 0), P(px1, py0, 0)])}" fill="${C.rightL}" stroke="${C.line}" stroke-width="${SW}"/>` +
+        `<polygon points="${pts([P(px0, py1, pz0), P(px1, py1, pz0), P(px1, py1, 0), P(px0, py1, 0)])}" fill="${C.frontL}" stroke="${C.line}" stroke-width="${SW}"/>` +
+        `<path d="${d([P(px0, py0, 0), P(px1, py0, 0), P(px1, py1, 0), P(px0, py1, 0)])}${d([P(cx0, cy0, 0), P(cx1, cy0, 0), P(cx1, cy1, 0), P(cx0, cy1, 0)])}" fill="${C.topL}" fill-rule="evenodd" stroke="${C.line}" stroke-width="${SW}"/>`;
+
+      /* 4) the exit opening */
+      const ey0 = 16, ey1 = 44, ez0 = 12, ez1 = 38;
+      const exitInt = `<polygon points="${pts([P(60, ey0, ez0), P(60, ey1, ez0), P(60, ey1, ez1), P(60, ey0, ez1)])}" fill="#0a0705"/>`;
+      const exitGlow = `<polygon points="${pts([P(60, ey0 + 3, ez0 + 3), P(60, ey1 - 3, ez0 + 3), P(60, ey1 - 3, ez1 - 3), P(60, ey0 + 3, ez1 - 3)])}" fill="url(#${uid}roof)" filter="url(#${uid}blur)"/>`;
+
+      /* 6) the machine */
+      let machine =
+        `<path d="${d([P(60, 0, 0), P(60, 60, 0), P(60, 60, ROOF), P(60, 0, ROOF)])}${d([P(60, ey0, ez0), P(60, ey1, ez0), P(60, ey1, ez1), P(60, ey0, ez1)])}" fill="${C.rightM}" fill-rule="evenodd" stroke="${C.line}" stroke-width="${SW}"/>` +
+        `<polygon points="${pts([P(0, 60, 0), P(60, 60, 0), P(60, 60, ROOF), P(0, 60, ROOF)])}" fill="${C.frontM}" stroke="${C.line}" stroke-width="${SW}"/>` +
+        `<polygon points="${pts([P(0, 0, ROOF), P(60, 0, ROOF), P(60, 60, ROOF), P(0, 60, ROOF)])}" fill="${C.topM}" stroke="${C.line}" stroke-width="${SW}"/>` +
+        `<polygon points="${pts([P(gX, gY, ROOF), P(gX1, gY, ROOF), P(gX1, gY1, ROOF), P(gX, gY1, ROOF)])}" fill="#120d09" stroke="${C.line}" stroke-width="${SW}"/>` +
+        cub(56, 64, ey0 - 2, ey1 + 2, ez1, ez1 + 5, C.topM, C.frontM, C.rightM);
+      for (const z of g.ventZ) {
+        machine += `<polygon points="${pts([P(8, 60, z), P(34, 60, z), P(34, 60, z + 3.2), P(8, 60, z + 3.2)])}" fill="#0a0705" stroke="${C.line}" stroke-width="${SW * 0.72}"/>`;
+      }
+      machine += `<polygon points="${ring('y', 45, 50, 60, 6)}" fill="#0a0705" stroke="${C.line}" stroke-width="${SW}"/>`;
+      if (g.lever) {
+        machine += `<polyline points="${pts([P(45, 60, 34), P(45, 60, 44)])}" stroke="${C.line}" stroke-width="1.6" fill="none"/>`;
+        machine += `<polygon points="${ring('y', 45, 45, 60, 3.2)}" fill="${C.orange}" stroke="${C.line}" stroke-width="1"/>`;
+      } else {
+        /* No room for a lever at this size; the knob alone still says "a
+           control lives here" and survives being 4px across. */
+        machine += `<polygon points="${ring('y', 53, 50, 60, 3)}" fill="${C.orange}"/>`;
+      }
+
+      /* 7) conveyor */
+      let conveyor = cub(kx0, g.kx1, ky0, ky1, kz - 5, kz, C.topC, C.frontC, C.rightC);
+      for (const lx of g.legs) conveyor += cub(lx, lx + 6, ky0 + 3, ky1 - 3, 0, kz - 5, C.topC, C.frontC, C.rightC);
+      conveyor += `<polygon points="${ring('x', ky0 + 12, kz - 2.5, kx0, 5)}" fill="#1b1611" stroke="${C.line}" stroke-width="${SW * 0.8}"/>`;
+      conveyor += `<polygon points="${ring('x', ky0 + 12, kz - 2.5, g.kx1, 5)}" fill="#1b1611" stroke="${C.line}" stroke-width="${SW * 0.8}"/>`;
+
+      /* 9) drum, on the full scene only */
+      let drum = '';
+      if (g.drum) {
+        const dcx = 160, dcy = 68, dr = 10, dh = 24;
+        drum =
+          `<polygon points="${pts([P(dcx - dr, dcy, 0), P(dcx - dr, dcy, dh), P(dcx + dr, dcy, dh), P(dcx + dr, dcy, 0)])}" fill="${C.frontC}" stroke="${C.line}" stroke-width="${SW}"/>` +
+          `<polygon points="${ring('z', dcx, dcy, dh, dr)}" fill="${C.topC}" stroke="${C.line}" stroke-width="${SW}"/>` +
+          `<polyline points="${pts([P(dcx - dr, dcy, dh * 0.55), P(dcx + dr, dcy, dh * 0.55)])}" stroke="${C.orange}" stroke-width="1.8" fill="none"/>`;
+      }
+
+      svg.innerHTML =
+        defs +
+        `<g>${chute}</g><g data-pm-below></g><g>${platform}</g>` +
+        `<g>${exitInt}</g><g data-pm-exitglow>${exitGlow}</g><g data-pm-in></g>` +
+        `<g>${machine}</g><g data-pm-mglow></g>` +
+        `<g>${conveyor}</g><g data-pm-slats></g><g data-pm-out></g>` +
+        `<g>${drum}</g><g data-pm-roof></g>`;
+
+      R = {
+        below: svg.querySelector('[data-pm-below]')!,
+        in: svg.querySelector('[data-pm-in]')!,
+        out: svg.querySelector('[data-pm-out]')!,
+        slats: svg.querySelector('[data-pm-slats]')!,
+        roof: svg.querySelector('[data-pm-roof]')!,
+        mglow: svg.querySelector('[data-pm-mglow]')!,
+        exitGlow: svg.querySelector('[data-pm-exitglow]')!,
+      };
+    }
+    build(G_FULL, 1.25);
+
+    /* ---- the ambient wash behind the section's type --------------------- */
+    const amb = document.createElement('div');
+    amb.setAttribute('aria-hidden', 'true');
+    amb.className = 'ind__amb';
+    section.insertBefore(amb, section.firstChild);
+
+    /* ---- the copy this light falls on ----------------------------------- */
+    const SHADE: [string, string[]][] = [
+      ['#fff2df,#e9e2d6,#8d867d', ['.ind__h']],
+      ['#fff2df,#ece5d9,#8a847b', ['.vlist__name', '.alink__txt']],
+      ['#ffe4c4,#cbc4b9,#6c675f', ['.vlist__members']],
+      ['#f3e1cb,#a39c91,#67625b', ['.ind__body']],
+    ];
+    const lit: { el: HTMLElement; near: string; mid: string; far: string }[] = [];
+    for (const [cols, sels] of SHADE) {
+      const [near, mid, far] = cols.split(',');
+      for (const sel of sels) {
+        section.querySelectorAll<HTMLElement>(sel).forEach((el) => lit.push({ el, near, mid, far }));
+      }
+    }
+    const rules = Array.from(section.querySelectorAll<HTMLElement>('.vlist__rule'));
+
+    /* ---- placement ------------------------------------------------------ */
+    let LX = 0, LY = 0, RAD = 600;
+    function place() {
+      const shell = section.querySelector<HTMLElement>('.shell');
+      const body = section.querySelector<HTMLElement>('.ind__body');
+      const more = section.querySelector<HTMLElement>('.ind__more a') ??
+                   section.querySelector<HTMLElement>('.ind__more');
+      const endRule = section.querySelector<HTMLElement>('.vlist__rule--end');
+      const head = section.querySelector<HTMLElement>('.ind__h');
+      if (!shell || !body || !more || !endRule || !head) return;
+
+      /* Measure the section WITHOUT the scene in it, and with the heading back
+         at its natural width. Both are things this function sets, and reading
+         the page while they are still applied measures the last answer rather
+         than the question. */
+      head.style.maxWidth = '';
+      host.style.cssText = 'display:none';
+      host.removeAttribute('data-mode');
+
+      const sec = section.getBoundingClientRect();
+      const sh = shell.getBoundingClientRect();
+      const b = body.getBoundingClientRect();
+      const m = more.getBoundingClientRect();
+      /* The closing rule spans the CONTENT column, so it is what the new
+         layouts align to. The shell's own box includes its side padding. */
+      const er = endRule.getBoundingClientRect();
+
+      const left = Math.max(b.right, m.right) + 32;
+      const regionW = sh.right - left;
+      const top = er.bottom + 26;
+      /* Inside the section's CONTENT box. The trailing padding is the black
+         run-out between this section and the next; measuring the region to the
+         padded edge would centre the scene in that run-out too, so the gap
+         could never be opened — every pixel added below would just move the
+         machine down with it. */
+      const padB = parseFloat(getComputedStyle(section).paddingBottom) || 0;
+      const regionH = sec.bottom - padB - 18 - top;
+
+      const opOf = () => {
+        const op = (host.offsetParent as HTMLElement | null) ?? section;
+        return op.getBoundingClientRect();
+      };
+
+      /* The corner has to EXIST and the window has to be a desktop one.
+         Measured space alone puts a 1024-wide portrait tablet on the desktop
+         layout — it really does leave a 282x180 corner — but the brief lists
+         1024 portrait as a tablet, and a diorama that small in the corner is
+         worse than the same one hung under the link. So the measurement still
+         governs (a desktop whose copy grows until the corner closes drops to
+         the tablet layout), with a width floor to settle the tablets that pass
+         it on a technicality. */
+      if (regionW >= 260 && regionH >= 150 && innerWidth >= 1100) {
+        /* DESKTOP, untouched: the full scene fitted into the empty corner. */
+        build(G_FULL, 1.25);
+        const ratio = G_FULL.vb.w / G_FULL.vb.h;
+        const w = Math.min(regionW, regionH * ratio);
+        const h = w / ratio;
+        host.setAttribute('data-mode', 'corner');
+        host.style.cssText = '';
+        host.style.width = `${w}px`;
+        const opR = opOf();
+        host.style.left = `${sh.right - opR.left - w}px`;
+        host.style.top = `${top - opR.top + (regionH - h) / 2}px`;
+      } else if (innerWidth >= 600) {
+        /* TABLET: the corner is gone, but there is still width. Same diorama,
+           smaller, hung off the right of the column under the link. The stroke
+           goes up because a 1.25-unit line stops being a line once the scene
+           is drawn at two-thirds the size. */
+        build(G_FULL, 1.5);
+        host.setAttribute('data-mode', 'flow');
+        host.style.cssText = '';
+        host.style.width = `${Math.min(420, er.width * 0.56)}px`;
+        host.style.marginLeft = 'auto';
+        host.style.marginTop = '34px';
+      } else {
+        /* PHONE: below the copy, the machine and the rows it lights would never
+           share a screen. So it moves up BESIDE the heading — which is the one
+           place there is spare width — and the heading is narrowed to make the
+           room rather than being overlapped. The scene is shortened to suit:
+           less belt, a nearer chute, no drum, and a faster cycle to match. */
+        build(G_COMPACT, 1.9);
+        const contentW = endRule.offsetWidth;
+        const ratioC = G_COMPACT.vb.w / G_COMPACT.vb.h;
+
+        /* THE SCENE GIVES WAY TO THE HEADING, NOT THE OTHER WAY ROUND.
+         *
+         * A flat 30% of the viewport left the heading 204px at 375, and
+         * "Industries we" wants about 207 — eleven pixels short, so it broke
+         * into three lines with "we" stranded on its own. A fixed number
+         * cannot know that: it depends on the copy, the face and the width.
+         *
+         * So the scene starts at 30% and steps down until the heading fits on
+         * two lines, then stops. The result is the largest machine that does
+         * not break the heading, at any width and for any heading. If nothing
+         * in range works, it keeps the smallest and the heading wraps as it
+         * must — never the reverse. */
+        const lineCount = () => {
+          const rg = document.createRange();
+          rg.selectNodeContents(head);
+          return rg.getClientRects().length;
+        };
+        const wMax = Math.round(innerWidth * 0.3);
+        const wMin = Math.round(innerWidth * 0.22);
+        let w = wMin;
+        for (let t = wMax; t >= wMin; t -= 3) {
+          head.style.maxWidth = `${contentW - t - 10}px`;
+          if (lineCount() <= 2) { w = t; break; }
+        }
+        head.style.maxWidth = `${contentW - w - 10}px`;
+        const h = w / ratioC;
+        host.setAttribute('data-mode', 'corner');
+        host.style.cssText = '';
+        host.style.width = `${w}px`;
+        /* LAYOUT metrics, not rects. The heading sits inside a [data-reveal]
+           block, so while that is animating its rect carries a translate that
+           is about to disappear — anchoring to it put the scene twenty pixels
+           low and left it there. offsetTop/offsetLeft are the laid-out values,
+           are immune to the transform, and are already relative to the same
+           .shell the scene is positioned against. Read after the heading has
+           been narrowed, since that is what decides where its last line falls. */
+        const headBottom = head.offsetTop + head.offsetHeight;
+        const contentRight = endRule.offsetLeft + endRule.offsetWidth;
+        host.style.left = `${contentRight - w}px`;
+        host.style.top = `${headBottom + 2 - h}px`;
+      }
+      lightPoint();
+    }
+
+    /* The grille's real position on screen, in the section's coordinates. */
+    function lightPoint() {
+      const ctm = svg.getScreenCTM();
+      const sec = section.getBoundingClientRect();
+      if (!ctm) return;
+      const p = svg.createSVGPoint();
+      p.x = LIGHT[0]; p.y = LIGHT[1];
+      const s = p.matrixTransform(ctm);
+      LX = s.x - sec.left;
+      LY = s.y - sec.top;
+      let far = 1;
+      for (const { el } of lit) {
+        const r = el.getBoundingClientRect();
+        const x0 = r.left - sec.left, y0 = r.top - sec.top, x1 = r.right - sec.left, y1 = r.bottom - sec.top;
+        for (const [cx, cy] of [[x0, y0], [x1, y0], [x0, y1], [x1, y1]]) {
+          far = Math.max(far, Math.hypot(cx - LX, cy - LY));
+        }
+      }
+      RAD = far * 1.05;
+    }
+
+    /* ---- painting the light onto the type -------------------------------- */
+    function paint(L: number) {
+      const sec = section.getBoundingClientRect();
+      /* The ambient layer now starts level with the section, so the light's
+         origin inside it is the section's own coordinate — no offset. */
+      amb.style.background =
+        `radial-gradient(circle ${RAD.toFixed(0)}px at ${LX.toFixed(0)}px ${LY.toFixed(0)}px,` +
+        ` rgba(255,220,176,${(0.1 + 0.07 * L).toFixed(3)}) 0,` +
+        ` rgba(255,220,176,${(0.045 + 0.03 * L).toFixed(3)}) ${(RAD * 0.4).toFixed(0)}px,` +
+        ` transparent ${(RAD * 1.05).toFixed(0)}px)`;
+      const midStop = (0.36 + 0.12 * L) * RAD;
+      for (const { el, near, mid, far } of lit) {
+        const r = el.getBoundingClientRect();
+        const ex = LX - (r.left - sec.left), ey = LY - (r.top - sec.top);
+        el.style.backgroundImage =
+          `radial-gradient(circle ${RAD.toFixed(0)}px at ${ex.toFixed(0)}px ${ey.toFixed(0)}px,` +
+          ` ${near} 0, ${mid} ${midStop.toFixed(0)}px, ${far} ${RAD.toFixed(0)}px)`;
+        el.style.webkitBackgroundClip = 'text';
+        el.style.backgroundClip = 'text';
+        el.style.webkitTextFillColor = 'transparent';
+      }
+      for (const el of rules) {
+        const r = el.getBoundingClientRect();
+        const dx = (r.left + r.width / 2) - sec.left - LX;
+        const dy = (r.top - sec.top) - LY;
+        const dd = Math.min(1, Math.hypot(dx, dy) / RAD);
+        el.style.backgroundColor =
+          `rgba(255, ${Math.round(214 + 30 * dd)}, ${Math.round(170 + 70 * dd)}, ${(0.26 - 0.14 * dd + 0.06 * L).toFixed(3)})`;
+      }
+    }
+    function unpaint() {
+      amb.style.background = '';
+      for (const { el } of lit) {
+        el.style.backgroundImage = '';
+        el.style.webkitBackgroundClip = '';
+        el.style.backgroundClip = '';
+        el.style.webkitTextFillColor = '';
+      }
+      for (const el of rules) el.style.backgroundColor = '';
+    }
+
+    /* ---- the scene's moving parts ---------------------------------------- */
+    /* gate is whether the lamp is CONNECTED, L is how hard it is burning.
+       Two things, and they were one: every glow was written as a floor plus a
+       share of L, so L falling to zero still left the roof at 0.400 and the
+       vents at 0.150 — the machine dimmed on leaving the section but never went
+       out. The floors are what make it read as a lamp at rest rather than a
+       hole, so they stay; they are simply switched off with everything else. */
+    function drawScene(t: number, L: number, gate = 1) {
+      const states = G.offs.map((o) => boxState(t, o, G));
+      let below = '', inside = '', outside = '';
+      for (const st of states) {
+        if (!st) continue;
+        below += parcel(st.x, st.z, { ...FULL, z1: 0 });
+        inside += parcel(st.x, st.z, { x0: -1e4, x1: 60, z0: 0, z1: 1e4 });
+        outside += parcel(st.x, st.z, { x0: 60, x1: 1e4, z0: 0, z1: 1e4 });
+      }
+      R.below.innerHTML = below;
+      R.in.innerHTML = inside;
+      R.out.innerHTML = outside;
+
+      let sl = '';
+      const step = 12, off = ((t / 1000) * 26) % step;
+      for (let x = kx0 + off; x < G.kx1; x += step) {
+        sl += `<polyline points="${pts([P(x, ky0, kz), P(x, ky1, kz)])}" stroke="#4a4038" stroke-width="${SW * 0.88}" fill="none"/>`;
+      }
+      R.slats.innerHTML = sl;
+
+      const panel = (0.4 + 0.55 * L) * gate;
+      let roof = `<polygon points="${pts([P(gX, gY, ROOF), P(gX1, gY, ROOF), P(gX1, gY1, ROOF), P(gX, gY1, ROOF)])}" fill="url(#${uid}roof)" opacity="${panel.toFixed(3)}"/>`;
+      const ys = G.slatY ?? Array.from({ length: G.slatN + 1 }, (_, i) => gY + ((gY1 - gY) / G.slatN) * i);
+      for (const y of ys) {
+        roof += `<polyline points="${pts([P(gX, y, ROOF), P(gX1, y, ROOF)])}" stroke="${C.line}" stroke-width="${SW * 0.88}" fill="none" opacity="0.85"/>`;
+      }
+      roof += `<ellipse cx="${LIGHT[0]}" cy="${LIGHT[1] - 16}" rx="46" ry="26" fill="url(#${uid}haze)" opacity="${((0.25 + 0.6 * L) * gate).toFixed(3)}"/>`;
+      R.roof.innerHTML = roof;
+      R.exitGlow.setAttribute('opacity', ((0.25 + 0.7 * L) * gate).toFixed(3));
+
+      let mg = '';
+      for (const z of G.ventZ) {
+        mg += `<polygon points="${pts([P(8, 60, z), P(34, 60, z), P(34, 60, z + 3.2), P(8, 60, z + 3.2)])}" fill="#ffca7a" opacity="${((0.15 + 0.6 * L) * gate).toFixed(3)}"/>`;
+      }
+      mg += `<polygon points="${ring('y', 45, 50, 60, 5)}" fill="#ffd89a" opacity="${((0.18 + 0.66 * L) * gate).toFixed(3)}"/>`;
+      R.mglow.innerHTML = mg;
+    }
+
+    /* ---- intensity, and the run loop -------------------------------------- */
+    let L = 0, gate = 0, on = false, raf = 0, last = 0, clock = 0, powerAt = -1, offAt = -1;
+
+    function targetAt(t: number) {
+      /* "work" peaks while a parcel is being pushed out, then decays. */
+      let work = 0;
+      for (const off of [0, 2100]) {
+        const ph = (t + off) % 4200;
+        const w = ph < 500 ? 1 : ph > 3700 ? (ph - 3700) / 500 : Math.exp(-(ph - 500) / 420);
+        work = Math.max(work, w);
+      }
+      return 0.55 + 0.45 * work + 0.03 * Math.sin(t / 170) * work;
+    }
+
+    function frame(now: number) {
+      if (document.hidden) { raf = requestAnimationFrame(frame); last = now; return; }
+      const dt = last ? Math.min(now - last, 64) : 16;
+      last = now;
+
+      if (offAt >= 0) {
+        /* Fading out: the belt is already frozen, the light is going. */
+        const k = Math.min(1, (now - offAt) / 400);
+        L = L * (1 - k * 0.35);
+        gate = 1 - k;
+        drawScene(clock, L, gate);
+        paint(L * gate);
+        if (k >= 1) {
+          L = 0;
+          gate = 0;
+          drawScene(clock, 0, 0);
+          unpaint();
+          raf = 0; offAt = -1;
+          return;
+        }
+        raf = requestAnimationFrame(frame);
+        return;
+      }
+
+      let target: number;
+      if (powerAt >= 0) {
+        /* Power-up: a filament catching, before the belt is allowed to run. */
+        const e = now - powerAt;
+        target = e < 90 ? 0.8 : e < 170 ? 0.15 : e < 260 ? 0.6 : targetAt(clock);
+        if (e > 450) powerAt = -1;
+      } else {
+        clock += dt;
+        target = targetAt(clock);
+      }
+      L += (target - L) * 0.12;
+      gate = 1;
+      drawScene(clock, L, 1);
+      paint(L);
+      raf = requestAnimationFrame(frame);
+    }
+
+    function start() {
+      if (on) return;
+      on = true; offAt = -1;
+      if (reduce.matches) { L = 0.7; gate = 1; drawScene(2000, 0.7, 1); paint(0.7); return; }
+      powerAt = performance.now(); last = 0;
+      if (!raf) raf = requestAnimationFrame(frame);
+    }
+    function stop() {
+      if (!on) return;
+      on = false;
+      if (reduce.matches) return;
+      offAt = performance.now();
+      if (!raf) raf = requestAnimationFrame(frame);
+    }
+
+    /* Hysteresis: it has to be well inside to switch on and well outside to
+       switch off, or a section edge parked on the threshold strobes. */
+    function check() {
+      const r = section.getBoundingClientRect();
+      const V = innerHeight;
+      if (!on && r.top < V * 0.75 && r.bottom > V * 0.25) start();
+      else if (on && (r.bottom < V * 0.18 || r.top > V * 0.92)) stop();
+    }
+
+    place();
+    drawScene(0, 0, 0);
+    let queued = false;
+    addEventListener('scroll', () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => { queued = false; check(); });
+    }, { passive: true });
+    addEventListener('resize', () => { place(); if (on) paint(L); }, { passive: true });
+    document.addEventListener('visibilitychange', () => { last = 0; });
+    document.fonts?.ready.then(() => { place(); if (on) paint(L); });
+    check();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-parcel-machine]').forEach(init);
+</script>

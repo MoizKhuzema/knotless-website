@@ -38,7 +38,7 @@ const { title, description, version, lastUpdated, headings, html, sibling } = As
    light under the cursor is not a thing a policy should have an opinion about.
    Added before render, so the one pointer rAF picks them up with everything
    else at load. */
-const body = html.replaceAll('<hr>', '<hr data-catch="line" />');
+const body = html.replaceAll('<hr>', '<hr />');
 
 /* Numbered sections only — the document H1 is set by the page, and every H3 is
    a sub-point inside a section rather than a place to jump to. */
@@ -69,13 +69,12 @@ const rows = Math.ceil(entries.length / 2);
   {/* --- Contents --------------------------------------------------------- */}
   <section class="sect sect--first">
     <nav class="toc" aria-label="Contents" data-reveal>
-      <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
       <p class="meta toc__label r" style="--i: 1">On this page</p>
       <ol class="toc__list" style={`--rows: ${rows}`}>
         {
           entries.map((entry, i) => (
             <li class="toc__row r" style={`--i: ${i + 2}`}>
-              <span class="toc__rule" data-catch="line" aria-hidden="true" />
+              <span class="toc__rule" aria-hidden="true" />
               <span class="toc__n meta--num" aria-hidden="true">
                 {entry.index}
               </span>
@@ -106,6 +105,23 @@ const rows = Math.ceil(entries.length / 2);
 </BaseLayout>
 
 <style>
+  /* NO VIEWPORT FLOOR ON A DOCUMENT.
+   *
+   * `main section { min-height: 100svh }` in global.css gives the homepage's
+   * sections a screen each so one section's light clears before the next
+   * arrives. A policy is not lit and is not composed in screens — it is read
+   * top to bottom — and the floor was inflating the title block from 109px of
+   * content to a full 1150px, then padding the contents list out by another
+   * 565px. Over a thousand pixels of black between the title and the first
+   * clause, on both legal pages.
+   *
+   * Scoped to this component, so it is the document opting out rather than the
+   * rule weakening. */
+  .ldoc,
+  .sect {
+    min-height: 0;
+  }
+
   /* --- Section rhythm, shared with the rest of the site ------------------- */
   .sect {
     padding-top: var(--spacing-section-lg);

@@ -1,30 +1,35 @@
 ---
 /**
- * Homepage — three sections: hero, what you get, how to get started. Copy
- * lives in src/data/homepage.ts.
+ * Homepage — seven sections. Copy lives in src/data/homepage.ts; founder names,
+ * titles, emails and phones in src/config/site.ts.
  *
- * SECTION RHYTHM (§05, the two-tier rule). Two breaks, both major:
+ * THE ARGUMENT, in order. Each section only earns its place by being the
+ * answer to the question the one above it raises:
  *
- *   hero            -> what you get        144px   the mark and the promise
- *                                                  end, the argument begins
- *   what you get    -> how to get started  144px   the substance ends, the
- *                                                  close begins
+ *   hero            the claim: we tell you what AI is worth, including when
+ *                   the answer is nothing
+ *   problem         who says so? three businesses, three stages of the same
+ *                   failure, and the finding underneath them
+ *   what you get    fine, so what do you actually do about it
+ *   industries      and who do you do it for (and why only two)
+ *   pricing         what does it cost. Published, because a page that sells
+ *                   "we show the working" cannot hide its own number
+ *   get started     what happens next
  *
- * Each section owns its own top break, so the rhythm reads down this file.
- * There is no minor tier on this page: with the middle section gone, both
- * remaining breaks are movements, and §05's warning cuts the other way — a
- * 96px break between the only two things on the page would read as a stumble,
- * not a rest.
- *
- * The pricing calculator §09 reserves a slot for drops in between What you get
- * and How to get started, on the same .sidehead grid: one file here and one
- * line below. That is where --spacing-section earns its place, taking the
- * rhythm to 144/96/144.
+ * SECTION RHYTHM (§05, the two-tier rule). Every section owns its own top
+ * break, so the rhythm reads down this file. They all take
+ * --spacing-section-lg: with six sections the two-tier rhythm was being
+ * asked to mark five boundaries, and a rhythm with five exceptions is not one.
+ * If a pair ever needs to read as a single movement, the minor tier is still
+ * there for it.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import KnotIntro from '../components/KnotIntro.astro';
+import TorchStage from '../components/home/TorchStage.astro';
 import HeroSection from '../components/home/HeroSection.astro';
+import ProblemSection from '../components/home/ProblemSection.astro';
 import WhatYouGetSection from '../components/home/WhatYouGetSection.astro';
+import IndustriesSection from '../components/home/IndustriesSection.astro';
+import PricingSection from '../components/home/PricingSection.astro';
 import GetStartedSection from '../components/home/GetStartedSection.astro';
 import { META } from '../data/homepage';
 import { graph, organization, website, webPage } from '../lib/schema';
@@ -35,6 +40,8 @@ const origin = Astro.site!.origin;
 const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
 
 // Connected @graph: the canonical Organization + WebSite, plus this WebPage.
+// Founder Person nodes stay on /about — the @ids are origin-anchored, so
+// duplicating them here would add nothing.
 const schema = graph([
   organization(origin),
   website(origin),
@@ -42,15 +49,26 @@ const schema = graph([
 ]);
 ---
 
-<!-- navReveal: the hero carries both the wordmark and the call to action, so
-     the nav's flanks stay empty until the hero's button scrolls under the bar.
-     See Nav.astro. -->
-<BaseLayout title={title} description={description} schema={schema} navReveal bleed>
-  {/* First in the slot on purpose: its gate script is synchronous, so it must
-      run while the parser is still ABOVE the hero. Revealing the overlay any
-      later would show the hero and then cover it. */}
-  <KnotIntro />
-  <HeroSection />
+<!-- The hero carries its own plain mark at the top left now, which is why the
+     sticky bar stays away until the hero has gone: the same wordmark on screen
+     twice is one too many.
+
+     KnotIntro is gone. The overlay's whole sequence was a thread that
+     ties itself, pulls straight and LANDS on the terracotta strike inside the
+     hero lockup — it finds that rect with [data-strike] and bails if it is not
+     there. With the lockup gone the animation has no destination, so leaving
+     the component mounted would just run a gate script that hides the page and
+     then tears itself down. -->
+<BaseLayout title={title} description={description} schema={schema} bleed>
+  {/* One torch lights both: it starts at the bottom of the hero and rides up,
+      turns and grows into the problem section as the page scrolls. They are
+      wrapped together because the light is continuous across them. */}
+  <TorchStage>
+    <HeroSection />
+    <ProblemSection />
+  </TorchStage>
   <WhatYouGetSection />
+  <IndustriesSection />
+  <PricingSection />
   <GetStartedSection />
 </BaseLayout>

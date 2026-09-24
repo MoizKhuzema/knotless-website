@@ -2,84 +2,126 @@
  * Homepage copy, lifted verbatim from the content brief.
  *
  * This is page CONTENT (the words on the homepage), kept separate from
- * src/config/site.ts, which holds site-WIDE values (legal entity, contacts).
+ * src/config/site.ts, which holds site-WIDE values (legal entity, founders,
+ * contacts). Founder names, titles, emails and phone numbers come from
+ * site.ts, not here.
  *
- * Three sections: hero, what you get, how to get started. Curly apostrophes
- * throughout (§11.12).
+ * Seven sections: hero, problem, what you get, industries, pricing, founders,
+ * how to get started.
  *
- * NEGATION BUDGET: §11.15 caps this page at ONE negation construction, and it
- * is spent in GET_STARTED.steps[0] — "No AI knowledge needed, no homework."
- * Anything added here that reaches for a second one has to displace it.
+ * COPY RULES. Curly apostrophes and curly quotes throughout (§11.12). NO EM
+ * DASHES anywhere in this file's strings — ranges are written "3,000 to 4,500"
+ * and asides are punctuated with a colon or a full stop. Australian spelling
+ * throughout ("specialise", not "specialize").
  */
 
 export const HERO = {
-  // The h1. Also SITE.tagline, but set here as page content: the hero renders
-  // it as the page heading, not as a lockup line under the mark.
-  headline: 'AI Untangled.',
+  /**
+   * The h1, and real type rather than the lockup's artwork. The mark has left
+   * the hero entirely and lives in the nav now: the page's heading is a claim,
+   * and a claim has to be a sentence a reader and a crawler can both read.
+   */
+  headline: 'The truth about what AI is worth in your business',
   standfirst:
-    'We’re helping clients discover what AI is worth in their business. We calculate where AI saves money in their workflows, then build solutions that pay back.',
+    'Knotless helps you make safe AI investments. We find AI opportunities in your business, and calculate if they actually pay back. If the maths doesn’t support it, we say so. If the case is there, we build it.',
   cta: {
     label: 'Book a free Fit Call',
     href: '/contact', // all "Book a free Fit Call" CTAs route to the contact page
   },
+  /** The line under the button: what the call actually costs the reader. */
+  ctaNote: '30 mins. One of your workflows costed live.',
 } as const;
 
 /**
  * Meta description, deliberately NOT the standfirst.
  *
- * The standfirst is 156 characters; search results cut off around 155, so
- * using it would publish a sentence truncated by a hair. This is the first
- * clause of the same claim, complete at 106 — and it still carries "in the
- * first year", which the hero has dropped. That is deliberate: a search result
- * has one line to make the claim and no page around it to qualify the claim
- * later.
+ * The standfirst runs past 200 characters and search results cut off around
+ * 155, so using it would publish a sentence truncated by a hair. This is the
+ * same claim compressed to 148.
  */
 export const META = {
   description:
-    'We calculate where AI saves money in your workflows, then build solutions that pay back in the first year.',
+    'We find AI opportunities in your business and calculate if they actually pay back. If the maths doesn’t support it, we say so. If the case is there, we build it.',
 } as const;
 
-/** Section 2 — what the work actually produces, then who it is for. */
+/**
+ * Section 1 — the problem, told in the client's own words.
+ *
+ * Three quotes, three stages of the same failure. They are attributed to a
+ * KIND of business rather than a named one, because none of them are
+ * testimonials and dressing them up as testimonials would be a lie. The
+ * attribution carries the stage; the quote carries the feeling.
+ */
+export const PROBLEM = {
+  heading: 'Different industries. Same knots.',
+  quotes: [
+    {
+      quote: 'We know we should be doing something. We don’t know what.',
+      attribution:
+        'An accounting practice. AI on every partner meeting agenda. Nobody owns the next step.',
+    },
+    {
+      quote:
+        'Every vendor promises we’ll save hours. None of them will put a dollar on it.',
+      attribution:
+        'A property management principal who stopped taking demos until someone shows working, not slides.',
+    },
+    {
+      quote:
+        'We bought something last year. I honestly couldn’t tell you what it’s done for us.',
+      attribution:
+        'A recruitment agency paying for a tool nobody’s quite sure how to evaluate.',
+    },
+  ],
+  closing:
+    'Three different stages. Same missing piece: nobody doing the maths gets paid if the answer is no.',
+} as const;
+
+/** Section 2 — what the engagement actually produces, in two stages. */
 export const WHAT_YOU_GET = {
   heading: 'What you get',
   /**
-   * Two named stages, in order. They were two paragraphs of running prose; the
-   * engagement is a sequence of discrete deliverables, and prose is the wrong
-   * shape for a list of things you get — the reader had to extract the list
-   * themselves. Naming them ("The Assessment", "The Build") also gives the
-   * second stage its precondition: you reach it only if the first makes the
+   * Two named stages, in order. Naming them also gives the second its
+   * precondition: you reach Implementation only if the Assessment makes the
    * case.
    */
   stages: [
     {
-      title: 'The Assessment',
+      title: 'Assessment',
       points: [
-        'A map of where AI saves money in your workflows',
+        'Every opportunity where AI saves money in your workflows',
+        'Two opportunities per workflow, on average',
+        'We tell you if an opportunity won’t pay back',
+        'We tell you if a pain point isn’t a technology problem',
         'Readiness assessed and blockers surfaced before you spend',
-        'Every opportunity grounded in evidence, with the working shown',
-        'A list of safe AI investments to take away',
+        'Estimated recoverable cost on each opportunity',
+        'We prove our maths and show the working',
       ],
     },
     {
-      title: 'The Build',
+      title: 'Implementation',
       points: [
-        'A step-by-step roadmap to adopt each safe opportunity, in order',
-        'ROI shown on every build before work starts',
-        'Solutions designed to be responsible and scalable',
-        'Governance built in to keep you compliant with every applicable law',
+        'Step-by-step roadmap from design to development to delivery',
+        'Predicted ROI on each build',
+        'Built to meet applicable laws and professional obligations',
+        'Built to scale responsibly',
+        'Built to fit how your team already works',
+        'Built so your team actually uses it',
+        'A governance framework covering security, oversight and upkeep',
+        'Every data flow handled under the Australian Privacy Act',
       ],
     },
   ],
-  /**
-   * Two named verticals, each with its sub-verticals. §09: "Group the
-   * verticals… Presented as a flat caps grid they read as *we'll take anyone*;
-   * grouped under two named verticals the same eight read as focused depth."
-   * The members are set as running text for the same reason — a grid of equal
-   * tiles reads as a menu.
-   */
-  verticalsLead: 'We specialise in two verticals',
-  /** Out to the page that sets out the same engagement in full. */
-  readMore: { label: 'What we do', href: '/what-we-do' },
+} as const;
+
+/**
+ * Section 3 — the two verticals, and the argument for having only two.
+ *
+ * Members are set as running text rather than as a grid of equal tiles: a grid
+ * reads as a menu, and the point of this section is depth, not breadth.
+ */
+export const INDUSTRIES = {
+  heading: 'Industries we specialise in',
   verticals: [
     {
       name: 'Professional services',
@@ -98,20 +140,55 @@ export const WHAT_YOU_GET = {
       members: ['property management', 'strata'],
     },
   ],
+  body: 'Two industries, on purpose. The workflows repeat inside them. We already know what a BAS quarter does to a practice and what compliance scheduling costs a rent roll. A generalist works that out on your time.',
+  /** Was out to /what-we-do, which no longer exists. The link stays — the
+      section is a claim about fit, and a reader who recognises their own
+      industry in it wants somewhere to go next — but the only page left that
+      continues the thought is the one that starts the conversation. */
+  readMore: { label: 'Talk to us', href: '/contact' },
 } as const;
 
 /**
- * Section 3 — how to get started. The page's single reversed Ink panel.
+ * Section 4 — price, published.
  *
- * Two statements, not a numbered stepper: the copy describes one call and what
- * you leave with, which is a sequence of two, and numbering two things implies
- * a process that does not exist.
+ * A firm whose whole pitch is "we do the maths and show the working" cannot
+ * put its own price behind a form. The rows are the Assessment only; the build
+ * is quoted against what the Assessment finds, which is stated rather than
+ * left as a gap for the reader to worry about.
+ *
+ * `time` and `price` render in the mono face with tabular figures: they are
+ * arithmetic, and the columns have to line up down the table.
+ */
+export const PRICING = {
+  heading: 'What it costs',
+  stage: 'Assessment',
+  columns: ['Workflows', 'Your team’s time', 'Price'] as const,
+  rows: [
+    { workflows: '1', time: '3 hours', price: '$3,000 to $4,500' },
+    { workflows: '2', time: '4 hours', price: '$4,500 to $6,500' },
+    { workflows: '3', time: '6 hours', price: '$6,000 to $9,000' },
+    { workflows: '4', time: '8 hours', price: '$7,500 to $12,000' },
+  ],
+  note: 'Exact price and duration are set on the free Fit Call, before you sign anything.',
+  build: 'Build: quoted separately.',
+} as const;
+
+/** Section 5 — the founders. Details come from site.ts. */
+export const FOUNDERS_SECTION = {
+  heading: 'Meet the founders',
+} as const;
+
+/**
+ * Section 6 — how to get started. The page's single reversed panel.
+ *
+ * Two steps, and numbered this time: the brief numbers them, and they are
+ * genuinely sequential (you book, then you leave knowing).
  */
 export const GET_STARTED = {
   heading: 'How to get started',
   steps: [
     'You book a free 30-minute Fit Call. No AI knowledge needed, no homework.',
-    'You leave knowing what we can do for your business, what the Assessment will cost and how long it will take, priced on the size and complexity of your workflows.',
+    'You leave knowing what one of your workflows costs you, what an assessment would cost and how long it takes.',
   ],
   cta: { label: 'Book a free Fit Call', href: '/contact' },
 } as const;

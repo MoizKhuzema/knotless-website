@@ -230,9 +230,10 @@ reasons explained there. If that applies to your request, we will tell you.
 ## 12. How to make a complaint
 
 If you think we have mishandled your personal information, tell us first. Email
-**[PRIVACY_EMAIL]** and we will look into it and respond. If you are not
-satisfied with our response, you can complain to the OAIC at **oaic.gov.au**,
-by phone on **1300 363 992**, or by mail to GPO Box 5288, Sydney NSW 2001.
+**[PRIVACY_EMAIL]** and we will
+look into it and respond. If you are not satisfied with our response, you can
+complain to the OAIC at **oaic.gov.au**, by phone on **1300 363 992**, or by
+mail to GPO Box 5288, Sydney NSW 2001.
 
 ---
 
@@ -241,7 +242,7 @@ by phone on **1300 363 992**, or by mail to GPO Box 5288, Sydney NSW 2001.
 **Knotless AI Pty Ltd**<br />
 ABN **[ABN]**
 
-Privacy enquiries: **[PRIVACY_EMAIL]**
+Privacy contact: **[PRIVACY_EMAIL]**
 
 ---
 

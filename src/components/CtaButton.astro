@@ -115,10 +115,77 @@ const { href, variant = 'primary' } = Astro.props;
     transform: translateX(3px);
   }
 
-  /* --- primary: the brand terracotta, deepening on hover -------------- */
+  /* --- primary: the brand terracotta, lit ----------------------------- */
+
+  /* NEON, at the low end of the word.
+   *
+   * Three parts, and each is doing a different job. A single big coloured
+   * shadow is what makes a button look like a 2010 glow filter; light on a
+   * real object has a tight hot edge, a near bloom and a far haze, and it is
+   * the ratio between them that reads as luminous rather than as blurred.
+   *
+   *   ring   a 1px ember rim, which is the FILAMENT — the edge of the thing
+   *          that is emitting. Without it the fill just has a cloud around it.
+   *   near   a tight bloom, offset down a little so the button still sits on
+   *          the page rather than floating off it.
+   *   far    a wide, weak haze that colours the ground the button stands on.
+   *
+   * Ember, not terracotta. The fill is #B0461F because a fill that size does
+   * not need the lift; light spilling off it does — ember is the token for a
+   * MARK on the ink ground, and a glow is a mark. Terracotta at this alpha
+   * over near-black is mud.
+   *
+   * Kept deliberately weak at rest. The hover state is where it turns on, and
+   * a button that is already at full glow has nowhere to go.
+   *
+   * PULLED IN, and the radius is doing more of that than the alpha. The far
+   * haze was 34px and reached most of the way to the words above the button,
+   * which is what made it read as an effect applied to the page rather than as
+   * light coming off a small object. At 18px it stops inside the button's own
+   * margin: the pill is lit, its immediate surround is warmed, and nothing
+   * else on the page knows about it. Alphas come down about a third with it,
+   * because a tighter glow at the old strength would have been brighter, not
+   * quieter. */
   .btn--primary {
     background-color: var(--color-terracotta);
     color: var(--color-on-accent);
+    border-color: rgba(207, 91, 48, 0.38);
+    box-shadow:
+      /* the lit top edge, inside the pill */
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 1px 8px -3px rgba(207, 91, 48, 0.32),
+      0 0 18px -8px rgba(207, 91, 48, 0.24);
+    transition:
+      border-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-mid) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out);
+  }
+  /* On hover the fill inverts to cream and the glow comes UP rather than off.
+     A lit object whose surface turns white should throw more light, not less —
+     dropping the glow on hover is the tell that it was a decoration on the
+     colour rather than light coming from the object. */
+  .btn--primary:hover,
+  .btn--primary:focus-visible {
+    border-color: rgba(224, 118, 77, 0.5);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.24),
+      0 1px 10px -3px rgba(207, 91, 48, 0.45),
+      0 0 26px -8px rgba(207, 91, 48, 0.34);
+  }
+  /* The glow is light spilling onto a dark ground. On paper there is nothing
+     for it to spill onto — a coloured haze on cream reads as a print
+     misregistration — so it comes off and the rim carries the whole effect. */
+  :global([data-theme='light']) .btn--primary {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 1px 2px rgba(31, 31, 29, 0.14);
+  }
+  :global([data-theme='light']) .btn--primary:hover,
+  :global([data-theme='light']) .btn--primary:focus-visible {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 2px 8px rgba(31, 31, 29, 0.2);
   }
   /* Inverts on hover: cream ground, near-black type, wiped in from the left in
      the same gesture as the logo's strike. The type colour rides the same
@@ -190,6 +257,11 @@ const { href, variant = 'primary' } = Astro.props;
     .btn:hover .btn__b,
     .btn:focus-visible .btn__b {
       transform: translateY(100%);
+    }
+    /* The glow is a static property, not motion, so it stays — only its
+       transition goes. */
+    .btn--primary {
+      transition: none;
     }
     .btn--primary:hover,
     .btn--primary:focus-visible {

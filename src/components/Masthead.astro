@@ -1,0 +1,64 @@
+---
+/**
+ * The masthead: the wordmark, plain, in the top corner of the page.
+ *
+ * Absolute, not fixed and not sticky — it belongs to the block it sits in and
+ * scrolls away with it. Nothing replaces it at the top of the screen; the
+ * round mark in BookingBadge takes over from the bottom-right corner instead.
+ *
+ * Its own .shell is what puts it on the content column's left edge: the copy
+ * below it is in a shell too, so this is the same measurement rather than a
+ * number that matches it today. The phone overrides that gutter, because there
+ * the copy is centred and there is no column edge to agree with.
+ */
+import { href } from '../lib/href';
+import BrandMark from './BrandMark.astro';
+
+/* On the homepage the mark goes back to the top of the page it is already on;
+   anywhere else it goes home. */
+const strip = (p: string) => p.replace(/\/+$/, '') || '/';
+const isHome = strip(Astro.url.pathname) === strip(href('/'));
+---
+
+<div class="mast">
+  <div class="shell mast__shell">
+    <a class="mast__mark" href={isHome ? '#top' : href('/')} aria-label="Knotless home">
+      <BrandMark alt="" />
+    </a>
+  </div>
+</div>
+
+<style>
+  .mast {
+    position: absolute;
+    top: var(--mast-top);
+    left: 0;
+    right: 0;
+    z-index: 3;
+    /* The band is full width so the shell can do the aligning, which means it
+       lies across the copy below it. Only the mark itself takes a click. */
+    pointer-events: none;
+  }
+  .mast__shell {
+    display: flex;
+    justify-content: flex-start;
+  }
+  .mast__mark {
+    display: inline-flex;
+    align-items: center;
+    pointer-events: auto;
+  }
+  /* No `display` here. BrandMark hides the wrong-theme artwork with
+     `.brand__img--light { display: none }`, and a scoped descendant selector
+     outranks it — declaring display:block would un-hide the hidden copy and
+     stack both marks, at twice the height. Size only. */
+  .mast__mark :global(.brand__img) {
+    height: var(--mast-h);
+    width: auto;
+  }
+  @media (max-width: 767px) {
+    .mast__shell {
+      padding-inline: 24px;
+    }
+  }
+</style>

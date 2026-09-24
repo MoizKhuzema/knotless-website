@@ -2,9 +2,9 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "astro-dev",
-      "runtimeExecutable": "/bin/zsh",
-      "runtimeArgs": ["-lc", "npm run dev"],
+      "name": "knotless-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
       "port": 4321
     }
   ]

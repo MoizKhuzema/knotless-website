@@ -23,18 +23,16 @@
  *
  * THE STAGES sit in glass now rather than under a hairline each.
  *
- * THE VERTICALS are an index, not a menu: a row per vertical, its members set
- * beside the name rather than beneath it, so the row spans its width and the
- * short one does not look like a mistake.
+ * THE VERTICALS have left this file. They were never "what you get" — they are
+ * who the work is for — and they now have their own section, which is also
+ * where the argument for having only two of them lives.
  */
 import { WHAT_YOU_GET } from '../../data/homepage';
-import ArrowLink from '../ArrowLink.astro';
 ---
 
 <section class="wyg" id="what-you-get">
   <div class="shell">
     <div class="wyg__head" data-reveal>
-      <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
       <h2 class="h-section wyg__h r" style="--i: 1">{WHAT_YOU_GET.heading}</h2>
     </div>
 
@@ -45,73 +43,69 @@ import ArrowLink from '../ArrowLink.astro';
     <ol class="wyg__stages" data-reveal>
       {
         WHAT_YOU_GET.stages.map((stage, i) => (
-          <li class="stage r" data-catch="ring" style={`--i: ${i}`}>
+          <li class="stage r" data-lamp-card style={`--i: ${i}`}>
             {/* A real element, not a pseudo: the card's ::before is spoken for
                 by nothing and its ::after by the catch ring, and the connector
                 has to register as a catcher in its own right to know how close
                 the cursor is to IT rather than to the card. */}
-            {i > 0 && <span class="stage__link" data-catch="line" aria-hidden="true" />}
-            <p class="stage__n meta meta--num">{String(i + 1).padStart(2, '0')}</p>
-            <h3 class="stage__h">{stage.title}</h3>
-            <span class="stage__rule" data-catch="line" aria-hidden="true" />
-            <ul class="stage__list">
-              {stage.points.map((point) => (
-                <li class="stage__item">
-                  <span class="stage__dot" data-catch="dot" aria-hidden="true" />
-                  <span>{point}</span>
-                </li>
-              ))}
-            </ul>
+            {/* Outside .pl-inner deliberately: the connector lives in the GAP
+                between the cards, not on either of them, so it must not dim
+                and brighten with the card's own light. */}
+            {i > 0 && <span class="stage__link" aria-hidden="true" />}
+
+            {/* The picture light. Ordered back to front: the wash it throws
+                down the pane, the hot line where the pane's top edge catches
+                it, then the fitting itself standing above the card. */}
+            <div class="pl-wash" aria-hidden="true" />
+            <div class="pl-edge" aria-hidden="true" />
+            <div class="pl-lamp" aria-hidden="true">
+              <div class="pl-spill" />
+              <div class="pl-stem" />
+              <div class="pl-plate" />
+              <div class="pl-bar"><i class="pl-band" /></div>
+            </div>
+
+            <div class="pl-inner">
+              <p class="stage__n meta meta--num">{String(i + 1).padStart(2, '0')}</p>
+              <h3 class="stage__h">{stage.title}</h3>
+              <span class="stage__rule" aria-hidden="true" />
+              <ul class="stage__list">
+                {stage.points.map((point) => (
+                  <li class="stage__item">
+                    <span class="stage__dot" aria-hidden="true" />
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </li>
         ))
       }
     </ol>
 
-    <div class="wyg__verticals" data-reveal>
-      <h3 class="wyg__vlead r" style="--i: 0">{WHAT_YOU_GET.verticalsLead}</h3>
-
-      <ul class="vlist">
-        {
-          WHAT_YOU_GET.verticals.map((v, i) => (
-            <li class="vlist__row r" style={`--i: ${i + 1}`}>
-              <span class="vlist__rule" data-catch="line" aria-hidden="true" />
-              <span class="vlist__n meta meta--num">{String(i + 1).padStart(2, '0')}</span>
-              <h4 class="vlist__name">{v.name}</h4>
-              <p class="vlist__members">
-                {v.members.map((m, j) => (
-                  /* The stop travels WITH the member before it, inside one
-                     flex item, so a wrap can only ever fall between members.
-                     Loose in the flex row it could start a line — measured at
-                     960px, where it pushed "marketing" 34px right of the line
-                     above it. */
-                  <span class="vlist__m">
-                    <span>{m}</span>
-                    {j < v.members.length - 1 && (
-                      <span class="vlist__stop" data-catch="dot" aria-hidden="true" />
-                    )}
-                  </span>
-                ))}
-              </p>
-            </li>
-          ))
-        }
-      </ul>
-      <span class="vlist__rule vlist__rule--end r" data-catch="line" aria-hidden="true" style={`--i: ${WHAT_YOU_GET.verticals.length + 1}`} />
-    </div>
-
-    {/* Out to the page that sets the same engagement out in full, spaced so
-        the section ends on something rather than just stopping. */}
-    <div class="wyg__more" data-reveal>
-      <div class="r">
-        <ArrowLink href={WHAT_YOU_GET.readMore.href}>{WHAT_YOU_GET.readMore.label}</ArrowLink>
-      </div>
-    </div>
   </div>
 </section>
 
 <style>
   .wyg {
-    padding-top: var(--spacing-section-lg);
+    /* Short of the section rhythm by the same 40px the stage list is long by,
+       which is how the HEADING moves up without the cards moving at all: the
+       section still starts where it always did, the heading sits 40px nearer
+       its top, and the list gives the distance straight back. The lamps, and
+       everything below them, stay exactly where they were. */
+    padding-top: calc(var(--spacing-section-lg) - 40px);
+    /* The black run-out to the next section. These two sections fill their
+       screen almost to the edge — 89px of slack here against the hero's 214 —
+       so without it the next heading arrives while the cards are still in the
+       eye. Sized so the run matches the hero's. */
+    padding-bottom: 14.5rem;
+  }
+  /* Shorter below the desktop layout. The run is sized against a desktop
+     screen; on a phone the same distance is most of a viewport of nothing. */
+  @media (max-width: 1099px) {
+    .wyg {
+      padding-bottom: 9rem;
+    }
   }
 
   .wyg__h {
@@ -123,14 +117,23 @@ import ArrowLink from '../ArrowLink.astro';
   .wyg__stages {
     /* One name for the gap, because the connector has to span exactly it. Two
        copies of this number would drift the first time either changed. */
-    --stage-gap: clamp(2.5rem, 5vw, 4rem);
+    /* 4rem, not clamp(2.5rem, …): stacked, the gap is also the headroom the
+       lower card's light fitting stands in, and that fitting is 30px tall. At
+       the clamp's floor the lamp would have crossed into the card above it. */
+    --stage-gap: 4rem;
     list-style: none;
     padding: 0;
     display: grid;
     gap: var(--stage-gap);
-    /* Was clamp(3rem, 5vw, 4.5rem) — 72px at 1440, which read as a break
-       between two sections rather than a heading over its own content. */
-    margin-top: clamp(1.75rem, 2.6vw, 2.5rem);
+    /* This is the heading's clearance, and what it has to clear is the LAMP,
+       not the card: the fitting stands 30px proud of the card's top edge, so
+       48px of margin left only 19px of daylight under the heading — and the
+       heading is serif, so its descenders spend some of that. Measured the
+       same on every width, desktop included. With the 40px the section's own
+       padding gives up above, 128px stacked and 120px side by side put ~90px
+       of air under the type — about one cap height of the heading, which is
+       what an opening line of this size wants under it. */
+    margin-top: 8rem;
   }
   @media (min-width: 48rem) {
     .wyg__stages {
@@ -142,6 +145,7 @@ import ArrowLink from '../ArrowLink.astro';
          card edges on grid lines. See body::before in global.css. */
       --stage-gap: var(--grid-cell);
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 7.5rem;
     }
   }
 
@@ -161,8 +165,23 @@ import ArrowLink from '../ArrowLink.astro';
    * The blur is what earns the word glass: the parallax grid and the cursor
    * light pass behind these and come through softened, so the pane reads as a
    * material with something behind it rather than as a tinted rectangle. */
+  /* A flex column so the list below can take the slack.
+   *
+   * The two stages no longer hold the same number of deliverables — seven
+   * against eight — and the cards are equal-height grid items, so the shorter
+   * list left 112px of empty pane under it at 1440. That gap is not
+   * breathing room, it reads as content that failed to load.
+   *
+   * Equal height is NOT the thing to give up to fix it: the connector between
+   * the two cards is positioned at 50% and crosses the gutter horizontally,
+   * which is only true while both cards are the same height. Letting them size
+   * to content would put the line into the side of the taller card.
+   *
+   * So the height stays and the LIST absorbs the difference. */
   .stage {
     position: relative;
+    display: flex;
+    flex-direction: column;
     /* Was clamp(1.5rem, 2.6vw, 2.25rem) — 36px at 1440, against a 16px type
        size. Tightened so the pane is a frame around the content rather than a
        margin with content in it. */
@@ -238,14 +257,6 @@ import ArrowLink from '../ArrowLink.astro';
     }
   }
   /* More specific than the generic line variant, which paints a solid fill. */
-  .stage__link[data-catch]::after {
-    color: var(--catch-lit);
-    background-color: transparent;
-    background-image: var(--link-img);
-    background-size: var(--link-size);
-    background-position: var(--link-pos);
-    background-repeat: no-repeat;
-  }
 
   /* Ember mono, the same numbering idiom as the verticals list below, so the
      page has one way of writing an ordinal rather than two. */
@@ -290,12 +301,38 @@ import ArrowLink from '../ArrowLink.astro';
      below. */
   .stage__rule {
     display: block;
+    position: relative;
     height: 1px;
     background-color: var(--color-line);
   }
+  /* The rule catches the lamp, like the pane's top edge does. It is the one
+     drawn line inside the card, so leaving it at its unlit grey while warm
+     light pours over everything around it made it read as a scratch on the
+     glass rather than as part of the card. Gated on --pour as well as --v, so
+     it comes up when the light actually reaches down to it rather than the
+     instant the lamp catches. */
+  .stage__rule::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: calc(var(--v) * var(--pour));
+    background: linear-gradient(90deg, transparent, rgba(255, 226, 190, 0.85), transparent);
+  }
 
+  /* The slack, absorbed. The list takes the leftover height and spreads its
+     items through it, so the shorter list sets slightly airier than the longer
+     one instead of stopping early and leaving a hole.
+
+     A difference in rhythm between two cards is far less visible than a hole
+     in one of them: nobody compares the leading of two lists across a 40px
+     gutter, and everybody sees 112px of empty pane. */
   .stage__list {
     margin-top: 1.1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
   .stage__item {
     display: grid;
@@ -339,218 +376,393 @@ import ArrowLink from '../ArrowLink.astro';
     background-color: var(--color-glass-soft);
     border: 1px solid var(--color-glass-soft-edge);
     box-shadow: inset 0 1px 0 var(--color-glass-soft-spec);
-    backdrop-filter: blur(6px) saturate(140%);
-    -webkit-backdrop-filter: blur(6px) saturate(140%);
   }
 
-  .wyg__more {
-    margin-top: clamp(2.5rem, 4vw, 3.5rem);
+
+  /* --- Gallery picture lights ------------------------------------------
+   *
+   * A slim fitting mounted on each card's top edge that switches on as the
+   * card arrives, pours warm light down the pane and stays on.
+   *
+   * --v is how far the lamp is switched on (0..1) and --pour is how far the
+   * light has run down the card (0..1). Both default to 1 on the card itself,
+   * so with no JS, a thrown error, or reduced motion the section is simply
+   * lit; the script opts IN to darkness by putting .js-lights on the section
+   * before it measures anything. A reveal that hides content unless a script
+   * rescues it is a reveal that eventually eats the content.
+   *
+   * The card keeps its glass. The brief's sample sets an opaque fill to hold
+   * text contrast, but the wash is a layer INSIDE the pane and composites over
+   * whatever the pane's own background is, so opacity buys nothing here and
+   * would cost the backdrop blur this section was built around. */
+  .stage {
+    --v: 1;
+    --pour: 1;
+  }
+  .js-lights .stage {
+    --v: 0;
+    --pour: 0;
   }
 
-  /* --- Verticals ----------------------------------------------------- */
-
-  .wyg__verticals {
-    margin-top: clamp(4.5rem, 8vw, 7.5rem);
+  .pl-inner {
+    position: relative;
+    z-index: 1;
+    /* Never below half: the copy dims as the lamp comes up, it does not
+       arrive with it. */
+    opacity: calc(0.5 + 0.5 * var(--v));
   }
 
-  /* The subheading, at last. It introduces the block, so it was set as a 13px
-     uppercase label — smaller than the two names under it and smaller than the
-     member lists. The hierarchy ran backwards: two entries in a list were
-     carrying more weight than the sentence that framed them.
-     
-     It takes the size the names had, 24 to 34px, and drops the uppercase and
-     the label tracking with it — a heading is read, not scanned. The section
-     now runs 60 / 34 / 21 / 13 from its heading down, in that order. */
-  .wyg__vlead {
-    margin: 0 0 2rem;
-    font-size: clamp(1.5rem, 1rem + 1.4vw, 2.125rem);
-    line-height: 1.15;
-    letter-spacing: var(--tracking-display);
-    font-weight: 600;
-    color: var(--color-cream);
-  }
-
-  .vlist {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  /* The three rules are ELEMENTS, not the list's and the rows' borders. A
-     border cannot be lit — the catch system paints into ::after, and a row's
-     ::after belongs to the row. As elements they register as catchers and take
-     the line variant with nothing new. One at the top of each row, one closing
-     the list. */
-  .vlist__rule {
+  /* The wash. clip-path is what makes the light POUR rather than fade: the
+     layer is fully drawn from the start and revealed top down, so the leading
+     edge travels the pane instead of the whole pane brightening at once. */
+  .pl-wash {
     position: absolute;
-    top: 0;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: var(--v);
+    clip-path: inset(0 0 calc((1 - var(--pour)) * 100%) 0 round var(--radius-lg));
+    background:
+      radial-gradient(ellipse 70% 38% at 50% 0%, rgba(255, 226, 188, 0.35), rgba(255, 220, 180, 0.105) 60%, transparent 80%),
+      linear-gradient(to bottom, rgba(255, 232, 204, 0.118), rgba(255, 232, 204, 0.033) 50%, transparent 78%);
+  }
+  /* Side by side the cards are wider and shorter, so the pool has to be
+     squatter or it runs off the sides before it reaches the copy. The class is
+     set from the measured layout, never from a width. */
+  .is-row .pl-wash {
+    background:
+      radial-gradient(ellipse 62% 48% at 50% 0%, rgba(255, 226, 188, 0.35), rgba(255, 220, 180, 0.105) 60%, transparent 80%),
+      linear-gradient(to bottom, rgba(255, 232, 204, 0.118), rgba(255, 232, 204, 0.033) 50%, transparent 78%);
+  }
+
+  /* The pane's top edge catching the light. */
+  .pl-edge {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    top: -1px;
+    height: 1px;
+    pointer-events: none;
+    opacity: var(--v);
+    background: linear-gradient(90deg, transparent, rgba(255, 226, 190, 0.95), transparent);
+  }
+
+  /* The fitting. Same two colours as the torch: the cream stroke and the one
+     ember accent, so it reads as another object from the same drawing. */
+  .pl-lamp {
+    position: absolute;
+    left: 50%;
+    top: -30px;
+    width: 56%;
+    height: 30px;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+  .pl-bar {
+    position: absolute;
     left: 0;
     right: 0;
-    height: 1px;
-    background-color: var(--color-line);
+    top: 0;
+    height: 9px;
+    border-radius: 5px;
+    background: #0b0908;
+    border: 1.6px solid var(--color-cream, #efe8dc);
+    box-sizing: border-box;
   }
-  .vlist__rule--end {
-    position: static;
-    display: block;
+  .pl-bar::after {
+    content: '';
+    position: absolute;
+    left: 9%;
+    right: 9%;
+    bottom: -1.6px;
+    height: 2px;
+    border-radius: 2px;
+    background: #fff1dc;
+    opacity: var(--v);
+    box-shadow: 0 2px 14px 4px rgba(255, 220, 180, calc(var(--v) * 0.85));
+  }
+  .pl-band {
+    position: absolute;
+    left: 7%;
+    top: 2px;
+    width: 6px;
+    height: 2px;
+    background: var(--color-ember, #c65a31);
+  }
+  .pl-stem {
+    position: absolute;
+    left: 50%;
+    top: 9px;
+    width: 1.6px;
+    height: 17px;
+    margin-left: -0.8px;
+    background: var(--color-cream, #efe8dc);
+  }
+  .pl-plate {
+    position: absolute;
+    left: 50%;
+    top: 25px;
+    width: 26px;
+    height: 5px;
+    margin-left: -13px;
+    border-radius: 1px;
+    background: #0b0908;
+    border: 1.6px solid var(--color-cream, #efe8dc);
+    box-sizing: border-box;
+  }
+  .pl-spill {
+    position: absolute;
+    left: -8%;
+    right: -8%;
+    top: 7px;
+    height: 40px;
+    opacity: calc(var(--v) * 0.95);
+    background: radial-gradient(ellipse 50% 60% at 50% 0%, rgba(255, 224, 186, 0.38), transparent 70%);
   }
 
-  .vlist__row {
-    position: relative;
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 0.75rem 1.5rem;
-    padding: clamp(1.75rem, 3vw, 2.5rem) 0;
-    transition: opacity var(--dur-fast) var(--ease-out);
-  }
-  @media (min-width: 48rem) {
-    .vlist__row {
-      /* Name and members side by side. Beneath the name, the two-member row
-         left a large word over a short line and a lot of air; beside it, both
-         rows span the full width and the short one reads as brevity rather
-         than as something missing. */
-      /* Wide enough that "Professional services" holds one line at 34px. It
-         wrapped to "Professional / services" at 15rem, which reads as a break
-         nobody chose. */
-      grid-template-columns: auto minmax(0, 22rem) minmax(0, 1fr);
-      align-items: baseline;
-      gap: 0 clamp(1.5rem, 3vw, 3rem);
+  @media (prefers-reduced-motion: reduce) {
+    /* Belt and braces: the script already declines to add .js-lights, but if
+       the preference changes after load nothing should be left dark. */
+    .js-lights .stage {
+      --v: 1;
+      --pour: 1;
     }
   }
 
-  .vlist__n {
-    color: var(--color-accent-type);
-  }
-
-  /* Was 52px against the h2's 60px — 0.87x, so the vertical names competed with
-     the section heading instead of sitting under it. At this scale the section
-     reads 60 / 34 / 21 / 13 and the order is unambiguous. */
-  .vlist__name {
-    font-family: var(--font-display, inherit);
-    /* Two entries in a list, not a display line. They were at the subheading's
-       size and the subheading was at a label's; this is the swap. */
-    font-size: var(--text-lg);
-    line-height: 1.15;
-    letter-spacing: var(--tracking-display);
-    font-weight: 600;
-    margin: 0;
-    color: var(--color-cream);
-    transition: color var(--dur-fast) var(--ease-out);
-  }
-
-  .vlist__members {
-    grid-column: 2;
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    /* The column gap matches the gap inside .vlist__m, so the stop sits the
-       same distance from the word before it as from the word after. */
-    gap: 0.4rem 0.55rem;
-    font-size: var(--text-sm);
-    color: var(--color-cream-dim);
-  }
-  .vlist__m {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-  }
-  @media (min-width: 48rem) {
-    .vlist__members {
-      grid-column: 3;
+  /* Tablet and phone close the two gaps around Industries.
+   *
+   * min-height: 0 is the load-bearing half. `main section { min-height: 100svh }`
+   * gives every section a viewport floor so its light has a screen to itself;
+   * below the desktop layout these two finish well short of that, so the floor
+   * was padding them out with black nobody asked for. The padding-bottom is
+   * then the run-out, sized for the shorter screen.
+   *
+   * Only these two. The hero stretch, the torch stage and the closing gap are
+   * doing real work and are left alone. */
+  @media (max-width: 1023px) {
+    .wyg {
+      min-height: 0;
+      padding-bottom: 64px;
     }
   }
-
-  /* A full stop between members, not a dash. The 1.25rem hairline read as a
-     rule — the same mark the section uses for structure — doing punctuation's
-     job, and at that length it separated the words more than it joined them.
-
-     Glass, like the beads in the cards above, at 5px rather than 8: the same
-     material, sized as punctuation rather than as a marker. */
-  /* A stop that has landed at the end of a wrapped line is not between two
-     things, so it is not punctuation — it is a dangling mark. Which item ends
-     a line is a fact only the layout knows, and it changes with the width, so
-     the script below measures it and marks the item.
-
-     visibility, NOT display. Removing the box would give the line back ~14px,
-     which can be enough for the next member to fit — and then the item is no
-     longer at the end of a line, the mark comes back, the line overflows
-     again, and it oscillates. Keeping the box means the measurement stays true
-     after the mark is hidden. */
-  .vlist__m[data-eol] .vlist__stop {
-    visibility: hidden;
-  }
-
-  .vlist__stop {
-    width: 0.3125rem;
-    height: 0.3125rem;
-    border-radius: 50%;
-    background-color: var(--color-glass-lift);
-    border: 1px solid var(--color-glass-soft-edge);
-    backdrop-filter: blur(4px) saturate(140%);
-    -webkit-backdrop-filter: blur(4px) saturate(140%);
-  }
-
-  /* Hovering one row lights it and dims its neighbour. Pointer-fine only: on
-     touch there is no hover, and a permanently dimmed row would look broken. */
-  @media (hover: hover) and (pointer: fine) {
-    .vlist:hover .vlist__row {
-      opacity: 0.4;
-    }
-    .vlist:hover .vlist__row:hover {
-      opacity: 1;
-    }
-    .vlist__row:hover .vlist__name {
-      color: var(--color-accent-type);
+  @media (max-width: 767px) {
+    .wyg {
+      padding-bottom: 40px;
+      /* Phones only: the approach to this heading is the longest black run on
+         the page, because what precedes it is a pinned screen releasing into
+         it. The section rhythm is a desktop measure; here it is a thumb. */
+      padding-top: 24px;
     }
   }
 </style>
 
 <script>
-  /* Hide the stop on any member that ends a wrapped line.
+  /* The picture lights.
    *
-   * The stop is bound to the member before it so that a wrap can never start a
-   * line with a mark — but that puts one at the END of a line whenever the
-   * break falls there, which is not between two things and so is not
-   * punctuation.
-   *
-   * No CSS can express this: where a line breaks is known only after layout.
-   * So it is measured — but on resize, not per frame, and the only thing
-   * written is a visibility toggle, which cannot itself change the layout that
-   * produced it.
-   *
-   * ResizeObserver rather than a window resize listener: it catches the list's
-   * box changing for any reason, including a font swapping in and reflowing
-   * the words, which a width listener would miss. */
-  (() => {
-    const lists = [...document.querySelectorAll('.vlist__members')];
-    if (!lists.length) return;
+   * WHICH MODE IS A QUESTION ABOUT LAYOUT, SO IT IS ASKED OF THE LAYOUT.
+   * Two cards on one row want one light following the other along the row;
+   * stacked, each wants its own light as it arrives. A width breakpoint only
+   * guesses at which of those is on screen — it would be wrong the moment the
+   * grid's breakpoint, the copy or the font changed. Comparing the two cards'
+   * offsetTop asks the thing itself.
+   */
+  function pictureLights(section: HTMLElement) {
+    const cards = Array.from(section.querySelectorAll<HTMLElement>('[data-lamp-card]'));
+    const list = section.querySelector<HTMLElement>('.wyg__stages');
+    if (cards.length < 2 || !list) return;
 
-    const sync = () => {
-      for (const list of lists) {
-        const items = [...list.children];
-        /* Read every top first, then write. Interleaving them would make each
-           write invalidate the next read. */
-        const tops = items.map((el) => el.getBoundingClientRect().top);
-        for (let i = 0; i < items.length; i++) {
-          // Ends a line when there is a next member and it sits lower.
-          const eol = i + 1 < items.length && tops[i + 1] - tops[i] > 1;
-          if (items[i].hasAttribute('data-eol') !== eol) {
-            items[i].toggleAttribute('data-eol', eol);
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    /* Reduced motion never goes dark in the first place, so there is nothing
+       to switch on and no loop to run. */
+    if (reduce.matches) return;
+    section.classList.add('js-lights');
+
+    const clamp = (x: number) => Math.max(0, Math.min(1, x));
+    const easeOutCubic = (x: number) => 1 - Math.pow(1 - x, 3);
+
+    const lit = cards.map(() => false);
+    const start = cards.map(() => 0);
+    let raf = 0;
+    let rowMode = false;
+    /* on: the section is in view and the lamps belong lit.
+       gate: the fade that takes them out when it is not. Kept apart from each
+       card's own switch-on so leaving mid-flicker cannot strand a card. */
+    let on = false;
+    let gate = 1;
+    let offAt = -1;
+    let stagger: ReturnType<typeof setTimeout> | undefined;
+
+    const measure = () => {
+      rowMode = Math.abs(cards[0].offsetTop - cards[1].offsetTop) < 4;
+      section.classList.toggle('is-row', rowMode);
+    };
+
+    /* The switch itself: a filament catching, not a fade. */
+    const vAt = (dt: number) => {
+      if (dt < 45) return 0.9;
+      if (dt < 90) return 0.1;
+      if (dt < 135) return 0.75;
+      if (dt < 180) return 0.3;
+      return 0.7 + 0.3 * clamp((dt - 180) / 220);
+    };
+    const pourAt = (dt: number) => easeOutCubic(clamp((dt - 120) / 700));
+
+    const frame = (now: number) => {
+      if (offAt >= 0) {
+        /* Going out. Everything dims together rather than each lamp running
+           its own switch-off, because they are one fitting from the reader's
+           side and a staggered fade would read as a fault. */
+        gate = 1 - Math.min(1, (now - offAt) / 320);
+        paintCards(now);
+        if (gate <= 0) {
+          gate = 0;
+          paintCards(now);
+          raf = 0;
+          offAt = -1;
+          return;
+        }
+        raf = requestAnimationFrame(frame);
+        return;
+      }
+      let busy = false;
+      busy = paintCards(now);
+      raf = busy ? requestAnimationFrame(frame) : 0;
+    };
+
+    function paintCards(now: number) {
+      let busy = false;
+      for (let i = 0; i < cards.length; i++) {
+        if (!lit[i]) continue;
+        if (start[i] === 0) {
+          /* Lit without a timer — switched on instantly because the page
+             loaded already scrolled past. It still has to follow the gate out,
+             and skipping it here is why leaving the section downwards left
+             both lamps burning. */
+          cards[i].style.setProperty('--v', gate.toFixed(3));
+          cards[i].style.setProperty('--pour', '1');
+          continue;
+        }
+        const dt = now - start[i];
+        const v = vAt(dt);
+        const pour = pourAt(dt);
+        cards[i].style.setProperty('--v', (v * gate).toFixed(3));
+        cards[i].style.setProperty('--pour', pour.toFixed(3));
+        if (v < 1 || pour < 1) busy = true;
+      }
+      return busy;
+    }
+
+    /* instant: the trigger line was already behind us when the page loaded —
+       an anchor, a refresh partway down, the back button. A lamp that flickers
+       on for something the reader has already scrolled to reads as a glitch. */
+    const switchOn = (i: number, instant: boolean) => {
+      if (lit[i]) return;
+      lit[i] = true;
+      if (instant) {
+        cards[i].style.setProperty('--v', gate.toFixed(3));
+        cards[i].style.setProperty('--pour', '1');
+        return;
+      }
+      start[i] = performance.now();
+      if (!raf) raf = requestAnimationFrame(frame);
+    };
+
+    /* booted is false only for the very first evaluation after load. Hanging
+       the instant path off "the first time this section is entered" instead
+       meant the first real arrival — scrolling down to it — skipped the
+       flicker entirely, which is the one time it most wants to play. */
+    let booted = false;
+    const check = () => {
+      if (!on) return;
+      const instant = !booted;
+      if (rowMode) {
+        /* One row, one event: the first lamp catches, the second follows a
+           beat later, the way someone walking a gallery turns them on. */
+        if (!lit[0] && cards[0].getBoundingClientRect().top < innerHeight * 0.7) {
+          switchOn(0, instant);
+          if (instant) switchOn(1, true);
+          else stagger = setTimeout(() => switchOn(1, false), 250);
+        }
+      } else {
+        for (let i = 0; i < cards.length; i++) {
+          if (!lit[i] && cards[i].getBoundingClientRect().top < innerHeight * 0.62) {
+            switchOn(i, instant);
           }
         }
       }
     };
 
-    sync();
-    /* Metrics change when the real face replaces the fallback, and the wrap
-       points move with them. */
-    document.fonts?.ready.then(sync);
-
-    if ('ResizeObserver' in window) {
-      const ro = new ResizeObserver(sync);
-      lists.forEach((l) => ro.observe(l));
-    } else {
-      addEventListener('resize', sync, { passive: true });
+    /* ENTERING AND LEAVING.
+     *
+     * The lamps used to latch: on once per visit, never off again. They now
+     * behave like the fitting they are drawn as — switched off when the
+     * section is behind you and struck again when you come back, flicker and
+     * all. The switch-on is only skipped on the very first evaluation of a
+     * page that loaded already scrolled past this section, where a flicker for
+     * something the reader has not arrived at reads as a glitch.
+     *
+     * Hysteresis, or a section edge parked on the threshold strobes. */
+    function enter() {
+      if (on) return;
+      on = true;
+      offAt = -1;
+      gate = 1;
+      /* A fresh visit, so every lamp is unlit and its timer cleared — coming
+         back mid-fade must not resume a half-finished switch-on. */
+      clearTimeout(stagger);
+      for (let i = 0; i < cards.length; i++) {
+        lit[i] = false;
+        start[i] = 0;
+        cards[i].style.setProperty('--v', '0');
+        cards[i].style.setProperty('--pour', '0');
+      }
+      measure();
+      check();
     }
-  })();
+    function leave() {
+      if (!on) return;
+      on = false;
+      clearTimeout(stagger);
+      offAt = performance.now();
+      if (!raf) raf = requestAnimationFrame(frame);
+    }
+    function gauge() {
+      const r = section.getBoundingClientRect();
+      const V = innerHeight;
+      if (!on && r.top < V * 0.85 && r.bottom > V * 0.15) enter();
+      else if (on && (r.bottom < V * 0.1 || r.top > V * 0.95)) leave();
+    }
+
+    /* One listener, one check per frame. Nothing here ever switches a lamp
+       back off, so scrolling up and down again leaves them all alone. */
+    let queued = false;
+    const onScroll = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => {
+        queued = false;
+        gauge();
+        check();
+      });
+    };
+
+    measure();
+    gauge();
+    booted = true;
+    addEventListener('scroll', onScroll, { passive: true });
+    /* Re-measure the LAYOUT, never the lit state: a card that is already on
+       stays on across a resize, and only the dark ones adopt the new mode. */
+    new ResizeObserver(() => {
+      measure();
+      gauge();
+      check();
+    }).observe(list);
+    document.fonts?.ready.then(() => {
+      measure();
+      gauge();
+      check();
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>('.wyg').forEach(pictureLights);
 </script>

@@ -1,47 +1,58 @@
 ---
 /**
- * Hero. One left-aligned column: the mark, the claim, the action.
+ * Hero — the flashlight.
  *
- * The knot used to sit in a bordered panel beside this column, which made it
- * read as an illustration NEXT TO the brand rather than as the brand. It is now
- * KnotIntro — a full-viewport overlay that ties itself, pulls straight, and
- * lands on the terracotta strike inside this lockup's `o`. So the figure is
- * gone and the column is on its own: the animation's destination is the hero
- * itself, and a box beside it would be competing with the place it lands.
+ * This is the FlashlightHero implementation, adapted onto the site's copy,
+ * type and button rather than reimplemented. Three things make the effect what
+ * it is, and all three come from that file:
  *
- * The call to action below is the nav reveal's sentinel: the bar's own button
- * and wordmark appear only once this one has scrolled past, so neither the
- * action nor the mark is ever on screen twice.
+ *   THE BEAM is two conic gradients from a shared apex — a wide soft fan and a
+ *   narrower brighter core inside it — clipped by a radial mask that gives the
+ *   distance falloff. That construction is why it reads as a projected beam
+ *   with edges rather than as a glow: a gaussian blob has no sides, and a
+ *   torch is mostly sides.
+ *
+ *   THE DUST is 80 motes on a canvas in `screen` blend, drifting upward and
+ *   drawn ONLY where they fall inside the cone, faded by both their angle off
+ *   the axis and their distance from the lens. It is what makes the light look
+ *   like it is travelling through air.
+ *
+ *   THE REVEAL is not a slide. The copy sits at 4% opacity under a 3px blur
+ *   and resolves as the light reaches it, bottom line first, which is the
+ *   direction light travels away from a torch held below.
+ *
+ * The cone is MEASURED, not styled: layout() reads the rendered line boxes of
+ * everything marked [data-lit] and solves for the narrowest cone containing
+ * them, then pushes the apex back behind the lens so the beam leaves it at the
+ * lens's own width. The copy is inside the light by construction at any
+ * viewport. See the note in layout() for the arithmetic.
  */
 import { HERO } from '../../data/homepage';
 import CtaButton from '../CtaButton.astro';
-// The PRIMARY lockup: wordmark with the tagline set beneath it. It carries
-// "AI Untangled." itself, so the hero no longer sets that line as type — the
-// brand says it once, in its own lettering.
-//
-// The _Flush variant sets the tagline flush left to the wordmark rather than
-// centred under it, so the lockup shares the left edge every other element in
-// this column is aligned to. BrandMark picks the ink or cream artwork to suit
-// the ground.
-import BrandMark from '../BrandMark.astro';
+import Masthead from '../Masthead.astro';
 ---
 
-<section class="hero" data-reveal>
+<section class="hero" id="top" data-stage-a data-hero-gate>
+  {/* The wordmark, top left. NOT carrying data-lit: the beam is fitted to the
+      copy in the middle of the screen, and a mark up in the corner would force
+      the cone open to reach it for no gain, since the torch is below the copy
+      and the mark is above it. */}
+  <Masthead />
+
   <div class="shell hero__grid">
     <div class="hero__col">
-      {/* The lockup IS the h1. An <img> inside the heading with real alt text
-          is a proper h1 — the page keeps its heading and its accessible name
-          without setting the tagline twice. */}
-      <h1 class="hero__lockup r" style="--i: 0">
-        <BrandMark variant="lockup" alt={`Knotless — ${HERO.headline}`} />
-      </h1>
+      {/* data-lit is what the beam is fitted to; TorchStage measures these and
+          solves for the cone that contains them. data-box on the button,
+          because a control is lit as a whole and not line by line. */}
+      <h1 class="hero__h" data-lit>{HERO.headline}</h1>
 
-      <p class="hero__lead lead r" style="--i: 1">{HERO.standfirst}</p>
+      <p class="hero__lead lead" data-lit>{HERO.standfirst}</p>
 
-      {/* The nav's flanks key off THIS element: the bar's button appears as
-          this one leaves, so the same action is never on screen twice. */}
-      <div class="hero__cta r" style="--i: 2" data-nav-sentinel>
-        <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
+      <div class="hero__cta">
+        <div data-lit data-box>
+          <CtaButton href={HERO.cta.href}>{HERO.cta.label}</CtaButton>
+        </div>
+        <p class="hero__note" data-lit>{HERO.ctaNote}</p>
       </div>
     </div>
   </div>
@@ -51,85 +62,102 @@ import BrandMark from '../BrandMark.astro';
   .hero {
     position: relative;
     display: flex;
-    /* Sits LOW, not centred. Centred is the safe answer and the reason the
-       hero read as a block that happened to land in the middle of a screen;
-       weighted to the bottom-left it reads as composed — the lockup carries
-       the top of the mass, the space above it does the work, and the page
-       below is visibly next rather than hidden.
-       
-       padding-bottom becomes the composition: it is the distance the content
-       floats above the hero's own floor. padding-top stops being a position
-       and becomes a FLOOR — the minimum clearance under the bar, which the
-       content only touches on a viewport too short to give it more. */
-    align-items: flex-end;
-    /* The FULL small viewport, not 88% of it. At 88svh the next section showed
-       a strip of itself before anything had been scrolled, which read as the
-       page having started badly rather than as an invitation to scroll.
-
-       svh, deliberately, not lvh or dvh. svh is the viewport with the browser
-       chrome SHOWING, which is the state a page loads in — so on load the hero
-       is exactly the visible height and nothing below it can leak. lvh would
-       make the hero taller than the screen at load and push the call to action
-       under the fold, since the content is anchored to the hero's bottom; dvh
-       would resize the hero as the chrome retracts, moving the content while
-       the reader is looking at it. */
+    align-items: center;
+    justify-content: center;
     min-height: 100svh;
-    /* Clearance stated as "the bar, plus this much air" rather than as a round
-       number that happened to be bigger than the bar.
-       
-       It matters because of the centring: the content is centred in the
-       padding box, and the bar is not in that box at all, so whatever the
-       padding does not account for comes out of the gap at the top. Measured
-       before: 26px of clearance at 390, 115px at 1440x900, 197px at 768 — the
-       same layout reading as cramped, fine, and airy depending on the
-       viewport. */
-    padding-block: var(--main-clear)
-      /* Grows with the viewport now that the hero fills it. At 9vh the content
-         sat at 91% of the screen once the hero was full height — glued to the
-         bottom rather than weighted toward it. At 20vh it holds the same 80%
-         it had at 88svh, at every height. */
-      clamp(5rem, 20vh, 14rem);
+    padding-block: var(--main-clear);
+    /* Contains the dust canvas's screen blend, so it lightens the beam and the
+       black ground and nothing outside this section. */
+    isolation: isolate;
+    overflow: hidden;
+
+    /* Set by the script. --p is the switch-on curve; the rest is the measured
+       cone. The defaults are what renders for the ~1 frame before layout()
+       runs, and for anyone the script never reaches. */
+    --p: 0;
+    --half: 30deg;
+    --ax: 50%;
+    --ay: 100%;
+    --reach: 600px;
+    --hx: 50%;
+    --hy: 42%;
+    --lx: 50%;
+    --ly: 90%;
   }
 
+
+  /* Opaque black over the page's warm ink, handed back over the last eighth so
+     the hero does not meet the section below it on a hard change of colour. */
+
+
+
+
   .hero__grid {
+    position: relative;
+    z-index: 2;
     width: 100%;
   }
 
-  /* The lockup carries the weight the headline used to. Sized off the column
-     rather than a fixed height, so it scales with the layout; the 3.52:1 ratio
-     of the asset does the rest. */
-  .hero__lockup {
-    margin: 0;
-    max-width: min(100%, 34rem);
-  }
-  @media (max-width: 639px) {
-    /* Edge to edge it was 342 x 97px at 390 — the mark as a banner rather than
-       as a mark. At 79% of the column it still leads the screen and leaves the
-       lead and the button room to be read with it. */
-    .hero__lockup {
-      max-width: 79%;
-    }
+  .hero__col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
 
+
+  .hero__h {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: clamp(2.5rem, 1.3rem + 4.2vw, 5rem);
+    font-weight: 600;
+    line-height: 1.02;
+    letter-spacing: var(--tracking-display);
+    color: var(--color-cream);
+    max-width: 14em;
+    text-wrap: balance;
+  }
 
   .hero__lead {
-    margin-top: clamp(1.75rem, 3vw, 2.5rem);
-    max-width: 42ch;
-    color: var(--color-cream-dim);
+    margin: clamp(1.25rem, 2.2vw, 1.75rem) 0 0;
+    max-width: 48ch;
+    color: var(--color-cream);
+    text-wrap: pretty;
   }
 
   .hero__cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     margin-top: clamp(2rem, 3vw, 2.75rem);
   }
 
+  /* The brightest of the three, which looks backwards and is not: smallest
+     type in the hero AND closest to the lens, so it sits in the most light. */
+  .hero__note {
+    margin: 0.9rem 0 0;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: #d6cfc4;
+  }
+
   @media (max-width: 639px) {
-    .hero {
-      /* No overrides. The clearance formula and the 100svh both scale; a second
-         set of numbers here is how the phone ended up 26px under the bar the
-         last time. */
-    }
+    .hero__h,
     .hero__lead {
       max-width: none;
+    }
+    .hero__note {
+      font-size: var(--text-md);
+    }
+  }
+
+
+  /* No flicker, no drift, no dust, and the copy simply present. */
+  @media (prefers-reduced-motion: reduce) {
+    .rv {
+      opacity: 1;
+      filter: none;
+      transition: none;
     }
   }
 </style>

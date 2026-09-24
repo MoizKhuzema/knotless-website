@@ -1,0 +1,373 @@
+---
+/**
+ * Section 01 — Different industries. Same knots.
+ *
+ * Three quotes, three stages of the same failure: nobody knows what to do,
+ * nobody will put a number on it, nobody can tell whether the thing they
+ * bought worked.
+ *
+ * They are set as real <blockquote>/<cite> pairs, and the attribution names a
+ * KIND of business rather than a named client. That is a content decision the
+ * markup has to honour: these are not testimonials, so they do not get the
+ * furniture of testimonials — no logos, no photographs, no five stars. A quote
+ * card that looks like a testimonial and is not one is the exact kind of
+ * unearned proof this page is arguing against.
+ *
+ * The quote mark is drawn as a pseudo-element in ember rather than typed into
+ * the copy, so it is a MARK (the palette's word: >=24px, rules and indices and
+ * carets) and not accent type. The words themselves are cream.
+ */
+import { PROBLEM } from '../../data/homepage';
+---
+
+<section class="prob" id="problem" data-stage-b>
+  {/* The soft pool the beam lays on the content, fading up as the torch
+      arrives. The cone alone falls off with distance, so the cards furthest
+      from the lens sit noticeably darker than the nearest; this evens that
+      out without widening the beam. TorchStage drives --son and the pool's
+      centre and size from the copy's own bounding box. */}
+  <div class="prob__pool" data-stage-pool aria-hidden="true"></div>
+  <div class="shell prob__stage" data-pin-stage>
+    <div class="prob__head" data-reveal>
+      <h2 class="h-section prob__h r" data-lit style="--i: 1">{PROBLEM.heading}</h2>
+    </div>
+
+    <ul class="prob__grid" data-deck data-reveal>
+      {
+        PROBLEM.quotes.map((q, i) => (
+          <li class="qcard r" data-deck-card data-avoid-badge data-lit data-box style={`--i: ${i}`}>
+            <blockquote class="qcard__quote">
+              <p>{q.quote}</p>
+            </blockquote>
+            <span class="qcard__rule" aria-hidden="true" />
+            {/* <cite> inside a <figure>/<blockquote> pattern would be the
+                textbook markup, but a figure per quote adds a landmark the
+                reader gains nothing from. The cite sits beside the quote it
+                attributes and that is the whole relationship. */}
+            <cite class="qcard__who">{q.attribution}</cite>
+          </li>
+        ))
+      }
+    </ul>
+
+    {/* The section's actual argument. It is the only line here that is
+        Knotless speaking rather than a client, so it is set apart from the
+        cards and given the lead size: the three quotes are evidence, this is
+        the finding. */}
+    <div class="prob__close" data-deck-closing data-reveal data-avoid-badge>
+      <p class="lead prob__closeline r" data-lit style="--i: 0">{PROBLEM.closing}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Was an inline style; it has to live here so the compact rules can make it
+     sticky, which an inline `position` would have won against. */
+  .prob__stage {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+  }
+
+  .prob__pool {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: var(--son, 0);
+    background: radial-gradient(
+      ellipse var(--pool-w, 40%) var(--pool-h, 30%) at var(--pool-x, 60%) var(--pool-y, 50%),
+      rgba(255, 226, 196, 0.09),
+      transparent 70%
+    );
+  }
+
+  .prob {
+    position: relative;
+    /* Centred in its screen, so the beam is aimed at the middle of the
+       viewport rather than at copy sitting against the top edge. The old
+       padding-top fought this: it pushed the content down inside the box it
+       was being centred in, which is why the copy sat low. */
+    display: flex;
+    align-items: center;
+    padding-top: 0;
+  }
+  /* Below the desktop layout the viewport floor was the other half of the gap.
+     `main section { min-height: 100svh }` makes this section a screen tall
+     whatever its content, and because the content is CENTRED in it, half the
+     leftover fell below the copy — 189px of black at 820 on top of the run-out
+     the stage already adds. The floor buys nothing here: the section is a
+     screen tall by itself at these widths. */
+  @media (max-width: 1023px) {
+    .prob {
+      min-height: 0;
+    }
+  }
+  @media (min-width: 1024px) {
+    .prob {
+      /* Room on the left for the torch to settle into and for its beam to open
+         across the content. The torch's resting place is solved from the copy's
+         own bounding box, so this gutter is what keeps the solve from having to
+         ask for an impossibly wide cone. Below this width there is no gutter to
+         give, so the torch comes in over the top instead. */
+      padding-left: clamp(0px, 20vw, 17rem);
+    }
+  }
+
+  .prob__h {
+    margin: 1.25rem 0 0;
+    max-width: 20ch;
+  }
+
+  .prob__grid {
+    list-style: none;
+    margin: clamp(2.5rem, 5vw, 4rem) 0 0;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+  }
+  @media (min-width: 1024px) {
+    .prob__grid {
+      /* Three across, which is the point: the reader is meant to see at a
+         glance that these are three DIFFERENT businesses saying one thing.
+         Below this width they cannot share a line without the longest quote
+         running to eight, so they stop trying to. */
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--grid-cell);
+    }
+  }
+
+  /* COMPACT (phones and tablets): the three quotes become a DECK.
+   *
+   * The section turns into a tall scroll track, .shell becomes a sticky stage
+   * that holds one screen, and the cards stop being a column: they are stacked
+   * absolutely in one box, and scroll slides each one up over the last. The
+   * card underneath scales back and dims so the pile reads as depth rather
+   * than as a card that simply changed its words.
+   *
+   * Everything here is driven by TorchStage, which owns the scroll maths for
+   * the torch already and so is the only place that can keep the light, the
+   * heading and the deck moving as one group. The custom properties it writes
+   * are --track-h (how long the track is) and --deck-h (the tallest card, so
+   * the closing line always sits directly under the deck rather than under
+   * whichever quote happens to be showing).
+   *
+   * PHONES ONLY. A tablet has the height to show all three quotes at once, and
+   * a deck that hides two of them to save room nobody needed is a worse read
+   * than the plain column. So the deck's breakpoint is not the same as the
+   * torch's: the torch keeps its top-left pose all the way to 1023 (there is
+   * no gutter to sit in below that), while the stacking stops at 767. DECK in
+   * the script matches this number, COMPACT matches the other. Every rule is
+   * gated on data-deck-on, which only the script sets: absolutely stacked
+   * cards with no script to slide them would be two quotes nobody can read, so
+   * without JS, on a screen too short to pin, or under reduced motion, this
+   * all stays off and the section is an ordinary list. */
+  /* TABLET: a plain column, but standing where the deck stood.
+   *
+   * The torch's resting pose is an offset from the STAGE's top, and the beam
+   * is fitted from there. The deck's stage carried 132px of headroom above the
+   * heading, and that gap is what let the torch sit above the copy and look
+   * down at it in a forty-degree cone. Drop the gap and the torch ends up
+   * level with the heading, which forces the same cone open to seventy
+   * degrees to still contain it. So the tablet keeps the headroom: the column
+   * is ordinary, the light above it is not re-aimed. */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .prob {
+      display: block;
+    }
+    .prob__stage {
+      padding: 132px 18px 24px;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .prob[data-deck-on] {
+      display: block;
+      padding: 0;
+      height: var(--track-h, auto);
+    }
+    [data-deck-on] .prob__stage {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      overflow: clip;
+      display: flex;
+      flex-direction: column;
+      /* Centred, not packed to the top. The pinned screen is a fixed 100svh and
+         the deck does not fill it, so every pixel the content did not use fell
+         BELOW the closing line and read as the gap into the next section —
+         183px of it at 390, on top of the run the two sections already add.
+         Centring splits that slack, and the half that goes above is headroom
+         the composition wanted anyway. */
+      justify-content: center;
+      padding: 132px 18px 24px;
+    }
+    /* The pool is positioned against the section, which is now a track several
+       screens tall, so it would smear across the whole of it. The beam alone
+       lights the deck at this size. */
+    [data-deck-on] .prob__pool {
+      display: none;
+    }
+
+    [data-deck-on] .prob__grid {
+      display: block;
+      position: relative;
+      height: var(--deck-h);
+      margin-top: clamp(1.5rem, 4vw, 2.25rem);
+    }
+    [data-deck-on] .prob__grid > li {
+      position: absolute;
+      inset: 0 0 auto 0;
+      min-height: var(--deck-h);
+      /* Opaque, or the card underneath reads straight through the one on top
+         and the whole pile turns to mud — but opaque in the SAME material,
+         not a brown fill standing in for it. The page is black, so a black
+         base under the ordinary glass tint composites to exactly what a glass
+         card looks like anywhere else, while still hiding the pile. The only
+         thing given up is the backdrop blur, which has nothing to blur once
+         the fill is opaque. */
+      background-color: #000;
+      background-image: linear-gradient(var(--color-glass-soft), var(--color-glass-soft));
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      /* Scale from the top edge, so a card shrinking underneath stays pinned
+         to the top of the deck instead of drifting away from it. */
+      transform-origin: 50% 0;
+      /* Opted out of the shared reveal: [data-reveal] .r holds its children at
+         zero opacity until the block is marked visible, which would fight the
+         transforms the stack writes. A card that slides a screen into place is
+         already its own reveal. */
+      opacity: 1;
+    }
+    [data-deck-on] .prob__grid > li:nth-child(2) { z-index: 2; }
+    [data-deck-on] .prob__grid > li:nth-child(3) { z-index: 3; }
+
+    /* THE BEAM CANNOT REACH AN OPAQUE CARD.
+     *
+     * The light is painted behind the copy, which is why it reads THROUGH the
+     * glass cards everywhere else. A deck card has to be opaque or the cards it
+     * is covering show straight through it, and the price of that is a card
+     * that sits in the middle of a lit section looking like a hole cut out of
+     * it. So the light it can no longer transmit is put back on top of it.
+     *
+     * The compact torch is always up in the top-left corner, so the fall is a
+     * fixed diagonal rather than anything that needs tracking, and --son ties
+     * it to the same arrival the rest of the section is lit by. */
+    [data-deck-on] .prob__grid > li::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background:
+        radial-gradient(125% 95% at 4% -14%, rgba(255, 232, 210, 0.2), transparent 64%),
+        linear-gradient(152deg, rgba(255, 232, 210, 0.08) 0%, transparent 48%);
+      opacity: var(--son, 0);
+    }
+
+    [data-deck-on] .prob__close {
+      margin-top: 16px;
+    }
+  }
+
+  /* The same glass as the stage cards and the founder cards — one card
+     material on the page, not three. */
+  .qcard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(1.25rem, 2vw, 1.75rem);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-glass-soft);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid var(--color-glass-soft-edge);
+    box-shadow: inset 0 1px 0 var(--color-glass-soft-spec);
+  }
+
+  .qcard__quote {
+    margin: 0;
+    flex: 1;
+  }
+
+  /* The opening mark, drawn rather than typed.
+   *
+   * In ember at 3.5rem it is comfortably past the 24px floor the palette sets
+   * for marks, and it is not type: it carries no word, it is aria-hidden by
+   * virtue of being a pseudo-element, and a screen reader reads the
+   * blockquote's own semantics instead. The quote's WORDS stay cream at
+   * 16.17:1.
+   *
+   * It sits on its own line above the quote rather than hanging in the margin:
+   * hung punctuation needs a margin to hang into, and inside a card there
+   * isn't one. */
+  .qcard__quote::before {
+    content: '\201C';
+    display: block;
+    font-family: var(--font-serif);
+    font-size: 3.5rem;
+    line-height: 0.6;
+    height: 1.6rem;
+    color: var(--color-ember);
+  }
+
+  .qcard__quote p {
+    margin: 0;
+    font-size: var(--text-lg);
+    line-height: 1.45;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-cream);
+    text-wrap: pretty;
+  }
+
+  .qcard__rule {
+    display: block;
+    height: 1px;
+    margin: 1.5rem 0 1.1rem;
+    background-color: var(--color-line);
+  }
+
+  /* The attribution. Not italic: <cite> defaults to italic, and an italic
+     sans is a synthesised oblique in a family that ships no italic face for
+     this weight. Upright and dimmed does the same job honestly. */
+  .qcard__who {
+    font-style: normal;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: #b9b1a5;
+    text-wrap: pretty;
+  }
+
+  /* The attribution is a caption beside a 21px quote on a wide screen, which
+     13px serves. On a phone it is three lines of real reading and the type
+     rules floor mobile body at 16px, so it steps up rather than staying fine
+     print. */
+  @media (max-width: 639px) {
+    .qcard__who {
+      font-size: var(--text-md);
+    }
+  }
+
+  .prob__close {
+    margin-top: clamp(2.5rem, 4.5vw, 4rem);
+  }
+
+  /* The section's CONCLUSION, not a fourth quote — so it takes no card and no
+     quote mark. Set in the heading serif with a thin rule above it: the three
+     quotes are evidence and this is the finding drawn from them, which is a
+     change of voice, and a change of voice wants a change of type rather than
+     the same body face one size up. Capped short so it lands as a statement
+     rather than spreading into a banner. */
+  .prob__closeline {
+    margin: 0;
+    max-width: 34ch;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-line);
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--color-cream);
+  }
+</style>

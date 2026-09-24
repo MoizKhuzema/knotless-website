@@ -8,7 +8,8 @@
  */
 import { SITE } from '../config/site';
 import { href } from '../lib/href';
-import Nav from '../components/Nav.astro';
+import BookingBadge from '../components/BookingBadge.astro';
+import Masthead from '../components/Masthead.astro';
 import Footer from '../components/Footer.astro';
 import '../styles/global.css';
 // Imported through Vite so the URLs are hashed and base-aware (needed for the
@@ -31,16 +32,10 @@ interface Props {
    */
   bleed?: boolean;
   /**
-   * Start with the nav's two flanks — its call to action and its wordmark —
-   * hidden, and bring them in together once the page's own hero action scrolls
-   * under the bar. The page must mark that element `data-nav-sentinel`.
-   */
-  navReveal?: boolean;
-  /**
-   * Emit <meta name="robots" content="noindex, nofollow">. For dev harnesses
-   * like /lab/ — sitemap and robots.txt exclusion only discourage crawling,
-   * whereas this is what actually keeps the page out of an index if the URL is
-   * ever discovered or linked from outside.
+   * Emit <meta name="robots" content="noindex, nofollow">. For any page that
+   * should not be indexed: sitemap and robots.txt exclusion only discourage
+   * crawling, whereas this is what actually keeps a page out of an index if
+   * the URL is ever discovered or linked from outside. Nothing sets it today.
    */
   noindex?: boolean;
 }
@@ -52,7 +47,6 @@ const {
   schema,
   bare = false,
   bleed = false,
-  navReveal = false,
   noindex = false,
 } = Astro.props;
 
@@ -66,7 +60,7 @@ const THEME: 'light' | 'dark' = 'dark';
 /** Browser chrome colour per ground. A lookup rather than a ternary: TypeScript
  *  narrows a const to its literal, so `THEME === 'light'` reads as an impossible
  *  comparison the moment THEME is 'dark'. This also keeps the pairing explicit. */
-const THEME_COLOR = { light: '#efe9dd', dark: '#0d0c0a' } as const;
+const THEME_COLOR = { light: '#efe9dd', dark: '#13100b' } as const;
 
 const fullTitle = `${title} - Knotless`;
 const ogImageAlt = `${SITE.legalEntityName} — ${SITE.tagline}`;
@@ -92,6 +86,30 @@ const fontFace = [
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content={THEME_COLOR[THEME]} />
+
+    {/* THE FIRST PAINT, and the reason this is inline and this early.
+     *
+     * Every stylesheet on this page is an external <link> further down the
+     * head. Until one of them arrives and applies, the browser paints its own
+     * default canvas — which is WHITE. On a site whose ground is near-black
+     * that is a full-screen white flash on every load and every reload, and
+     * nothing in global.css can prevent it, because global.css is the thing
+     * being waited for.
+     *
+     * color-scheme is what actually fixes it: it tells the browser what kind
+     * of page this is BEFORE author CSS exists, so the initial canvas, the
+     * scrollbars and any form controls all come up dark instead of light. The
+     * background-color beside it makes that canvas the page's real ink rather
+     * than the browser's generic dark, so there is no second, subtler flash
+     * when the stylesheet lands and corrects the shade.
+     *
+     * is:inline keeps Astro from hoisting this into the bundle it is meant to
+     * pre-empt. Both values are derived from the same THEME constant as the
+     * theme-color meta above, so a theme switch cannot leave them disagreeing. */}
+    <style
+      is:inline
+      set:html={`:root{color-scheme:${THEME};background-color:${THEME_COLOR[THEME]}}`}
+    />
 
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
@@ -150,6 +168,17 @@ const fontFace = [
         addEventListener('resize', set, { passive: true });
       })();
     </script>
+  <script is:inline>
+    /* Hold the hero copy in the dark until the torch intro decides whether to
+       run, so the words never flash up before the light does. The timeout is a
+       safety net in case the stage script never runs. */
+    (function () {
+      var d = document.documentElement;
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches || location.hash) return;
+      d.classList.add('intro-pending');
+      setTimeout(function () { d.classList.remove('intro-pending'); }, 2500);
+    })();
+  </script>
   </head>
   <body>
     {
@@ -161,167 +190,25 @@ const fontFace = [
             Skip to content
           </a>
 
-          {/* The ground lights where the reader's attention is. Sits at the
-              grid's layer, so it illuminates the surface and passes BEHIND the
-              content rather than washing over the type. */}
-          <div class="glow" aria-hidden="true"><span></span></div>
-
-          <Nav navReveal={navReveal} />
           <main id="main" tabindex="-1" class={bleed ? undefined : 'main--contained'}>
-            {bleed ? <slot /> : <div class="shell"><slot /></div>}
+            {/* A bleed page lays out its own hero and puts the masthead inside
+                it. A contained one has no hero to hang it on, so main carries
+                it — otherwise removing the fixed bar would leave those pages
+                with no mark at the top of them at all. */}
+            {bleed ? <slot /> : (<><Masthead /><div class="shell"><slot /></div></>)}
           </main>
+          <BookingBadge />
           <Footer />
         </>
       )
     }
 
-    <script is:inline>
-      /* Cursor illumination.
-       *
-       * Moved with transform ONLY — a radial gradient repositioned by its
-       * background-position repaints a viewport-sized layer every frame, where
-       * a translated element is composited. Coalesced into one rAF so a mouse
-       * reporting at 1000Hz still costs one move per frame.
-       *
-       * Fine pointers only, and never under reduced motion: a light that
-       * chases the cursor is motion, and there is nothing to follow on a
-       * touchscreen. */
-      (() => {
-        const glow = document.querySelector('.glow');
-        if (!glow) return;
-        const dot = glow.firstElementChild;
-        if (!dot) return;
-        if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-        /* The light does not follow the pointer, it CHASES it — closing a
-         * fraction of the remaining gap each frame. Snapping to the cursor is
-         * what makes a glow read as a CSS property being assigned; trailing a
-         * little is what makes it read as a thing with mass.
-         *
-         * EASE is per 60Hz frame, corrected by dt so the same glide plays on a
-         * 120Hz panel. Without that correction a ProMotion Mac runs it at
-         * double speed and loses the trail entirely — which is most of this
-         * audience.
-         *
-         * The loop PARKS when the light arrives. A rAF that never stops costs a
-         * wake-up every frame for a still pointer, all day, on battery. */
-        const EASE = 0.12;
-        /* How far the ground moves for every pixel the light does. The number
-           is small on purpose: at 1440 it is 11px of vertical travel against a
-           133px cell, under a tenth of one. Any more and the surface stops
-           reading as a surface and starts reading as a thing being dragged. */
-        const GRID_GAIN = 0.025;
-        /* How far from a panel's edge the light still reaches it. Roughly the
-           glow's own radius, so a panel lights when the pool touches it. */
-        const CATCH = 240;
-
-        const root = document.documentElement;
-        const catchers = [...document.querySelectorAll('[data-catch]')];
-
-        let tx = 0, ty = 0;      // where the pointer is
-        let px = 0, py = 0;      // where the light is
-        let running = false, seeded = false, lit = false, last = 0;
-
-        const place = () => {
-          dot.style.transform = `translate3d(${px}px, ${py}px, 0)`;
-          if (!seeded) return;
-
-          /* The ground, trailing at a fraction of the light's travel.
-             VERTICAL ONLY. A horizontal shift moved the grid up to 18px at
-             1440 — 13% of a cell — which took every card edge off the line it
-             is now built to sit on. Nothing aligns to the horizontal lines, so
-             that axis is free. */
-          root.style.setProperty('--gy', ((py - innerHeight / 2) * GRID_GAIN).toFixed(2) + 'px');
-
-          /* Rects are read fresh every frame, not cached. Caching them and
-             invalidating on scroll and resize looked obviously cheaper and was
-             wrong: the reveal observer TRANSLATES these cards as they come into
-             view, so a rect captured on the scroll that triggered the reveal is
-             already stale by the time the card lands. Measured symptom —
-             --cnear stuck at 0 with the pointer sitting on the card.
-             There are two of these on the homepage and nine on /what-we-do/;
-             one layout read per frame per card, only while the pointer is
-             moving, is not worth a class of bug. */
-          for (const el of catchers) {
-            const r = el.getBoundingClientRect();
-            /* Distance from the pointer to the RECTANGLE, not to its centre —
-               zero anywhere inside it. A centre distance would light a wide
-               card only when the pointer reached the middle of it. */
-            const dx = Math.max(r.left - px, 0, px - r.right);
-            const dy = Math.max(r.top - py, 0, py - r.bottom);
-            const near = Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) / CATCH);
-            el.style.setProperty('--cnear', near.toFixed(3));
-            el.style.setProperty('--cx', (px - r.left).toFixed(1) + 'px');
-            el.style.setProperty('--cy', (py - r.top).toFixed(1) + 'px');
-          }
-        };
-
-        /* Scrolling moves every panel under a stationary pointer, so one frame
-           has to run even though nothing was moved by hand. It parks again
-           immediately after. */
-        const kick = () => {
-          if (seeded && !running) { running = true; last = 0; requestAnimationFrame(frame); }
-        };
-
-        const frame = (now) => {
-          const dt = last ? Math.min(now - last, 64) : 16.67;
-          last = now;
-          const k = 1 - Math.pow(1 - EASE, dt / 16.67);
-          px += (tx - px) * k;
-          py += (ty - py) * k;
-          place();
-          /* Half a pixel, not a tenth. An exponential approach never actually
-             arrives, so the threshold decides how long the tail runs: 0.1px
-             took 68 frames to clear a 600px jump, the last twenty of them
-             moving the light by less than a pixel in total. It snaps to the
-             exact target on park, so the only thing those frames bought was
-             battery. */
-          if (Math.abs(tx - px) < 0.5 && Math.abs(ty - py) < 0.5) {
-            px = tx; py = ty; place();
-            running = false; last = 0;
-            return;
-          }
-          requestAnimationFrame(frame);
-        };
-
-        addEventListener('pointermove', (e) => {
-          tx = e.clientX; ty = e.clientY;
-          if (!seeded) {
-            /* The first sample snaps. Easing in from the 0,0 origin would swipe
-               the light diagonally across the whole page the moment the pointer
-               arrives, which is the opposite of subtle. Same on re-entry after
-               the pointer has left: the light appears where the cursor is and
-               fades up, rather than sliding in from wherever it was abandoned. */
-            seeded = true; px = tx; py = ty; place();
-          }
-          if (!lit) {
-            lit = true;
-            glow.setAttribute('data-lit', '');
-            /* Separate attribute on the root, because [data-catch] elements are
-               anywhere in the page and cannot key off the glow's own state. */
-            root.setAttribute('data-pointer-lit', '');
-          }
-          if (!running) { running = true; last = 0; requestAnimationFrame(frame); }
-        }, { passive: true });
-
-        /* Capture on document, not scroll on window: the vignette cards live in
-           a horizontally scrolling track, and scroll does not bubble out of it.
-           Capture sees every scrolling element on the page. */
-        document.addEventListener('scroll', kick, { passive: true, capture: true });
-        addEventListener('resize', kick, { passive: true });
-
-        const leave = () => {
-          lit = false; seeded = false;
-          glow.removeAttribute('data-lit');
-          root.removeAttribute('data-pointer-lit');
-        };
-        addEventListener('pointerleave', leave);
-        // A pointer that leaves through the document edge does not always fire
-        // pointerleave on window; the document one does.
-        document.addEventListener('mouseleave', leave);
-      })();
-    </script>
+    {/* The cursor illumination script lived here: a rAF that tracked the
+        pointer, moved a radial pool with it, drifted the grid for parallax and
+        fed the proximity "catch" light on rules and card edges. The pool and
+        the parallax were switched off behind flags a while back, the catch
+        system has been removed, and the grid it drifted no longer exists — so
+        the loop was running every frame to drive nothing. */}
 
     <script is:inline>
       // Reveal. One observer for the whole page; each block staggers its own
@@ -416,83 +303,16 @@ const fontFace = [
         text-decoration: none;
       }
 
-      /* Clears the 5rem fixed bar for pages that don't open with a hero. */
-      /* Clearance stated as "the bar, plus this much air", the same way the
-         homepage hero states it — rather than 9rem and 7rem, two round numbers
-         with no declared relationship to the thing they were clearing. The bar
-         is 84px at desktop and 78px on a phone, so those left 60px and 34px of
-         actual air. This is the floor the homepage uses. */
-      .main--contained {
-        padding-top: var(--main-clear);
-      }
+      /* Stated as "the masthead, plus this much air", the same way the
+         homepage hero states it — rather than a round number with no declared
+         relationship to the thing it is clearing.
 
-      /* z-index 0 puts it on the grid's layer: above the page's own
-         background, below `main`/`nav`/`footer`, which are z-index 1. So it
-         lights the surface and never lifts the type sitting on it. */
-      .glow {
-        position: fixed;
-        inset: 0;
-        z-index: 0;
-        overflow: hidden;
-        pointer-events: none;
-        contain: strict;
-      }
-      .glow span {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 34rem;
-        height: 34rem;
-        margin: -17rem 0 0 -17rem;
-        border-radius: 50%;
-        /* A falloff, not a disc.
-         *
-         * Two evenly spaced stops describe a linear ramp, and nothing in the
-         * world falls off linearly — it reads as a flat plate with a soft edge.
-         * These five stops trace 1/(1+(r/0.25)^2), the inverse-square curve
-         * light actually follows: most of the intensity spent inside the first
-         * fifth of the radius, then a long thin tail.
-         *
-         * Peak and radius are back at the values this started from, 0.1 and
-         * 34rem, so the curve is the only thing kept from the falloff pass.
-         * Integrated against the two-stop ramp at the same size: mean alpha
-         * 0.77x and total emitted 0.77x — dimmer everywhere, because an
-         * inverse-square tail is thinner than a linear one.
-         *
-         * The core is a delta of 19 in 8 bits, the number originally flagged as
-         * what a dim display swallows. It survives now for a reason that did
-         * not hold then: the light MOVES. Motion is detected far below the
-         * contrast threshold of a static patch, and the grid behind it is twice
-         * the contrast it was. Do not read this value as safe on its own.
-         *
-         * The radius grows 34rem -> 46rem because the tail needs somewhere to
-         * go; at the old size the curve was still at 0.018 when it hit the
-         * edge, which is exactly the rim the stops exist to avoid.
-         *
-         * One hue throughout. A second colour in the halo is the obvious way to
-         * make it read cooler at the edges, and it is also a sixth colour —
-         * DESIGN.md 11.1. The falloff does that work instead: thin ember over
-         * ink desaturates toward the ground on its own. */
-        background: radial-gradient(
-          circle closest-side,
-          rgba(207, 91, 48, 0.1) 0%,
-          rgba(207, 91, 48, 0.061) 20%,
-          rgba(207, 91, 48, 0.028) 40%,
-          rgba(207, 91, 48, 0.015) 60%,
-          rgba(207, 91, 48, 0.006) 80%,
-          transparent 100%
-        );
-        opacity: 0;
-        transition: opacity 420ms var(--ease-out);
-        will-change: transform;
-      }
-      .glow[data-lit] span {
-        opacity: 1;
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .glow {
-          display: none;
-        }
+         position:relative because this element is now the masthead's
+         containing block: on a page with no hero, main is what the mark hangs
+         off. */
+      .main--contained {
+        position: relative;
+        padding-top: var(--main-clear);
       }
 
     </style>

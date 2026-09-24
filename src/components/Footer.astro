@@ -2,255 +2,511 @@
 /**
  * Footer.
  *
- * Closes the page with the mark set large — the bundle finally at rest — over
- * the contact block and legal row. All values come from src/config/site.ts.
+ * Two bands, at every size: a top band carrying the mark and the ways to reach
+ * us, and a bottom band carrying the legal line and the legal pages. What
+ * changes across the breakpoints is only how those two bands fold.
+ *
+ * The labels are gone. "Get in touch" over an email address and a phone number,
+ * and "Elsewhere" over two links, were headings for lists short enough to read
+ * in one glance — three lines of type to introduce five. The icons say the same
+ * thing in the same space as the content.
+ *
+ * ONE source for the content. The contact rows come from an array rather than
+ * being written out twice, and the LinkedIn button is a component placed in
+ * both bands: the design wants it top-right on desktop and tablet and in the
+ * bottom bar on the phone, and those are different PARENTS, which no amount of
+ * CSS can move an element between. Exactly one copy is visible at each size.
+ *
+ * All values come from src/config/site.ts.
  */
 import { SITE } from '../config/site';
 import { href } from '../lib/href';
 import BrandMark from './BrandMark.astro';
+import LinkedInButton from './LinkedInButton.astro';
 
+/* Privacy and Terms only. "Contact" left with the brief's footer: both calls to
+   action route to /contact and the band above this one is the same address and
+   the same phone number. A third path to the same page is not a link, it is
+   noise. */
 const LINKS = [
   { label: 'Privacy', href: '/privacy' },
   { label: 'Terms', href: '/terms' },
-  { label: 'Contact', href: '/contact' },
 ];
+
 const dial = (phone: string) => phone.replace(/\s+/g, '');
+
+/* supportEmail and supportPhone, not the contactEmail of record: that address
+   still feeds the legal pages and the Organization node, while this band is the
+   support channel the brief publishes. */
+const REACH = [
+  { kind: 'mail' as const, href: `mailto:${SITE.supportEmail}`, label: SITE.supportEmail },
+  { kind: 'tel' as const, href: `tel:${dial(SITE.supportPhone)}`, label: SITE.supportPhone },
+];
+
 const year = new Date().getFullYear();
 ---
 
 <footer class="foot">
-  <div class="shell">
-    <span class="rule-thread" data-catch="line" aria-hidden="true"></span>
-
-    <div class="foot__grid">
+  <div class="shell foot__inner">
+    <div class="foot__top">
       <div class="foot__brand">
         <BrandMark alt={SITE.legalEntityName} />
-        <p class="foot__tag meta">{SITE.tagline}</p>
+        <p class="foot__tag">{SITE.tagline}</p>
       </div>
 
-      <div class="foot__contact">
-        <p class="meta foot__label">Get in touch</p>
-        <a class="foot__mail" href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>
-        {
-          SITE.supportPhone && (
-            <p class="foot__people">
-              <span>Support</span>
-              <a href={`tel:${dial(SITE.supportPhone)}`}>{SITE.supportPhone}</a>
-            </p>
-          )
-        }
-      </div>
-
-      <div class="foot__meta">
-        <p class="meta foot__label">Elsewhere</p>
-        <ul class="foot__links">
+      {/* A wrapper on desktop, where the pills and the button ride together at
+          the right end. It becomes display:contents below 1024 so the three
+          blocks can order and wrap as siblings of the mark. */}
+      <div class="foot__reach">
+        <div class="foot__contact">
           {
-            LINKS.map((l) => (
-              <li>
-                <a href={href(l.href)}>{l.label}</a>
-              </li>
+            REACH.map((r) => (
+              <a class="foot__pill" href={r.href}>
+                {r.kind === 'mail' ? (
+                  <svg
+                    class="foot__ico"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="1.4" y="3.2" width="13.2" height="9.6" rx="1.6" />
+                    <path d="M1.9 4.4 8 8.7l6.1-4.3" />
+                  </svg>
+                ) : (
+                  <svg
+                    class="foot__ico"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M5.1 1.9 6.6 5 5.2 6.6a9.4 9.4 0 0 0 4.2 4.2L11 9.4l3.1 1.5v2.2a1.3 1.3 0 0 1-1.4 1.3A11.9 11.9 0 0 1 1.6 2.4 1.3 1.3 0 0 1 2.9 1h2.2Z" />
+                  </svg>
+                )}
+                <span class="foot__pill-txt">{r.label}</span>
+                <svg
+                  class="foot__out"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M3.4 8.6 8.6 3.4M4.3 3.4h4.3v4.3" />
+                </svg>
+              </a>
             ))
           }
-          {/* Until the company page exists this points at the homepage rather
-              than at a guessed LinkedIn URL. It is NOT wired to
-              SITE.companyLinkedinUrl: that value also feeds schema.org sameAs,
-              where an unverified profile would be a false claim about identity
-              rather than just a dead link. */}
-          <li>
-            <a
-              href={SITE.companyLinkedinUrl || href('/')}
-              {...(SITE.companyLinkedinUrl
-                ? { target: '_blank', rel: 'noopener noreferrer' }
-                : {})}
-            >
-              LinkedIn
-            </a>
-          </li>
-        </ul>
+        </div>
+
+        <LinkedInButton band="top" />
       </div>
     </div>
 
-    <p class="foot__legal">© {year} {SITE.legalEntityName} · ABN {SITE.abn}</p>
+    <div class="foot__bottom">
+      <p class="foot__legal">© {year} {SITE.legalEntityName} · ABN {SITE.abn}</p>
+      <ul class="foot__links">
+        {
+          LINKS.map((l) => (
+            <li>
+              <a href={href(l.href)}>{l.label}</a>
+            </li>
+          ))
+        }
+      </ul>
+      <LinkedInButton band="bottom" />
+    </div>
   </div>
 </footer>
 
 <style>
+  /* --------------------------------------------------------------------
+   * Written phone-first, in the three bands the design calls for:
+   * base = under 600, then 600+, then 1024+.
+   *
+   * The hairlines are literal white alphas rather than --color-line: they are
+   * a lift off whatever the footer sits on, not the site's ink-derived rule
+   * colour, and at 10% they read as an edge on this ground where #2e281f does
+   * not. Named once here so the three bands share them.
+   * ------------------------------------------------------------------ */
   .foot {
-    margin-top: var(--spacing-section-lg);
-    padding-bottom: 3rem;
+    --foot-edge: rgba(255, 255, 255, 0.1);
+    --foot-edge-lit: rgba(255, 255, 255, 0.22);
+    --foot-hair: rgba(255, 255, 255, 0.06);
+    --foot-icon: #d4744a;
+    --foot-legal: #6f6a62;
+    --foot-link: #8f8a82;
+
+    /* Was --spacing-section-lg, the gap BETWEEN sections: 152px on a wide
+       screen. The footer is not another section — it is the end of the one
+       above it, and at a section's distance it read as a separate block
+       floating in black. The closing section already reserves the room its
+       floodlight's stand needs, so this only has to be a seam. */
+    margin-top: 2.5rem;
+    /* env() so a phone's home indicator — or anything else parked at the
+       bottom of the viewport — never covers the last row. */
+    padding: 26px 0 calc(22px + env(safe-area-inset-bottom, 0px));
   }
 
-  .foot__grid {
-    display: grid;
-    gap: 3rem;
-    padding-top: clamp(3rem, 6vw, 5rem);
-  }
-  /* Tighter on the phone: the blocks are short there, and 48px between them
-     was spacing built for the three-column desktop layout. */
-  @media (max-width: 639px) {
-    .foot__grid {
-      gap: 2.25rem;
-      padding-top: 2.5rem;
-    }
-    .foot__label {
-      margin-bottom: 0.75rem;
-    }
-    .foot__legal {
-      margin-top: 2.5rem;
-    }
-  }
-  /* Snapped from the first breakpoint that has columns at all, not just the
-     widest. 1.4fr/1fr/1fr with a 4rem gap left every column start at an
-     arbitrary offset — measured 31px off the nearest line at 768. */
-  @media (min-width: 48rem) {
-    .foot__grid {
-      grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
-      gap: 0;
-    }
-    /* 3 / 4 / 2 of nine. The contact column takes the widest share because it
-       carries the address, which sets the minimum this layout has to clear. */
-    .foot__brand {
-      grid-column: 1 / span 3;
-      padding-right: 1.5rem;
-    }
-    .foot__contact {
-      grid-column: 4 / span 4;
-      padding-right: 1.5rem;
-    }
-    .foot__meta {
-      grid-column: 8 / span 2;
-    }
-  }
-  /* Fifteen columns above 64rem, so the shares change: 6 / 5 / 4. The gutter
-     is padding INSIDE the first two columns rather than a grid gap, because a
-     gap would push every following column off the lines again. */
-  @media (min-width: 64rem) {
-    .foot__brand {
-      grid-column: 1 / span 6;
-      padding-right: var(--grid-cell);
-    }
-    .foot__contact {
-      grid-column: 7 / span 5;
-      padding-right: var(--grid-cell);
-    }
-    .foot__meta {
-      grid-column: 12 / span 4;
-    }
-  }
+  /* --- top band ------------------------------------------------------ */
 
-  .foot__brand :global(.brand__img) {
-    height: clamp(1.5rem, 2.4vw, 2.1rem);
-    width: auto;
-  }
-  .foot__tag {
-    margin: 1.25rem 0 0;
-    color: var(--color-accent-type);
-  }
-
-  .foot__label {
-    margin: 0 0 1.25rem;
-    color: var(--color-cream-dim);
-  }
-
-  .foot__mail {
-    display: inline-flex;
-    align-items: center;
-    min-height: 2.75rem;
-    /* Was --text-lead, 26px at 1440 — the largest thing in the footer after
-       the wordmark, and larger than any body text on the page. The address is
-       the footer's most useful line, not its loudest; 21px is the ladder's
-       next rung and still reads first. */
-    font-size: var(--text-lg);
-    color: var(--color-cream);
-    text-decoration: none;
-    letter-spacing: var(--tracking-tight);
-    border-bottom: 1px solid var(--color-line);
-    padding-bottom: 2px;
-    transition: border-color var(--dur-fast) var(--ease-out);
-    /* No word-break. It was splitting the address mid-domain —
-       "hello@knotless.com.a / u" — whenever the column was narrower than the
-       line. An fr track's automatic minimum is its min-content, so with the
-       break removed the column simply widens to hold the address instead. */
-    white-space: nowrap;
-  }
-  .foot__mail:hover {
-    border-bottom-color: var(--color-ember);
-  }
-
-  /* One support line, and one only. Two personal mobiles in the footer put
-     both direct numbers on every page of the site, which is more of a person
-     than a footer needs to publish. */
-  .foot__people {
-    margin: 1.5rem 0 0;
-    padding: 0;
+  .foot__top {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.75rem;
-    min-height: 2.75rem;
-    font-size: var(--text-sm);
+    column-gap: 10px;
+    row-gap: 0;
   }
-  .foot__people span {
-    color: var(--color-cream-dim);
+  /* On the phone the wrapper must not be a box: the mark, the contact rows and
+     the button are three separate full-width bands there, each with its own
+     rule under it. */
+  .foot__reach {
+    display: contents;
   }
-  .foot__people a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 2.75rem;
-    color: var(--color-cream);
-    text-decoration: none;
+
+  .foot__brand {
+    flex: 1 0 100%;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--foot-edge);
   }
-  .foot__people a:hover {
+  .foot__brand :global(.brand__img) {
+    height: 24px;
+    width: auto;
+  }
+  .foot__tag {
+    margin: 0;
+    font-size: 10.5px;
+    line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    /* --color-accent-type, not --color-ember. The tagline is TYPE, and ember's
+       4.83:1 is a mark colour — the same rule the lockup asset encodes. */
     color: var(--color-accent-type);
   }
 
+  /* --- contact -------------------------------------------------------- */
+
+  .foot__contact {
+    flex: 1 0 100%;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid var(--foot-edge);
+  }
+
+  .foot__pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    padding: 12px 0;
+    font-size: 14.5px;
+    line-height: 1.2;
+    color: var(--color-cream);
+    text-decoration: none;
+    /* The address is one line at every width. It is the single string in the
+       footer that means nothing broken in half. */
+    white-space: nowrap;
+    transition: border-color var(--dur-fast) var(--ease-out);
+  }
+  .foot__pill + .foot__pill {
+    border-top: 1px solid var(--foot-hair);
+  }
+  .foot__pill-txt {
+    /* min-width:0 so a narrow phone shrinks this rather than pushing the arrow
+       off the edge; the ellipsis is the failure mode, not a wrap. */
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .foot__ico {
+    flex: none;
+    width: 16.5px;
+    height: 16.5px;
+    color: var(--foot-icon);
+  }
+  .foot__out {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    margin-left: auto;
+    color: var(--color-cream-dim);
+  }
+
+  /* --- LinkedIn -------------------------------------------------------
+   * The button itself is LinkedInButton.astro; what it IS lives there, where
+   * it is placed and how big it is lives here, because that is a property of
+   * the band it sits in. Its classes are :global so these rules can reach
+   * across the component boundary — kept under .foot, which IS scoped, so
+   * nothing here applies anywhere else on the site. */
+
+  .foot :global(.in) {
+    width: 30px;
+    height: 30px;
+  }
+  .foot :global(.in svg) {
+    width: 14px;
+    height: 14px;
+  }
+  /* Exactly one is rendered at each size; display:none takes the other out of
+     the accessibility tree too, so the label is never read twice. */
+  .foot :global(.in--top) {
+    display: none;
+  }
+
+  /* --- bottom band ---------------------------------------------------- */
+
+  .foot__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 16px;
+  }
+  .foot__legal {
+    order: 3;
+    flex: 1 0 100%;
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--foot-legal);
+  }
   .foot__links {
+    order: 1;
     list-style: none;
     margin: 0;
     padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 18px;
   }
   .foot__links a {
     display: inline-flex;
     align-items: center;
-    min-height: 2.75rem;
-    color: var(--color-cream-dim);
+    font-size: 13px;
+    color: var(--foot-link);
     text-decoration: none;
-    font-size: var(--text-sm);
     transition: color var(--dur-fast) var(--ease-out);
   }
-
-  /* On the phone the four links run ACROSS, not down. Stacked they were four
-     44px rows — 176px of the footer's 691px, for four words that fit on one
-     line. A row costs 44px and reads the same.
-
-     The horizontal padding is a tap target, not decoration: "Terms" sets 40px
-     wide and a target should be 44. The list is pulled back by the same amount
-     so the first link still starts on the content edge. */
-  @media (max-width: 639px) {
-    .foot__links {
-      display: flex;
-      flex-wrap: wrap;
-      column-gap: 0.75rem;
-      margin-inline: -0.4rem;
-    }
-    .foot__links a {
-      padding-inline: 0.4rem;
-    }
+  .foot :global(.in--bottom) {
+    order: 2;
   }
-  .foot__links a:hover {
+
+  /* --- hover ---------------------------------------------------------- */
+
+  .foot__pill:hover {
+    border-color: var(--foot-edge-lit);
+  }
+  .foot__links a:hover,
+  .foot__pill:hover .foot__out {
     color: var(--color-accent-type);
   }
 
-  /* Sentence case, in the sans. It carried .meta, so the copyright and the ABN
-     were set in MONOSPACED UPPERCASE with 0.16em tracking — a line that exists
-     to be read once, set in the hardest possible way to read it. Nothing about
-     "© 2026 Knotless AI Pty Ltd · ABN 74 …" is data that wants tabular figures
-     or a label that wants caps. */
-  .foot__legal {
-    margin: clamp(3rem, 6vw, 5rem) 0 0;
-    font-size: var(--text-sm);
-    line-height: 1.5;
-    color: var(--color-cream-dim);
-    opacity: 0.8;
+  /* Touch: the two bottom links and the circle are drawn compact, so the hit
+     area is grown under the finger rather than the design being grown for it. */
+  @media (hover: none) {
+    .foot__links a {
+      min-height: 44px;
+    }
+    .foot__links {
+      margin-block: -0.5rem;
+    }
+    /* The circle is 30px on the phone and 38px on a tablet, both under the tap
+       floor, so the target is grown outward without moving the drawn ring. */
+    .foot :global(.in)::after {
+      content: '';
+      position: absolute;
+      inset: -7px;
+    }
+    .foot__pill {
+      min-height: 44px;
+    }
   }
+
+  /* ====================================================================
+   * TABLET — 600px and up.
+   *
+   * The mark and the button share the first line, the two pills take the
+   * second at equal width, and one rule closes the band under both.
+   * ================================================================== */
+  @media (min-width: 600px) {
+    .foot {
+      margin-top: 3rem;
+      padding: 30px 0 calc(22px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .foot__top {
+      row-gap: 14px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--foot-edge);
+    }
+
+    /* The mark stacks again: the phone's side-by-side baseline row exists
+       because the phone has no width to spare, and nothing else does. */
+    .foot__brand {
+      flex: 0 1 auto;
+      display: block;
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+    .foot__brand :global(.brand__img) {
+      height: 30px;
+    }
+    .foot__tag {
+      margin-top: 8px;
+      font-size: 11px;
+    }
+
+    .foot :global(.in--top) {
+      display: inline-flex;
+      order: 2;
+      margin-left: auto;
+      width: 40px;
+      height: 40px;
+    }
+    .foot :global(.in--top svg) {
+      width: 17px;
+      height: 17px;
+    }
+    .foot :global(.in--bottom) {
+      display: none;
+    }
+
+    .foot__contact {
+      order: 3;
+      flex-direction: row;
+      gap: 10px;
+      border-bottom: 0;
+    }
+    /* Equal halves, together filling the line. */
+    /* min-height tracks the circle beside it, so the row reads as one rank
+       of controls rather than two sizes of them. */
+    .foot__pill {
+      flex: 1;
+      min-width: 0;
+      min-height: 40px;
+      padding: 10px 14px;
+      font-size: 14.5px;
+      border: 1px solid var(--foot-edge);
+      border-radius: 999px;
+    }
+    .foot__ico {
+      width: 17.5px;
+      height: 17.5px;
+    }
+    .foot__out {
+      width: 13px;
+      height: 13px;
+    }
+    .foot__pill + .foot__pill {
+      border-top: 1px solid var(--foot-edge);
+    }
+
+    .foot__legal {
+      order: 1;
+      flex: 1 1 auto;
+      font-size: 12.5px;
+    }
+    .foot__links {
+      order: 2;
+    }
+    .foot__links a {
+      font-size: 13.5px;
+    }
+  }
+
+  /* ====================================================================
+   * DESKTOP — 1024px and up. One line for the whole top band.
+   * ================================================================== */
+  @media (min-width: 1024px) {
+    .foot {
+      margin-top: 4rem;
+      padding: 34px 0 calc(26px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* A second step up, not a repeat of the tablet's. The band is one line
+       here, so the width the tablet spends on two rows is available to the
+       type instead. 34px is where the mark sat before this redesign. */
+    .foot__brand :global(.brand__img) {
+      height: 34px;
+    }
+    .foot__tag {
+      font-size: 12px;
+    }
+    .foot__pill {
+      min-height: 44px;
+      padding: 11px 16px;
+      font-size: 15.5px;
+    }
+    .foot__ico {
+      width: 19px;
+      height: 19px;
+    }
+    .foot__out {
+      width: 14px;
+      height: 14px;
+    }
+    .foot :global(.in--top) {
+      width: 44px;
+      height: 44px;
+    }
+    .foot :global(.in--top svg) {
+      width: 19px;
+      height: 19px;
+    }
+    .foot__legal {
+      font-size: 13.5px;
+    }
+    .foot__links a {
+      font-size: 14.5px;
+    }
+
+    .foot__top {
+      flex-wrap: nowrap;
+      column-gap: 40px;
+      row-gap: 0;
+    }
+    /* A box again, so the pills and the button travel to the right end as one
+       group rather than each finding its own place on the line. */
+    .foot__reach {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+      min-width: 0;
+    }
+    /* The tablet band reorders these to fold the row; at this width the line
+       is DOM order again — pills, then the button at the end. */
+    .foot__contact {
+      order: 0;
+      flex: 0 1 auto;
+    }
+    .foot :global(.in--top) {
+      order: 0;
+      margin-left: 0;
+    }
+    /* Shrink-to-content out here: each pill is only as wide as its own line,
+       which is what makes the band read as two buttons rather than a split bar. */
+    .foot__pill {
+      flex: 0 1 auto;
+    }
+  }
+
+  /* The pill borders animate on hover, and the arrows do not slide, so there is
+     nothing here that reduced motion needs to stop. */
 </style>

@@ -1,0 +1,70 @@
+---
+/**
+ * The footer's LinkedIn button.
+ *
+ * A component rather than markup written twice: the design puts the button in
+ * the top band on desktop and tablet and in the bottom bar on the phone, which
+ * are different places in the document, and CSS cannot move an element between
+ * two parents. So both are rendered and exactly one is display:none at each
+ * size — which takes the other out of the accessibility tree as well as off the
+ * screen, so the label is never announced twice.
+ */
+import { SITE } from '../config/site';
+import { href } from '../lib/href';
+
+interface Props {
+  /** Which band this copy belongs to. Drives the show/hide rule in Footer.
+      NOT called `slot`: that attribute is reserved on an Astro component, and
+      would place this element into a named slot of the parent instead. */
+  band: 'top' | 'bottom';
+}
+const { band } = Astro.props;
+
+/* companyLinkedinUrl is deliberately empty until the profile exists. It is NOT
+   guessed: the same value feeds schema.org sameAs, where an unverified URL is a
+   false claim about identity rather than just a dead link. Until then the
+   button goes home, and without target/rel — opening the site's own homepage in
+   a new tab is not what _blank is for. */
+const url = SITE.companyLinkedinUrl;
+---
+
+<a
+  class:list={['in', `in--${band}`]}
+  aria-label="Knotless on LinkedIn"
+  href={url || href('/')}
+  {...(url ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+>
+  <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+    <path
+      d="M3.1 5.9h2.2v7.2H3.1V5.9Zm1.1-3.5a1.3 1.3 0 1 1 0 2.6 1.3 1.3 0 0 1 0-2.6ZM6.9 5.9H9v1h.03a2.3 2.3 0 0 1 2.07-1.14c2.21 0 2.62 1.46 2.62 3.35v3.98h-2.18V9.55c0-.82-.01-1.87-1.14-1.87-1.14 0-1.32.89-1.32 1.81v3.61H6.9V5.9Z"
+    ></path>
+  </svg>
+</a>
+
+<style>
+  /* Sizes and placement live in Footer.astro, which owns the two bands. This
+     file owns only what the button IS.
+   *
+   * `a.in` rather than `.in`, and the extra element is load-bearing: global.css
+   * ends with `:focus-visible { … border-radius: 4px }`, which is (0,1,0) — the
+   * same weight as a bare class — and lands AFTER this file in the bundle. A
+   * tie goes to the later rule, so on keyboard focus the circle would square
+   * itself into a rounded box. The type selector settles it by weight instead
+   * of by order. */
+  :global(a.in) {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    border: 1px solid var(--foot-edge);
+    border-radius: 50%;
+    color: var(--color-cream);
+    transition:
+      border-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+  :global(a.in:hover) {
+    border-color: var(--foot-edge-lit);
+  }
+</style>

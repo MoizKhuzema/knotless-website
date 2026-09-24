@@ -15,6 +15,31 @@
  *      types, which is handy for autocomplete.
  */
 
+export interface Founder {
+  /**
+   * Full name, surname included. DESIGN.md §09: "The founders section must show
+   * the founders. A section headed 'Who you'll be talking to' that shows two
+   * first names is the weakest moment on the page. Surnames at minimum."
+   *
+   * Note this is the FORMAL credit, used on the founder cards and in JSON-LD.
+   * /about's prose uses first names on their own — a narrative register, not
+   * this one — and writes them into the copy rather than reading them here.
+   */
+  name: string;
+  /** Role / title, e.g. "Co-Founder & CEO". */
+  title: string;
+  /** Direct email address (shown on the homepage founder cards). */
+  email: string;
+  /** Direct contact number (shown in the footer and on the founder cards). */
+  phone: string;
+  /**
+   * Full LinkedIn profile URL. Empty string = no confirmed profile: the Person
+   * node in the /about JSON-LD then omits `url` and `sameAs` entirely rather
+   * than publishing a dead link (see founderPersons() in src/lib/schema.ts).
+   */
+  linkedinUrl: string;
+}
+
 export interface SiteConfig {
   /** Registered company name, e.g. on invoices and legal pages. */
   legalEntityName: string;
@@ -27,10 +52,21 @@ export interface SiteConfig {
    * legal pages omit the line rather than rendering an empty one.
    */
   registeredAddress: string;
-  /** General contact email. */
+  /** General contact email. Feeds the legal pages and the Organization node. */
   contactEmail: string;
   /**
-   * The support line in the footer. A direct mobile, at the client's
+   * The support address published in the footer.
+   *
+   * A SEPARATE TOKEN, still, even though both now hold the same address: this
+   * one is substituted into privacy-policy.md and terms-of-use.md as
+   * [CONTACT_EMAIL] and is the Organization node's `email` in JSON-LD — the
+   * address of record — while the footer's row is a support channel, which is
+   * a different promise. Two names for one mailbox costs nothing; one name for
+   * two promises is what makes them impossible to separate later.
+   */
+  supportEmail: string;
+  /**
+   * The support line in the footer. A founder's direct number, at the client's
    * instruction — it was an obviously-unassigned placeholder until then, which
    * §11.17 would not have let ship. It is a real person's mobile published on
    * a public page: empty the string and the footer drops the row entirely.
@@ -47,6 +83,8 @@ export interface SiteConfig {
   primaryDomain: string;
   /** Secondary / alternate domain WITHOUT protocol. */
   secondaryDomain: string;
+  /** The people behind the company, rendered as founder cards. */
+  founders: readonly Founder[];
   /**
    * Phrasing used when referencing the Privacy Act in legal copy, so the exact
    * wording can be tuned without editing page content. Currently "handled under".
@@ -60,9 +98,9 @@ export interface SiteConfig {
 }
 
 /**
- * The direct line published as the footer's support row. Declared as a constant
- * rather than inline so the one number the site publishes has one place to be
- * changed.
+ * The published support line, declared once because two places use it: the
+ * founder record and the footer's support row. A number typed twice is a
+ * number that gets changed once.
  */
 const SUPPORT_PHONE = '+61 416 588 531';
 
@@ -77,7 +115,10 @@ export const SITE = {
   // (§13) and src/legal/terms-of-use.md (§14). To bring the address back, add
   // the value here AND restore the token line in both markdown files.
   registeredAddress: '',
-  contactEmail: 'hello@knotless.com.au',
+  /* Was hello@. Both addresses are the support mailbox now — see the note on
+     supportEmail for why they remain two tokens. */
+  contactEmail: 'support@knotless.com.au',
+  supportEmail: 'support@knotless.com.au',
   supportPhone: SUPPORT_PHONE,
 
   privacyEmail: 'privacy@knotless.com.au',
@@ -89,6 +130,22 @@ export const SITE = {
   companyLinkedinUrl: '',
   primaryDomain: 'knotless.com.au',
   secondaryDomain: 'knotless.au',
+  founders: [
+    {
+      name: 'Insiya Karbalai',
+      title: 'Co-Founder & CEO',
+      email: 'insiya.karbalai@knotless.com.au',
+      phone: SUPPORT_PHONE,
+      linkedinUrl: '', // no confirmed profile yet — omitted from JSON-LD
+    },
+    {
+      name: 'Huzefa Karbalai',
+      title: 'Co-Founder & COO',
+      email: 'huzefa.karbalai@knotless.com.au',
+      phone: '+61 433 353 544',
+      linkedinUrl: '', // no confirmed profile yet — omitted from JSON-LD
+    },
+  ],
   privacyActWording: 'handled under',
   deliveryLocations: ['Australia', 'Pakistan'], // TODO confirm — from /what-we-do brief
 } as const satisfies SiteConfig;

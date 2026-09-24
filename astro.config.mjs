@@ -29,10 +29,9 @@ export default defineConfig({
   // it. lastmod is stamped at build; the 404 page is excluded.
   integrations: [
     sitemap({
-      // /lab/ is a dev harness, never a site page. Excluded here, disallowed in
-      // robots.txt, and carrying its own noindex meta — three layers, because
-      // the first two only discourage crawling.
-      filter: (page) => !page.includes('/404') && !page.includes('/lab'),
+      // 404 is the only route worth keeping out: it resolves, so it would be
+      // listed as a page of the site otherwise.
+      filter: (page) => !page.includes('/404'),
     }),
   ],
   vite: {

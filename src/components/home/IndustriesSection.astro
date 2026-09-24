@@ -1,0 +1,353 @@
+---
+/**
+ * Section 03 — Industries we specialise in.
+ *
+ * This used to be the tail of "What you get", where it never belonged: the
+ * verticals are not something a client receives, they are who the work is for.
+ * On its own it can also carry the argument, which is the part that actually
+ * sells: two industries is a CHOICE, and the closing paragraph says what the
+ * reader buys with that choice.
+ *
+ * The list is an index, not a menu. A row per vertical with its members set
+ * beside the name rather than beneath it, so the row spans its width and the
+ * two-member one does not look like a mistake. A flat grid of equal caps tiles
+ * would read as "we'll take anyone", which is the opposite of the claim.
+ */
+import { INDUSTRIES } from '../../data/homepage';
+import ArrowLink from '../ArrowLink.astro';
+import ParcelMachine from './ParcelMachine.astro';
+---
+
+<section class="ind" id="industries">
+  <div class="shell">
+    <div class="ind__head" data-reveal>
+      <h2 class="h-section ind__h r" style="--i: 1">{INDUSTRIES.heading}</h2>
+    </div>
+
+    <div class="ind__list" data-reveal>
+      <ul class="vlist">
+        {
+          INDUSTRIES.verticals.map((v, i) => (
+            <li class="vlist__row r" style={`--i: ${i}`}>
+              <span class="vlist__rule" aria-hidden="true" />
+              <span class="vlist__n meta meta--num">{String(i + 1).padStart(2, '0')}</span>
+              <h3 class="vlist__name">{v.name}</h3>
+              <p class="vlist__members">
+                {v.members.map((m, j) => (
+                  /* The stop travels WITH the member before it, inside one
+                     flex item, so a wrap can only ever fall between members.
+                     Loose in the flex row it could start a line — measured at
+                     960px, where it pushed "marketing" 34px right of the line
+                     above it. */
+                  <span class="vlist__m">
+                    <span>{m}</span>
+                    {j < v.members.length - 1 && (
+                      <span class="vlist__stop" aria-hidden="true" />
+                    )}
+                  </span>
+                ))}
+              </p>
+            </li>
+          ))
+        }
+      </ul>
+      <span
+        class="vlist__rule vlist__rule--end r"
+        aria-hidden="true"
+        style={`--i: ${INDUSTRIES.verticals.length}`}
+      />
+    </div>
+
+    {/* The reason. Without it the section is a list of words the reader has to
+        interpret; with it, the shortness of the list IS the argument. */}
+    <div class="ind__why" data-reveal>
+      <p class="ind__body r" style="--i: 0">{INDUSTRIES.body}</p>
+      <div class="ind__more r" style="--i: 1">
+        <ArrowLink href={INDUSTRIES.readMore.href}>{INDUSTRIES.readMore.label}</ArrowLink>
+      </div>
+    </div>
+
+    {/* The machine. It places itself into whatever empty corner the copy
+        leaves, and lights the copy from its roof. */}
+    <ParcelMachine />
+  </div>
+</section>
+
+<style>
+  .ind {
+    position: relative;
+    padding-top: var(--spacing-section-lg);
+    /* Same run-out. Larger than its neighbour's because the machine sits at
+       the very bottom of this section's content — 18px of slack — so it needs
+       the whole distance building from scratch. */
+    padding-bottom: 12rem;
+  }
+  @media (max-width: 1099px) {
+    .ind {
+      padding-bottom: 7.5rem;
+    }
+  }
+  /* The ambient wash the machine throws across the section.
+   *
+   * It reaches PAST the section, top and bottom, and sits behind everything on
+   * the page rather than behind this section's own content. Clipped to the
+   * section it ended on a hard horizontal line — warm above, black below —
+   * which is precisely what made one continuous black page read as a stack of
+   * separate blocks. Light does not stop at a box edge.
+   *
+   * z-index: -1 rather than 0, and .ind deliberately keeps z-index: auto so it
+   * never becomes a stacking context: that lets this layer drop behind the
+   * neighbouring sections' copy as well as its own, so it can overlap them
+   * without ever washing over their type. The script offsets the gradient's
+   * origin by the same --amb-pad it sets here. */
+  .ind :global(.ind__amb) {
+    position: absolute;
+    left: 0;
+    right: 0;
+    /* DOWN ONLY.
+     *
+     * It used to overhang at both ends. Downward that is what keeps this
+     * section and the next reading as one continuous page. Upward it was just
+     * spill: on a phone the machine sits beside the HEADING, near this
+     * section's top edge, so 320px of overhang put its wash across the bottom
+     * of the cards above it — light from a thing that is not in that section.
+     *
+     * Stopping at the edge on its own would trade the spill for a hard line,
+     * which is the fault this overhang was added to fix. So the top is masked
+     * instead: the wash fades in across the section's own head margin and has
+     * nothing left by the time it reaches the boundary. */
+    top: 0;
+    bottom: calc(-1 * var(--amb-pad, 320px));
+    z-index: -1;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--amb-fade, 130px));
+    mask-image: linear-gradient(to bottom, transparent 0, #000 var(--amb-fade, 130px));
+  }
+  .ind > .shell {
+    position: relative;
+    z-index: 1;
+  }
+
+  .ind__h {
+    margin: 1.25rem 0 0;
+    max-width: 20ch;
+  }
+
+  .ind__list {
+    margin-top: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .vlist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* The rules are ELEMENTS, not the list's and the rows' borders. A border
+     cannot be lit — the catch system paints into ::after, and a row's ::after
+     belongs to the row. As elements they register as catchers and take the
+     line variant with nothing new. One at the top of each row, one closing the
+     list. */
+  .vlist__rule {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--color-line);
+  }
+  .vlist__rule--end {
+    position: static;
+    display: block;
+  }
+
+  .vlist__row {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.75rem 1.5rem;
+    padding: clamp(1.75rem, 3vw, 2.5rem) 0;
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+  @media (min-width: 48rem) {
+    .vlist__row {
+      /* Name and members side by side. Beneath the name, the two-member row
+         left a large word over a short line and a lot of air; beside it, both
+         rows span the full width and the short one reads as brevity rather
+         than as something missing. */
+      /* Wide enough that "Professional services" holds one line at 21px. */
+      grid-template-columns: auto minmax(0, 22rem) minmax(0, 1fr);
+      align-items: baseline;
+      gap: 0 clamp(1.5rem, 3vw, 3rem);
+    }
+  }
+
+  .vlist__n {
+    color: var(--color-accent-type);
+  }
+
+  .vlist__name {
+    /* Two entries in a list, not a display line — and at 21px it is well under
+       the 32px floor, so this is sans, not the serif the section heading
+       above it uses. */
+    font-family: var(--font-sans);
+    font-size: var(--text-lg);
+    line-height: 1.15;
+    letter-spacing: var(--tracking-display);
+    font-weight: 600;
+    margin: 0;
+    color: var(--color-cream);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .vlist__members {
+    grid-column: 2;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    /* The column gap matches the gap inside .vlist__m, so the stop sits the
+       same distance from the word before it as from the word after. */
+    gap: 0.4rem 0.55rem;
+    font-size: var(--text-sm);
+    color: var(--color-cream-dim);
+  }
+  .vlist__m {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  @media (min-width: 48rem) {
+    .vlist__members {
+      grid-column: 3;
+    }
+  }
+
+  /* A full stop between members, not a dash. Glass, like the beads in the
+     cards above, at 5px rather than 8: the same material, sized as
+     punctuation rather than as a marker. */
+  /* A stop that has landed at the end of a wrapped line is not between two
+     things, so it is not punctuation — it is a dangling mark. Which item ends
+     a line is a fact only the layout knows, and it changes with the width, so
+     the script below measures it and marks the item.
+
+     visibility, NOT display. Removing the box would give the line back ~14px,
+     which can be enough for the next member to fit — and then the item is no
+     longer at the end of a line, the mark comes back, the line overflows
+     again, and it oscillates. Keeping the box means the measurement stays true
+     after the mark is hidden. */
+  .vlist__m[data-eol] .vlist__stop {
+    visibility: hidden;
+  }
+
+  .vlist__stop {
+    width: 0.3125rem;
+    height: 0.3125rem;
+    border-radius: 50%;
+    background-color: var(--color-glass-lift);
+    border: 1px solid var(--color-glass-soft-edge);
+  }
+
+  /* Hovering one row lights it and dims its neighbour. Pointer-fine only: on
+     touch there is no hover, and a permanently dimmed row would look broken. */
+  @media (hover: hover) and (pointer: fine) {
+    .vlist:hover .vlist__row {
+      opacity: 0.4;
+    }
+    .vlist:hover .vlist__row:hover {
+      opacity: 1;
+    }
+    .vlist__row:hover .vlist__name {
+      color: var(--color-accent-type);
+    }
+  }
+
+  .ind__why {
+    margin-top: clamp(2.5rem, 4vw, 3.5rem);
+  }
+
+  .ind__body {
+    margin: 0;
+    max-width: 62ch;
+    font-size: var(--text-base);
+    line-height: 1.7;
+    color: var(--color-cream-dim);
+    text-wrap: pretty;
+  }
+
+  .ind__more {
+    margin-top: clamp(1.75rem, 3vw, 2.5rem);
+  }
+
+  /* Tablet and phone close the two gaps around Industries.
+   *
+   * min-height: 0 is the load-bearing half. `main section { min-height: 100svh }`
+   * gives every section a viewport floor so its light has a screen to itself;
+   * below the desktop layout these two finish well short of that, so the floor
+   * was padding them out with black nobody asked for. The padding-bottom is
+   * then the run-out, sized for the shorter screen.
+   *
+   * Only these two. The hero stretch, the torch stage and the closing gap are
+   * doing real work and are left alone. */
+  @media (max-width: 1023px) {
+    .ind {
+      min-height: 0;
+      padding-bottom: 64px;
+    }
+  }
+  @media (max-width: 767px) {
+    .ind {
+      padding-bottom: 40px;
+    }
+  }
+</style>
+
+<script>
+  /* Hide the stop on any member that ends a wrapped line.
+   *
+   * The stop is bound to the member before it so that a wrap can never start a
+   * line with a mark — but that puts one at the END of a line whenever the
+   * break falls there, which is not between two things and so is not
+   * punctuation.
+   *
+   * No CSS can express this: where a line breaks is known only after layout.
+   * So it is measured — but on resize, not per frame, and the only thing
+   * written is a visibility toggle, which cannot itself change the layout that
+   * produced it.
+   *
+   * ResizeObserver rather than a window resize listener: it catches the list's
+   * box changing for any reason, including a font swapping in and reflowing
+   * the words, which a width listener would miss. */
+  (() => {
+    const lists = [...document.querySelectorAll('.vlist__members')];
+    if (!lists.length) return;
+
+    const sync = () => {
+      for (const list of lists) {
+        const items = [...list.children];
+        /* Read every top first, then write. Interleaving them would make each
+           write invalidate the next read. */
+        const tops = items.map((el) => el.getBoundingClientRect().top);
+        for (let i = 0; i < items.length; i++) {
+          // Ends a line when there is a next member and it sits lower.
+          const eol = i + 1 < items.length && tops[i + 1] - tops[i] > 1;
+          if (items[i].hasAttribute('data-eol') !== eol) {
+            items[i].toggleAttribute('data-eol', eol);
+          }
+        }
+      }
+    };
+
+    sync();
+    /* Metrics change when the real face replaces the fallback, and the wrap
+       points move with them. */
+    document.fonts?.ready.then(sync);
+
+    if ('ResizeObserver' in window) {
+      const ro = new ResizeObserver(sync);
+      lists.forEach((l) => ro.observe(l));
+    } else {
+      addEventListener('resize', sync, { passive: true });
+    }
+  })();
+</script>

@@ -1,14 +1,20 @@
 ---
 /**
- * Section 03 — How to get started. The close.
+ * Section 06 — How to get started. The close.
  *
  * The one light panel on a dark site. After several screens of ink, paper
  * arrives as an event — the same trick as a reversed panel on a light site,
  * run the other way round, and it lands harder because nothing else on the
  * page is light.
  *
- * Two statements, not a stepper. Numbering two things implies a process that
- * doesn't exist.
+ * NUMBERED, at last. The old copy was two statements about one call and the
+ * numbering was dropped for implying a process that did not exist. The new
+ * copy is genuinely sequential — you book the call, then you leave the call
+ * knowing three things — so the ordinal is a fact about the content rather
+ * than decoration on it.
+ *
+ * The ordinals are mono, which is the one register the type rules let them be:
+ * an index is a figure, not a word.
  */
 import { GET_STARTED } from '../../data/homepage';
 import CtaButton from '../CtaButton.astro';
@@ -16,27 +22,56 @@ import CtaButton from '../CtaButton.astro';
 
 <section class="close">
   <div class="shell">
-    <div class="close__panel" data-reveal>
-      <div class="close__inner">
-        <span class="rule-thread close__rule r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
+    {/* The card becomes the LENS of a floodlight. Everything around it is
+        drawn in the browser from the lens's measured box, so the card keeps
+        its own width and the housing is built to fit it rather than the other
+        way round. .lens-on is the real card — the same markup, the same
+        styles, still clickable and focusable. .lens-off is the identical
+        markup rendered dark, so the unlit lens shows the artwork on the glass
+        rather than an empty rectangle; it is inert and hidden from assistive
+        tech, so the page still contains exactly one of everything. */}
+    <div class="flood" data-flood>
+      <svg class="flood-back" data-flood-back aria-hidden="true"></svg>
 
-        <h2 class="h-section close__h r" style="--i: 1">{GET_STARTED.heading}</h2>
+      <div class="flood-lens" data-flood-lens>
+        {
+          [false, true].map((on) => (
+            <div
+              class:list={[on ? 'lens-on' : 'lens-off']}
+              {...(on ? {} : { 'aria-hidden': 'true', inert: true })}
+            >
+              <div class="close__panel">
+                <div class="close__inner">
+                  <h2 class="h-section close__h">{GET_STARTED.heading}</h2>
 
-        <ol class="close__steps">
-          {
-            GET_STARTED.steps.map((step, i) => (
-              <li class="close__step r" style={`--i: ${i + 2}`}>
-                <span class="close__srule" data-catch="line" aria-hidden="true" />
-                <p>{step}</p>
-              </li>
-            ))
-          }
-        </ol>
+                  <ol class="close__steps">
+                    {GET_STARTED.steps.map((step, i) => (
+                      <li class="close__step">
+                        <span class="close__srule" aria-hidden="true" />
+                        <div class="close__body">
+                          <span class="close__n meta--num" aria-hidden="true">
+                            {String(i + 1).padStart(2, '0')}
+                          </span>
+                          <p>{step}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
 
-        <div class="close__cta r" style="--i: 4">
-          <CtaButton href={GET_STARTED.cta.href} variant="inverse">{GET_STARTED.cta.label}</CtaButton>
-        </div>
+                  <div class="close__cta">
+                    <CtaButton href={GET_STARTED.cta.href} variant="inverse">
+                      {GET_STARTED.cta.label}
+                    </CtaButton>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        }
+        <div class="lens-warm" aria-hidden="true"></div>
       </div>
+
+      <svg class="flood-front" data-flood-front aria-hidden="true"></svg>
     </div>
   </div>
 </section>
@@ -44,9 +79,156 @@ import CtaButton from '../CtaButton.astro';
 <style>
   .close {
     padding-top: var(--spacing-section-lg);
+    /* The halo and the ground pool reach past the card. They must never be
+       able to widen the page. */
+    overflow-x: clip;
+  }
+
+  /* --- The floodlight -------------------------------------------------
+   *
+   * The housing, stand and ground are drawn in the browser from the lens's
+   * measured box, so the card is never resized to fit an illustration — the
+   * illustration is built around whatever the card turns out to be.
+   *
+   * Every layer except .lens-on is decoration: pointer-events none across the
+   * board, so the call to action underneath stays clickable and focusable the
+   * whole way through the switch-on. */
+  .flood {
+    position: relative;
+    --p: 1;
+    --w: 0;
+    --led: #5a2a18;
+    --sw-x: 0px;
+    --bezel: #efe8dc;
+  }
+  /* On the element ITSELF, not on <html>. Astro scopes every compound in a
+     selector, so `.js-flood .flood` compiles to `.js-flood[data-astro-cid]
+     .flood[...]` — and the root element never carries that attribute, so the
+     rule silently never matched and the card sat fully lit before the switch
+     was thrown. The script sets this class on both; this is the one that can
+     be scoped. */
+  .flood.js-flood {
+    --p: 0;
+  }
+
+  .flood-lens {
+    position: relative;
+  }
+  .flood-back,
+  .flood-front {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    /* The housing is drawn OUTSIDE the lens box, in negative coordinates. */
+    overflow: visible;
+    pointer-events: none;
+  }
+  .flood-front {
+    z-index: 3;
+  }
+
+  .lens-on {
+    position: relative;
+    z-index: 2;
+    opacity: var(--p);
+  }
+  /* The same card, dark, as the artwork on an unlit lens. */
+  .lens-off {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .lens-off .close__panel {
+    background-color: #12100e;
+    color: #4e4943;
+    height: 100%;
+  }
+  .lens-off .close__h,
+  .lens-off p {
+    color: #4e4943;
+  }
+  .lens-off .close__n {
+    color: #5a3222;
+  }
+  .lens-off .close__srule {
+    color: #26221e;
+  }
+  .lens-off a {
+    background: #1c1916 !important;
+    background-image: none !important;
+    color: #4e4943 !important;
+    border-color: #1c1916 !important;
+    box-shadow: none !important;
+  }
+
+  /* The amber of a lamp warming up, gone by the time it is at full output. */
+  .lens-warm {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    border-radius: var(--radius-lg);
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    opacity: var(--w);
+    background: radial-gradient(ellipse at 50% 55%, #ffd9a8, #f3c68c);
+  }
+
+  /* Driven from the timeline through custom properties, so the drawing is
+     built once per layout instead of re-rendered every frame. */
+  /* Both glows were set against the original paper. The card is now at about
+     a quarter of the brightness it was, so they come down by the same
+     proportion — a halo tuned to a bright lamp reads as fog once the lamp is
+     dimmed, because the light around the source is brighter than the source.
+     The halo's strength comes from the layout config, so the two layouts can
+     differ; the pool is the same either way. */
+  /* :global, because these elements are written by the script into innerHTML
+     and so never receive Astro's scope attribute. Scoped, every one of these
+     compiled to `.fl-halo[data-astro-cid]` and matched nothing — which is why
+     the halo and the ground pool were sitting at full opacity however low the
+     numbers went, and why the LED and the switch never moved. The custom
+     properties still inherit from .flood, so only the selectors change. */
+  :global(.fl-halo) {
+    opacity: calc(var(--halo, 0.06) * var(--p));
+  }
+  :global(.fl-pool) {
+    opacity: calc(0.24 * var(--p));
+  }
+  :global(.fl-bezel) {
+    stroke: var(--bezel);
+  }
+  :global(.fl-led) {
+    fill: var(--led);
+  }
+  :global(.fl-toggle) {
+    transform: translateX(var(--sw-x));
+  }
+
+  /* The focus ring has to be legible on cream, not on the page's ink. */
+  .lens-on a:focus-visible {
+    outline: 2px solid #16150f;
+    outline-offset: 3px;
   }
 
   .close__panel {
+    /* HALF THE BRIGHTNESS OF THE PAPER.
+     *
+     * Halved in LUMINANCE, not in channel values: #efe9dd carries a relative
+     * luminance of 0.819, and 0.410 converts back to this. Dividing the RGB
+     * numbers instead would have landed on #78756f — a flat mid grey that
+     * reads as neither paper nor panel, and drops the body text to 3.8:1,
+     * under the floor.
+     *
+     * Taken down twice: 0.819 -> 0.410 -> 0.220. The second step is close to
+     * the floor. The body copy is 22.6px at weight 400, which is just under
+     * WCAG's large-text line, so it needs the full 4.5:1 — and its ink is
+     * already near black, so there is nowhere left to go beneath about 0.21.
+     *
+     * Local to the closing card. The same token dresses the paper sections on
+     * /about and /what-we-do, and they were not asked about. */
+    --color-invert-bg: #84817a;
     background-color: var(--color-invert-bg);
     color: var(--color-invert-fg);
     border-radius: var(--radius-lg);
@@ -106,12 +288,50 @@ import CtaButton from '../CtaButton.astro';
   .close__step {
     max-width: 58rem;
   }
+  /* The ordinal beside the statement, not above it: the rule above each step
+     already separates them, and a number on its own line would make each step
+     three stacked objects.
+
+     aria-hidden, because the <ol> already tells a screen reader these are
+     items one and two. Reading "zero one" before the sentence would be the
+     list's own numbering said twice, once badly. */
+  .close__body {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: baseline;
+    gap: 0 1rem;
+  }
+
+  /* Oxide, not ember: this panel is CREAM, and on a light ground the accent is
+     #9E3418. Ember at 24px+ is a mark on the ink ground; here it would be type
+     on paper at 11px, which is the exact thing the palette forbids. */
+  /* The ordinals darken with the ground they sit on. At the paper's old
+     luminance the ember read 5.87:1; halving the background took it to 3.11,
+     under the floor for 11px text. Same hue, taken down until it clears 4.5
+     again — lowering the ground without lowering the ink is how a legible
+     panel quietly stops being one. */
+  /* The ordinals follow the ground down, and this is where the ember runs
+     out. At 11px they need 4.5:1, which at this brightness allows almost no
+     luminance at all — so what is left is a very dark rust that reads as a
+     dark mark rather than as the brand's orange. The alternative was keeping
+     the colour and shipping 2.6:1, which is not a trade to make quietly. */
+  .close__n {
+    color: #330b00;
+  }
+
+  /* Near black, not the dimmed ink. On the darkened panel the dim tone fell
+     to 4.10:1; the same copy in the heading's own colour clears the floor
+     without changing anything the reader can name. */
   .close__step p {
     margin: 0;
     font-size: var(--text-lead);
     line-height: 1.5;
     letter-spacing: var(--tracking-tight);
-    color: var(--color-invert-fg-dim);
+    /* Near black, not the dimmed ink, and set HERE rather than earlier in the
+       rule — the dim value is declared at this point, so an override above it
+       simply loses. On the darkened panel the dim tone measured 3.7:1; this
+       clears the floor without changing anything the reader can name. */
+    color: #16150f;
   }
 
   /* A rule above each statement, replacing the ember dash beside it. Two
@@ -138,3 +358,237 @@ import CtaButton from '../CtaButton.astro';
     }
   }
 </style>
+
+<script>
+  /* The floodlight.
+   *
+   * The card is the LENS. Nothing here resizes it: the housing, the stand and
+   * the ground are drawn from whatever box the card turns out to occupy, so
+   * the finished state inside the glass is the card exactly as it was.
+   *
+   * Both SVGs sit over the lens box at 1 unit per pixel and draw OUTSIDE it in
+   * negative coordinates, which is why they carry overflow:visible. The back
+   * one holds everything behind the glass, the front one the bezel and the
+   * hardware that overlaps it.
+   */
+  const NS = 'http://www.w3.org/2000/svg';
+  const CREAM = '#efe8dc', DARK = '#0b0908', EMBER = '#c65a31';
+
+  function flood(root: HTMLElement) {
+    const lens = root.querySelector<HTMLElement>('[data-flood-lens]');
+    const back = root.querySelector<SVGSVGElement>('[data-flood-back]');
+    const front = root.querySelector<SVGSVGElement>('[data-flood-front]');
+    const section = root.closest('section');
+    if (!lens || !back || !front || !section) return;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    const uid = 'fl' + Math.random().toString(36).slice(2, 7);
+
+    const rr = (x: number, y: number, w: number, h: number, r: number) =>
+      `M${x + r} ${y}h${w - 2 * r}a${r} ${r} 0 0 1 ${r} ${r}v${h - 2 * r}a${r} ${r} 0 0 1 ${-r} ${r}h${-(w - 2 * r)}a${r} ${r} 0 0 1 ${-r} ${-r}v${-(h - 2 * r)}a${r} ${r} 0 0 1 ${r} ${-r}z`;
+
+    function draw() {
+      const W = lens!.offsetWidth;
+      const H = lens!.offsetHeight;
+      if (W < 40 || H < 40) return;
+
+      /* Which layout, from the room actually available beside the card —
+         never from the viewport width. The yoke needs b2 + arm + pivot clear
+         of the card on both sides; below that there is nowhere to put it and
+         the stand goes underneath instead. */
+      const lr = lens!.getBoundingClientRect();
+      const freeL = lr.left;
+      const freeR = innerWidth - lr.right;
+      const wide = Math.min(freeL, freeR) >= 50;
+
+      const g = wide
+        ? { b1: 10, b2: 24, hr: 26, sw: 1.8, br: 20, bsw: 1.3, dx: 12, dy: -10, fins: 14,
+            bolt: 2.6, baseW: 74, baseH: 14, poolX: 0.62, poolY: 30, blur: 26, halo: 0.06 }
+        : { b1: 5, b2: 12, hr: 20, sw: 1.6, br: 17, bsw: 1.1, dx: 4, dy: -4, fins: 9,
+            bolt: 1.6, baseW: 46, baseH: 10, poolX: 0.55, poolY: 18, blur: 16, halo: 0.055 };
+
+      const hx = -g.b2, hy = -g.b2, hw = W + 2 * g.b2, hh = H + 2 * g.b2;
+      const bx = -g.b1, by = -g.b1, bw = W + 2 * g.b1, bh = H + 2 * g.b1;
+
+      /* Where the stand puts the light down. */
+      const standTop = hy + hh;
+      const postTop = wide ? standTop + 30 : standTop + 6;
+      const postH = wide ? 26 : 22;
+      const groundY = postTop + postH + g.baseH;
+
+      const S = `stroke="${CREAM}" fill="none" stroke-linecap="round" stroke-linejoin="round"`;
+
+      /* ---- behind the glass ---- */
+      let b = `<defs>
+        <filter id="${uid}b" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="${g.blur}"/></filter>
+        <radialGradient id="${uid}p"><stop offset="0" stop-color="#ffe6c6" stop-opacity="1"/><stop offset="1" stop-color="#ffe6c6" stop-opacity="0"/></radialGradient>
+        <linearGradient id="${uid}g" x1="0" x2="1">
+          <stop offset="0" stop-color="${CREAM}" stop-opacity="0"/>
+          <stop offset="0.5" stop-color="${CREAM}" stop-opacity="1"/>
+          <stop offset="1" stop-color="${CREAM}" stop-opacity="0"/>
+        </linearGradient>
+      </defs>`;
+
+      /* Halo, then the ground it stands on, then the pool it throws. */
+      b += `<path class="fl-halo" style="--halo:${g.halo}" d="${rr(hx, hy, hw, hh, g.hr)}" fill="${CREAM}" filter="url(#${uid}b)"/>`;
+      b += `<line x1="${hx - 120}" y1="${groundY}" x2="${hx + hw + 120}" y2="${groundY}" stroke="url(#${uid}g)" stroke-width="1.4" opacity="0.35"/>`;
+      b += `<ellipse class="fl-pool" cx="${W / 2}" cy="${groundY}" rx="${W * g.poolX}" ry="${g.poolY}" fill="url(#${uid}p)"/>`;
+
+      /* The box has a back as well as a front. */
+      b += `<path d="${rr(hx + g.dx, hy + g.dy, hw, hh, g.hr)}" fill="${DARK}" ${S} stroke-width="${g.sw}" opacity="0.85"/>`;
+      for (let i = 0; i < g.fins; i++) {
+        const t = 0.2 + (0.6 * i) / (g.fins - 1);
+        const x = hx + hw * t;
+        b += `<line x1="${x}" y1="${hy}" x2="${x + g.dx}" y2="${hy + g.dy}" stroke="${CREAM}" stroke-width="1" opacity="0.5"/>`;
+      }
+      b += `<path d="${rr(hx, hy, hw, hh, g.hr)}" fill="${DARK}" ${S} stroke-width="${g.sw}"/>`;
+
+      /* ---- the stand ---- */
+      const cx = W / 2;
+      if (wide) {
+        const pl = hx - 14, pr2 = hx + hw + 14, py = H / 2;
+        const yb = postTop;
+        /* The yoke, drawn as a tube: a thick cream stroke with a thinner dark
+           one inside it, which is how the rest of the site draws round bar. */
+        const yoke = `M${pl} ${py}V${yb - 14}a14 14 0 0 0 14 14H${pr2 - 14}a14 14 0 0 0 14 -14V${py}`;
+        b += `<path d="${yoke}" ${S} stroke-width="7"/><path d="${yoke}" stroke="${DARK}" fill="none" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>`;
+        b += `<rect x="${cx - 5}" y="${yb}" width="10" height="${postH}" fill="${DARK}" ${S} stroke-width="${g.sw}"/>`;
+      } else {
+        b += `<rect x="${cx - 14}" y="${standTop}" width="28" height="6" rx="2" fill="${DARK}" ${S} stroke-width="${g.sw}"/>`;
+        b += `<rect x="${cx - 4}" y="${postTop}" width="8" height="${postH}" fill="${DARK}" ${S} stroke-width="${g.sw}"/>`;
+      }
+
+      /* Base, switch, LED, cable. */
+      const bt = groundY - g.baseH, tw = g.baseW * 0.8;
+      b += `<path d="M${cx - g.baseW} ${groundY}L${cx - tw} ${bt}H${cx + tw}L${cx + g.baseW} ${groundY}Z" fill="${DARK}" ${S} stroke-width="${g.sw}"/>`;
+      const sw = wide ? 22 : 16, sh = wide ? 10 : 8, sx = cx - g.baseW * 0.55, sy = bt + (g.baseH - sh) / 2;
+      b += `<rect x="${sx}" y="${sy}" width="${sw}" height="${sh}" rx="${sh / 2}" fill="${DARK}" ${S} stroke-width="1.1"/>`;
+      b += `<rect class="fl-toggle" x="${sx + 1.5}" y="${sy + 1.5}" width="${sw / 2 - 1.5}" height="${sh - 3}" rx="${(sh - 3) / 2}" fill="${EMBER}"/>`;
+      b += `<circle class="fl-led" cx="${cx + g.baseW * 0.5}" cy="${bt + g.baseH / 2}" r="${wide ? 3.4 : 2.6}"/>`;
+      b += `<path d="M${cx + g.baseW} ${groundY - 3}q40 6 64 ${3} t90 0" ${S} stroke-width="1.6" opacity="0.7"/>`;
+
+      back!.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      back!.innerHTML = b;
+
+      /* ---- in front of the glass ---- */
+      let f = '';
+      /* The frame: the housing with the lens punched out of it, so the glass
+         sits in a hole rather than under a sheet. */
+      f += `<path d="${rr(hx, hy, hw, hh, g.hr)}${rr(bx, by, bw, bh, g.br)}" fill="${DARK}" fill-rule="evenodd"/>`;
+      f += `<path d="${rr(hx, hy, hw, hh, g.hr)}" ${S} stroke-width="${g.sw}"/>`;
+      f += `<path class="fl-bezel" d="${rr(bx, by, bw, bh, g.br)}" fill="none" stroke-width="${g.bsw}" stroke-linejoin="round"/>`;
+      const bo = (g.b2 - g.b1) / 2 + g.b1;
+      for (const [px, py2] of [[-bo, -bo], [W + bo, -bo], [-bo, H + bo], [W + bo, H + bo]]) {
+        f += `<circle cx="${px}" cy="${py2}" r="${g.bolt}" fill="${DARK}" ${S} stroke-width="1"/>`;
+      }
+      if (wide) {
+        const py = H / 2;
+        f += `<line x1="${hx}" y1="${py}" x2="${hx - 14}" y2="${py}" ${S} stroke-width="4"/>`;
+        f += `<line x1="${hx + hw}" y1="${py}" x2="${hx + hw + 14}" y2="${py}" ${S} stroke-width="4"/>`;
+        f += `<circle cx="${hx - 14}" cy="${py}" r="9" fill="${DARK}" ${S} stroke-width="1.6"/><circle cx="${hx - 14}" cy="${py}" r="3" fill="${CREAM}"/>`;
+        f += `<circle cx="${hx + hw + 14}" cy="${py}" r="9" fill="${DARK}" ${S} stroke-width="1.6"/><circle cx="${hx + hw + 14}" cy="${py}" r="3" fill="${EMBER}"/>`;
+      } else {
+        f += `<circle cx="${hx + hw}" cy="${H / 2}" r="3" fill="${EMBER}"/>`;
+      }
+      front!.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      front!.innerHTML = f;
+
+      /* Room under the card for the stand, and no more than that. */
+      section!.style.paddingBottom = `${Math.round(groundY - H + (wide ? 34 : 22))}px`;
+    }
+
+    const set = (p: number, w: number) => {
+      root.style.setProperty('--p', p.toFixed(3));
+      root.style.setProperty('--w', w.toFixed(3));
+      root.style.setProperty('--bezel', p > 0.5 ? '#ffe3bf' : CREAM);
+    };
+    const on = () => {
+      set(1, 0);
+      root.style.setProperty('--led', '#ff8a55');
+      root.style.setProperty('--sw-x', '8px');
+    };
+
+    let t0 = 0, raf = 0, done = false;
+    function frame(now: number) {
+      const t = now - t0;
+      if (t >= 200) {
+        root.style.setProperty('--led', '#ff8a55');
+        root.style.setProperty('--sw-x', '8px');
+      }
+      /* Hard steps, not transitions: a filament catching is a sequence of
+         states, and easing between them turns it into a dimmer. */
+      let p: number;
+      if (t >= 500) {
+        const k = Math.min(1, (t - 500) / 700);
+        p = 0.45 + 0.55 * (1 - Math.pow(1 - k, 3));
+      } else if (t >= 430) p = 0.2;
+      else if (t >= 370) p = 0.6;
+      else if (t >= 310) p = 0.06;
+      else if (t >= 260) p = 0.85;
+      else p = 0;
+
+      let w = 0;
+      if (t >= 260) w = 0.55 * p * (t <= 560 ? 1 : Math.max(0, 1 - (t - 560) / 900));
+      set(p, w);
+
+      if (t < 1460) {
+        raf = requestAnimationFrame(frame);
+        return;
+      }
+      on();
+      raf = 0;
+      done = true;
+    }
+
+    root.classList.add('js-flood');
+    document.documentElement.classList.add('js-flood');
+    draw();
+
+    /* Only skip the switch-on if the card is genuinely BEHIND the reader —
+       its whole box above the top of the screen. The old test fired whenever
+       the card's top was anywhere in the upper 85% of the viewport, which is
+       true of a card sitting perfectly in view: reload or come back while
+       looking at it and it was already lit, with nothing to watch. */
+    const lr = lens.getBoundingClientRect();
+    const already = lr.bottom < 0;
+    if (reduce.matches || already) {
+      on();
+      done = true;
+    } else {
+      /* Fire on how much of the CARD is showing, not on where its top edge
+         falls in the viewport. A fixed line means a short card on a tall
+         desktop screen starts — and finishes its second and a half — while
+         only its top strip is visible, so by the time the reader is looking
+         at it the lamp has always already been on. A fraction of the card is
+         the same amount of card on every screen. The extra test catches a
+         card taller than the viewport, which can never reach the ratio once
+         its top has gone past. */
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (done || raf) return;
+            const enough = e.intersectionRatio >= 0.55 || e.boundingClientRect.top <= 0;
+            if (!e.isIntersecting || !enough) continue;
+            t0 = performance.now();
+            raf = requestAnimationFrame(frame);
+            io.disconnect();
+          }
+        },
+        { threshold: [0, 0.25, 0.55, 0.8] },
+      );
+      io.observe(lens);
+    }
+
+    /* The housing is rebuilt when the card changes shape; the switch never
+       goes back. */
+    new ResizeObserver(() => {
+      draw();
+      if (done) on();
+    }).observe(lens);
+    document.fonts?.ready.then(() => {
+      draw();
+      if (done) on();
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-flood]').forEach(flood);
+</script>

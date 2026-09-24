@@ -1,0 +1,856 @@
+---
+/**
+ * TorchStage — one torch, two sections.
+ *
+ * Wraps the hero and the problem section and owns the light for both. The
+ * torch starts small at the bottom of the hero pointing up, and as the page
+ * scrolls it rides up, turns, grows and settles at the left of the problem
+ * section with its beam re-aimed to contain that section's content.
+ *
+ * Adapted from the TorchStory sketch. Three things come from it directly:
+ *
+ *   THE LINE-ART TORCH. Lanyard loop, knurled grip drawn as a real cross-hatch
+ *   under a clip, a threaded collar, a flared head with converging hatch on its
+ *   underside and a double bezel. It is drawn in strokes rather than fills,
+ *   which is the only way an object this small survives being scaled 4x during
+ *   the transition without turning into mush.
+ *
+ *   ONE AIM FUNCTION FOR BOTH ENDS. aim() takes a point and a box and returns
+ *   the direction to it plus the half-angle that contains it. That generalises
+ *   the hero's "fit the cone to the copy" to ANY direction, which is what makes
+ *   a travelling beam possible: the same solve runs for the hero's text pointing
+ *   up and the problem section's cards pointing right, and everything between is
+ *   an interpolation of two solved states rather than a keyframed guess.
+ *
+ *   SCROLL, NOT SCROLL-JACKING. The rig is sticky and everything is a pure
+ *   function of scroll position, so it is exactly reversible, never fights the
+ *   reader, and costs one rAF per scroll event.
+ *
+ * The stage is also the black ground for both sections, handed back to the
+ * page's warm ink at its bottom edge.
+ */
+const gripHatch = Array.from({ length: 19 }, (_, i) => 34 - 64 + i * 7);
+const headHatch = Array.from({ length: 6 }, (_, i) => i);
+---
+
+<div class="stage" data-torch-stage>
+  <slot />
+
+  <div class="stage__fx" aria-hidden="true">
+    <div class="stage__sticky" data-sticky>
+      <canvas class="stage__dust" data-dust></canvas>
+      <div class="stage__rig" data-rig>
+        <div class="stage__beam" data-beam><div class="stage__beamCore" data-beam-core></div></div>
+
+        {/* Points right; lens centre at (276, 0). Parts carrying data-k/data-o
+            take rx = lensRx * k + o, so the lens ellipse widens as the torch
+            turns toward the reader on the way across. */}
+        <svg class="stage__torch" data-torch width="300" height="170" viewBox="0 -85 300 170">
+          <defs>
+            <radialGradient id="tsLens" cx=".45" cy=".45" r=".65">
+              <stop offset="0" stop-color="#fffdf7" />
+              <stop offset=".6" stop-color="#fff0da" />
+              <stop offset="1" stop-color="#eed2ae" />
+            </radialGradient>
+            <filter id="tsGlow" x="-300%" y="-60%" width="700%" height="220%">
+              <feGaussianBlur stdDeviation="16" />
+            </filter>
+            <clipPath id="tsGrip"><rect x="34" y="-29" width="58" height="58" /></clipPath>
+            <clipPath id="tsHead">
+              <path d="M172 -35 C205 -42 240 -62 264 -78 L264 78 C240 62 205 42 172 35 Z" />
+            </clipPath>
+            <linearGradient id="tsRim" x1="0" x2="1">
+              <stop offset="0" stop-color="#efe9dd" />
+              <stop offset=".6" stop-color="#efe9dd" />
+              <stop offset="1" stop-color="#ffcf9c" />
+            </linearGradient>
+          </defs>
+
+          <g fill="none" stroke="#efe9dd" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="-9" cy="0" r="8" stroke-width="2" />
+            <line x1="-1" y1="0" x2="2" y2="0" stroke-width="2" />
+            <rect x="2" y="-24" width="20" height="48" rx="8" fill="#0b0908" stroke-width="2.5" />
+            <line x1="12" y1="-23" x2="12" y2="23" stroke-width="1" opacity=".5" />
+
+            <rect x="18" y="-30" width="134" height="60" rx="5" fill="#0b0908" stroke-width="2.5" />
+            <g clip-path="url(#tsGrip)" stroke-width="1" opacity=".55">
+              {gripHatch.map((x) => (
+                <>
+                  <line x1={x} y1="-29" x2={x + 58} y2="29" />
+                  <line x1={x} y1="29" x2={x + 58} y2="-29" />
+                </>
+              ))}
+            </g>
+            <line x1="34" y1="-30" x2="34" y2="30" stroke-width="1.5" />
+            <line x1="92" y1="-30" x2="92" y2="30" stroke-width="1.5" />
+            <g stroke-width="1" opacity=".45">
+              <line x1="98" y1="14" x2="148" y2="14" />
+              <line x1="100" y1="19" x2="148" y2="19" />
+              <line x1="104" y1="24" x2="148" y2="24" />
+              <line x1="22" y1="16" x2="30" y2="16" />
+              <line x1="22" y1="22" x2="30" y2="22" />
+            </g>
+            <line x1="118" y1="-22" x2="146" y2="-22" stroke-width="1.5" opacity=".8" />
+            <rect x="100" y="-30" width="5" height="60" fill="#b0461f" stroke="none" />
+            <rect x="114" y="-38" width="26" height="9" rx="4.5" fill="#b0461f" stroke-width="2" />
+
+            <rect x="150" y="-35" width="22" height="70" rx="3" fill="#0b0908" stroke-width="2.5" />
+            <g stroke-width="1" opacity=".5">
+              <line x1="155" y1="-34" x2="155" y2="34" />
+              <line x1="159" y1="-34" x2="159" y2="34" />
+              <line x1="163" y1="-34" x2="163" y2="34" />
+              <line x1="167" y1="-34" x2="167" y2="34" />
+            </g>
+
+            <path
+              d="M172 -35 C205 -42 240 -62 264 -78 L264 78 C240 62 205 42 172 35 Z"
+              fill="#0b0908" stroke="url(#tsRim)" stroke-width="2.5"
+            />
+            <g clip-path="url(#tsHead)" stroke-width="1" opacity=".45">
+              {headHatch.map((i) => <line x1="172" y1={10 + i * 5} x2="268" y2={26 + i * 11} />)}
+            </g>
+            <path d="M182 -30 C208 -37 234 -52 254 -64" stroke-width="1.3" opacity=".7" />
+
+            <ellipse cx="268" cy="0" rx="23" ry="82" fill="#0b0908" stroke-width="2.5" data-k="1" data-o="7" />
+            <ellipse cx="270" cy="0" rx="19" ry="76" stroke-width="1.2" opacity=".6" data-k="1" data-o="3" />
+          </g>
+
+          <ellipse class="stage__lensGlow" cx="282" cy="0" rx="34" ry="84" fill="#ffe4c2" filter="url(#tsGlow)" data-k="2" data-o="2" />
+          <ellipse class="stage__lens" cx="276" cy="0" rx="16" ry="72" fill="url(#tsLens)" data-k="1" data-o="0" />
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .stage {
+    position: relative;
+    isolation: isolate;
+    /* The stage is the ground for both sections it wraps. */
+    background: #000;
+    /* A fixed run of black AFTER the second section's copy, so the next
+       section's ground never arrives while the last line is still being read.
+       The hand-off gradient lives inside this, not on top of the copy. */
+    padding-bottom: 26vh;
+    --pw: 1; /* beam power, 0..1 */
+    --son: 0; /* how lit the second section is, 0..1 */
+  }
+  /* Compact already ends on a pinned screen that holds, and then a whole
+     screen of track releasing, so it arrives at the next section with the
+     pause the gap is there to provide. The laptop, which cuts straight from
+     the copy to the next ground, still needs the full run.
+     
+     The figures match the run-outs the other sections use below the desktop
+     layout, so every gap on a tablet or a phone is the same distance. */
+  @media (max-width: 1023px) {
+    .stage {
+      padding-bottom: 48px;
+    }
+  }
+  @media (max-width: 767px) {
+    .stage {
+      padding-bottom: 8px;
+    }
+  }
+
+
+  /* The hand-off gradient that used to sit here faded the stage's black down
+     into the page's warm ink. The page is black now, so it was painting black
+     over black — and a gradient whose only job was to disguise a colour change
+     between two sections is the opposite of what continuity wants. */
+
+  .stage__fx {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: clip;
+    opacity: var(--fx-on, 1);
+  }
+  .stage__sticky {
+    position: absolute;
+    inset: 0;
+  }
+  .stage__dust {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .stage__rig {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* THE BEAM IS A BOX STANDING ON THE LENS, not a gradient swept around a
+   * point. A conic gradient has to come from somewhere infinitely small, so
+   * the apex had to be shoved back behind the lens to fake a beam that starts
+   * the lens's own width — and that push-back is what kept fighting the cone
+   * fit. A clipped trapezoid is the real shape: lens-wide at the bottom,
+   * opening to the cone's half-angle, with one gradient down its length. The
+   * script sets width, height, transform and mask.
+   *
+   * THE SIDES ARE FEATHERED BY MASKS, NOT BLURRED. This box is around
+   * 1800x740, and its size, shape and mask are all rewritten on every scroll
+   * frame — so `filter: blur()` on it meant re-blurring a layer that big,
+   * every frame, to soften two slanted edges. Two feathered gradient masks on
+   * the core cut the same shape with the same soft edge for almost nothing.
+   * See where the masks are built in the script. */
+  .stage__beam {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform-origin: 50% 100%;
+    opacity: var(--pw);
+    will-change: transform;
+  }
+  .stage__beamCore {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to top, rgba(255, 244, 230, 0.16), transparent 28%),
+      linear-gradient(90deg,
+        rgba(170, 190, 225, 0.06) 0%,
+        rgba(255, 232, 210, 0.13) 10%,
+        rgba(255, 232, 210, 0.19) 50%,
+        rgba(255, 232, 210, 0.13) 90%,
+        rgba(170, 190, 225, 0.06) 100%);
+  }
+
+  .stage__torch {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform-origin: 0 0;
+    overflow: visible;
+  }
+  .stage__lens {
+    opacity: calc(0.3 + 0.7 * var(--pw));
+  }
+  .stage__lensGlow {
+    opacity: calc(0.75 * var(--pw));
+  }
+
+  /* The copy is never blank, only dimmed — if the script never runs, the page
+     is simply a page. */
+  :global(.stage [data-lit]) {
+    transition: opacity 0.5s ease;
+  }
+  :global(html.intro-pending .stage [data-lit]),
+  :global(.stage.is-intro [data-lit]) {
+    opacity: 0.06;
+    transition: none;
+  }
+  /* When the light steadies, the copy comes up in reading order. */
+  :global(.stage .hero [data-lit]) {
+    transition: opacity 0.7s ease;
+  }
+  :global(.stage .hero .hero__lead) { transition-delay: 0.12s; }
+  :global(.stage .hero [data-box])  { transition-delay: 0.24s; }
+  :global(.stage .hero .hero__note) { transition-delay: 0.32s; }
+  /* WHY THE LIGHT HAS TO CHANGE SIDES ON PHONES.
+   *
+   * Everywhere else the cards are glass — translucent, with the beam behind
+   * them showing through, which is what makes them look lit. A stacked card
+   * cannot be glass: card three has to hide cards one and two underneath it,
+   * so on phones it is opaque, and an opaque card over the beam is simply a
+   * dark rectangle in the middle of the light.
+   *
+   * So on phones the overlay is lifted above the quotes and washes over them
+   * instead of behind them. The hero is lifted above the overlay in turn,
+   * because its copy has no background to be lit through and is already
+   * correct — only the section with the opaque cards needs the light in front.
+   * pointer-events stays none, so nothing here is in the way of a tap. */
+  @media (max-width: 767px) {
+    .stage__fx {
+      z-index: 2;
+    }
+    .stage :global([data-stage-a]) {
+      position: relative;
+      z-index: 3;
+    }
+  }
+
+</style>
+
+<script>
+  const DEG = Math.PI / 180;
+  const clamp = (x: number, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+  const smooth = (a: number, b: number, x: number) => {
+    const t = clamp((x - a) / (b - a));
+    return t * t * (3 - 2 * t);
+  };
+  const ease = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+  type Box = { l: number; r: number; t: number; b: number };
+  /** dir: 0 = up, clockwise. half: cone half-angle. len: distance to the
+      farthest lit thing, measured ALONG the beam. */
+  type Fit = { dir: number; half: number; len: number };
+  const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
+  const LENS_HALF = 72;  /* lens half-height, in torch units */
+  const HEAD_BACK = 112; /* lens back to the collar, in torch units */
+  /* Tablet only: how far the torch HEAD is turned toward the right of the
+     beam's aim. Purely visual — the beam's direction, spread and reach are not
+     affected; the head rotates about its lens centre, where the beam starts. */
+  const TABLET_TILT = 12 * (Math.PI / 180);
+
+  function init(root: HTMLElement) {
+    const sticky = root.querySelector<HTMLElement>('[data-sticky]');
+    const rig = root.querySelector<HTMLElement>('[data-rig]');
+    const beam = root.querySelector<HTMLElement>('[data-beam]');
+    const core = root.querySelector<HTMLElement>('[data-beam-core]');
+    const torch = root.querySelector<SVGSVGElement>('[data-torch]');
+    const canvas = root.querySelector<HTMLCanvasElement>('[data-dust]');
+    const hero = root.querySelector<HTMLElement>('[data-stage-a]');
+    const next = root.querySelector<HTMLElement>('[data-stage-b]');
+    if (!sticky || !rig || !beam || !torch || !canvas || !hero || !next) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const lensParts = Array.from(torch.querySelectorAll<SVGElement>('[data-k]'));
+    const litA = Array.from(hero.querySelectorAll<HTMLElement>('[data-lit]'));
+    const litB = Array.from(next.querySelectorAll<HTMLElement>('[data-lit]'));
+    /* Two breakpoints, each matched by a CSS rule of the same number so the
+       two can never end up in different worlds.
+         COMPACT — no gutter to stand the torch in, so it comes in top-left.
+         DECK    — small enough that three quotes will not fit at once, so they
+                   stack. A tablet is compact but has the height for all three,
+                   and hiding two of them there would buy nothing. */
+    const COMPACT = matchMedia('(max-width: 1023px)');
+    const DECK = matchMedia('(max-width: 767px)');
+
+    /* The pieces the compact deck is made of. The scroll maths for the torch
+       already lives here, and the light, the heading and the cards have to
+       move as one group, so this is the only place that can drive them. */
+    const pin = next?.querySelector<HTMLElement>('[data-pin-stage]') ?? null;
+    const deck = next?.querySelector<HTMLElement>('[data-deck]') ?? null;
+    const cards = Array.from(next?.querySelectorAll<HTMLElement>('[data-deck-card]') ?? []);
+    const closing = next?.querySelector<HTMLElement>('[data-deck-closing]') ?? null;
+    const fx = root.querySelector<HTMLElement>('.stage__fx');
+
+    const MOVE = 0.6;              /* of each step animates; the rest holds */
+    const easeOut = (x: number) => 1 - Math.pow(1 - x, 3);
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    /* L0 is measured inside the hero, L1 inside the stage — never against the
+       page, so neither goes stale when the section's height changes. */
+    type Geo = {
+      aH: number; V: number;
+      L0: { x: number; y: number; s: number }; L1: { x: number; y: number; s: number };
+      f0: Fit; f1: Fit;
+    };
+    let G: Geo | null = null;
+    /* Deck state, all of it resolved in layout(): whether the section is
+       pinned at all, the tallest card, how far a card travels to reach the
+       deck, and the scroll distance that buys one change. */
+    let pinned = false;
+    let deckH = 0;
+    let slide = 0;
+    let step = 1;
+    let introStart = -1;
+    let view = { x: 0, y: 0, dir: 0, half: 0.5, lensHalf: 30, len: 800, H: 900, pw: 1 };
+
+    /* Line boxes for running text, the element box for anything with
+       data-box. A card's box is what has to be lit; a paragraph's box is
+       full-measure however short its last line is, so that gets its lines. */
+    const rectsOne = (el: HTMLElement, R: DOMRect): Box[] => {
+      let list: DOMRect[];
+      if (el.hasAttribute('data-box')) list = [el.getBoundingClientRect()];
+      else {
+        const r = document.createRange();
+        r.selectNodeContents(el);
+        list = Array.from(r.getClientRects());
+      }
+      return list
+        .filter((q) => q.width > 1 && q.height > 1)
+        .map((q) => ({ l: q.left - R.left, r: q.right - R.left, t: q.top - R.top, b: q.bottom - R.top }));
+    };
+
+    /* Every line box of every lit element, in root coordinates. Fitting the
+       actual lines rather than one merged rectangle is what lets the cone sit
+       close to the copy: a centred paragraph's bounding box is a rectangle,
+       but its lines are a much smaller shape. */
+    const rectsOf = (els: HTMLElement[], R: DOMRect): Box[] => els.flatMap((e) => rectsOne(e, R));
+    const boxOf = (rs: Box[], pad = 22): Box => ({
+      l: Math.min(...rs.map((q) => q.l)) - pad, r: Math.max(...rs.map((q) => q.r)) + pad,
+      t: Math.min(...rs.map((q) => q.t)) - pad, b: Math.max(...rs.map((q) => q.b)) + pad,
+    });
+
+    /**
+     * Fit a cone leaving a lens of half-height `lensHalf` at (x, y) around every
+     * rect plus a small buffer.
+     *
+     *  1. Aim down the middle of the angular spread, so the cone needs the
+     *     LEAST width — not at the box centre, which is only the same thing
+     *     when the content happens to be symmetric about the lens.
+     *  2. Half-angle is the smallest that keeps every corner inside GIVEN the
+     *     beam already leaves the lens `lensHalf` wide. That term is the whole
+     *     trick: the hero's CTA sits a hundred pixels from the lens and is
+     *     narrower than the lens itself, so it costs zero degrees. Fitting it
+     *     as a bare corner is what demanded seventy degrees and threw a cone
+     *     half again as wide as the headline across the screen.
+     *  3. Length is the farthest corner along the beam, so reach stops just
+     *     past the copy instead of overshooting by however wide the cone is.
+     */
+    const fit = (x: number, y: number, lensHalf: number, rects: Box[], buf: number): Fit => {
+      const pts = rects.flatMap((q) => [
+        [q.l - buf, q.t - buf], [q.r + buf, q.t - buf],
+        [q.l - buf, q.b + buf], [q.r + buf, q.b + buf],
+      ]);
+      if (!pts.length) return { dir: 0, half: 30 * DEG, len: 600 };
+
+      let sx = 0, sy = 0;
+      for (const [px, py] of pts) {
+        const d = Math.hypot(px - x, py - y) || 1;
+        sx += (px - x) / d;
+        sy += (py - y) / d;
+      }
+      const ref = Math.atan2(sx, -sy);
+      let lo = Infinity, hi = -Infinity;
+      for (const [px, py] of pts) {
+        const a = wrap(Math.atan2(px - x, -(py - y)) - ref);
+        lo = Math.min(lo, a);
+        hi = Math.max(hi, a);
+      }
+      const dir = ref + (lo + hi) / 2;
+
+      /* u runs along the beam, v across it. */
+      const ax = Math.sin(dir), ay = -Math.cos(dir);
+      let tan = Math.tan(3 * DEG), len = 0;
+      for (const [px, py] of pts) {
+        const dx = px - x, dy = py - y;
+        const u = dx * ax + dy * ay;
+        const v = Math.abs(dx * -ay + dy * ax);
+        len = Math.max(len, u);
+        if (u > 1) tan = Math.max(tan, (v - lensHalf) / u);
+      }
+      return { dir, half: Math.atan(Math.min(tan, Math.tan(80 * DEG))), len };
+    };
+
+    const motes = Array.from({ length: 80 }, () => ({
+      x: Math.random(), y: Math.random(),
+      r: 0.4 + Math.random() * 1.1,
+      v: 0.04 + Math.random() * 0.12,
+      ph: Math.random() * 6,
+    }));
+
+    /* Everything the deck writes, taken back off. Called whenever the
+       viewport leaves compact, or the pin is skipped: leftover inline
+       transforms and heights on absolutely-placed cards would wreck the
+       laptop's three columns, and nothing else clears them. */
+    function resetStack() {
+      pinned = false;
+      next!.removeAttribute('data-deck-on');
+      next!.style.removeProperty('--track-h');
+      next!.style.removeProperty('--deck-h');
+      for (const c of cards) {
+        c.style.transform = '';
+        c.style.filter = '';
+        c.style.minHeight = '';
+      }
+      if (closing) {
+        closing.style.opacity = '';
+        closing.style.transform = '';
+      }
+    }
+
+    function layout() {
+      const V = fx!.clientHeight || innerHeight;
+      const W = fx!.clientWidth || innerWidth;
+      const aH = hero!.offsetHeight;
+      /* Reduced motion gets the plain list and a torch already in its second
+         pose — a pinned section that only moves on scroll is still motion. */
+      const wantDeck = DECK.matches && !reduce.matches && !!pin && !!deck && cards.length > 1;
+
+      if (!wantDeck) resetStack();
+      else {
+        /* Measure the cards at their natural height first, or we would be
+           measuring the deck height we set last time. */
+        next!.style.removeProperty('--deck-h');
+        for (const c of cards) c.style.minHeight = '';
+        let dh = 0;
+        for (const c of cards) dh = Math.max(dh, c.offsetHeight);
+
+        const stageH = pin.offsetHeight;
+        const deckTop = deck.getBoundingClientRect().top - pin.getBoundingClientRect().top;
+        const closeH = closing ? closing.offsetHeight : 0;
+
+        /* Very short screens cannot hold heading + card + closing at once.
+           Rather than pin something that does not fit, show the plain list. */
+        if (deckTop + dh + closeH + 24 > stageH) resetStack();
+        else {
+          deckH = dh;
+          slide = stageH - deckTop;          /* deck top to the bottom edge */
+          step = stageH * 0.55;              /* scroll distance per change */
+          next!.style.setProperty('--deck-h', `${Math.round(dh)}px`);
+          /* (N-1) card changes, one closing reveal, then a short hold before
+             the sticky releases of its own accord. */
+          next!.style.setProperty('--track-h', `${Math.round(stageH + (cards.length + 0.3) * step)}px`);
+          next!.setAttribute('data-deck-on', '');
+          pinned = true;
+        }
+      }
+
+      const rA = rectsOf(litA, hero!.getBoundingClientRect());
+      if (!rA.length || V < 1) return;
+
+      const buf = clamp(Math.min(W, V) * 0.02, 12, 24);
+      const s0 = clamp(V * 0.0004, 0.22, 0.4);
+      /* In HERO coordinates, so it survives anything happening below it. */
+      const L0 = { x: W / 2, y: aH - 276 * s0 * 0.8, s: s0 };
+      const f0 = fit(L0.x, L0.y, LENS_HALF * s0, rA, buf);
+
+      /* The second pose and its beam are measured in STAGE coordinates. */
+      const pinR = pin!.getBoundingClientRect();
+      let rB: Box[];
+      if (pinned) {
+        /* Fitted to heading + the deck's BOX + the closing line, so the cone is
+           settled before the first card arrives and does not twitch as the
+           quotes swap underneath it. */
+        const frame = deck!.getBoundingClientRect();
+        rB = rectsOf(litB.filter((el) => !el.hasAttribute('data-deck-card')), pinR).concat([{
+          l: frame.left - pinR.left, r: frame.right - pinR.left,
+          t: frame.top - pinR.top, b: frame.top - pinR.top + deckH,
+        }]);
+      } else if (COMPACT.matches) {
+        /* TABLET KEEPS THE DECK'S TARGETS EVEN THOUGH IT HAS NO DECK.
+         *
+         * The quotes are a plain column here, running most of a screen deep.
+         * Fitting the cone to all of them re-aims it at something three times
+         * taller than what it used to light, and the beam opens from forty
+         * degrees to seventy and from seventeen hundred pixels wide to six and
+         * a half thousand — a wash, not a torch. So the target stays what it
+         * was when this width still stacked: the heading and ONE card's box.
+         * The rest of the column sits outside the cone, exactly as content
+         * below the beam does on the laptop. */
+        const c0 = cards[0]?.getBoundingClientRect();
+        const head = litB.filter((el) => !el.hasAttribute('data-deck-card') && !closing?.contains(el));
+        rB = rectsOf(head, pinR);
+        if (c0) {
+          /* The deck's target ran to the closing line, which sat directly under
+             the deck box — that is what set the beam's REACH. Here the closing
+             line is a screen further down, so its old place is added back as
+             height on the card's box rather than chasing it down the column.
+             Without this the beam comes up seven per cent short. */
+          const tail = closing ? closing.offsetHeight + 16 : 0;
+          rB = rB.concat([{
+            l: c0.left - pinR.left, r: c0.right - pinR.left,
+            t: c0.top - pinR.top, b: c0.bottom - pinR.top + tail,
+          }]);
+        }
+      } else {
+        rB = rectsOf(litB, pinR);
+      }
+      if (!rB.length) return;
+      const bB = boxOf(rB);
+
+      let L1: { x: number; y: number; s: number };
+      let f1: Fit;
+      if (COMPACT.matches) {
+        /* Top-left, pointing diagonally down across the stage. Three passes:
+           moving the lens changes the aim, which changes where the lens goes. */
+        /* Tablet shows the whole head inside the corner, a size up; phones keep the
+           original tucked-in corner pose. A is where the tail sits. */
+        const s1 = DECK.matches ? clamp(W * 0.0011, 0.34, 0.48) : 0.62;
+        const A = DECK.matches ? -4 : 22;
+        L1 = { x: W * 0.13, y: bB.t - HEAD_BACK * s1 * 0.5, s: s1 };
+        f1 = fit(L1.x, L1.y, LENS_HALF * s1, rB, buf);
+        for (let i = 0; i < 3; i++) {
+          const back = HEAD_BACK * s1;
+          /* Stage-LOCAL, so no live rect may appear here: pinR.top changes
+             every time the page scrolls, and folding it into an offset that is
+             meant to be fixed inside the stage is what sent the torch a
+             thousand pixels off screen. The stage's own rect is added back in
+             update(), once, at the moment of drawing. */
+          L1 = {
+            x: A + Math.sin(f1.dir) * back,
+            y: A - Math.cos(f1.dir) * back,
+            s: s1,
+          };
+          f1 = fit(L1.x, L1.y, LENS_HALF * s1, rB, buf);
+        }
+      } else {
+        /* Unchanged laptop pose: the head sits in the gutter left of the copy,
+           sized by the viewport but capped by the room actually available, and
+           shines across. */
+        const gutter = pinR.left + bB.l;
+        const s1 = Math.min(clamp(V * 0.0013, 0.55, 1.3), Math.max(gutter - 10, 40) / HEAD_BACK);
+        L1 = { x: HEAD_BACK * s1 - 4 - pinR.left, y: (bB.t + bB.b) / 2, s: s1 };
+        f1 = fit(L1.x, L1.y, LENS_HALF * s1, rB, buf);
+      }
+
+      /* Feed the second section's pool from the same box the beam is aimed at.
+         The compact deck hides it, so this only ever matters on the laptop. */
+      const pool = next!.querySelector<HTMLElement>('[data-stage-pool]');
+      if (pool && !pinned) {
+        pool.style.setProperty('--pool-x', `${pinR.left + (bB.l + bB.r) / 2}px`);
+        pool.style.setProperty('--pool-y', `${pinR.top + (bB.t + bB.b) / 2 - next!.getBoundingClientRect().top}px`);
+        pool.style.setProperty('--pool-w', `${(bB.r - bB.l) * 0.7}px`);
+        pool.style.setProperty('--pool-h', `${(bB.b - bB.t) * 0.7}px`);
+      }
+
+      canvas!.width = Math.round(W * dpr);
+      canvas!.height = Math.round(V * dpr);
+      G = { aH, V, L0, L1, f0, f1 };
+      update();
+    }
+
+    /* A torch being switched on: dark, a catch, a second catch, then steady.
+       It runs on EVERY load that opens at the top of the page — it was once
+       per session, which at 0.4s meant it was effectively never seen. */
+    const introPower = (now: number) => {
+      if (introStart < 0) return 1;
+      const ms = now - introStart;
+      if (ms < 260) return 0;      // dark
+      if (ms < 320) return 0.85;   // click
+      if (ms < 380) return 0.1;
+      if (ms < 450) return 0.6;    // second catch
+      if (ms < 520) return 0.2;
+      return clamp(0.2 + (ms - 520) / 420);  // steadies to full by ~940ms
+    };
+
+    function update(now = performance.now()) {
+      if (!G) return;
+      const { aH, V, L0, L1, f0, f1 } = G;
+      const heroR = hero!.getBoundingClientRect();
+      const pinR = pin!.getBoundingClientRect();
+      const rootR0 = root.getBoundingClientRect();
+
+      const p = clamp(-heroR.top / Math.max(aH, 1));
+      const t = reduce.matches ? (p < 0.5 ? 0 : 1) : ease(clamp(p / 0.8));
+
+      /* THE ONE RULE. Each pose is an offset inside its own element, so the
+         torch's place on screen is whatever that element's place on screen is,
+         this frame. No page coordinates, no scroll offset to keep in step. */
+      const x = lerp(heroR.left + L0.x, pinR.left + L1.x, t);
+      const y = lerp(heroR.top + L0.y, pinR.top + L1.y, t);
+      const s = lerp(L0.s, L1.s, t);
+      /* Shortest way round, so the turn from pointing up to pointing across
+         never takes the long way through the back of the page. */
+      const dir = f0.dir + wrap(f1.dir - f0.dir) * t;
+      const half = lerp(f0.half, f1.half, t);
+      const len = lerp(f0.len, f1.len, t);
+
+      /* Eased in with t, so the head turns as it travels into the tablet pose and
+         the hero pose (t = 0) is untouched. */
+      const tilt = COMPACT.matches && !DECK.matches ? TABLET_TILT * t : 0;
+      torch!.style.transform =
+        `translate(${x}px, ${y}px) rotate(${(dir - tilt) / DEG - 90}deg) scale(${s}) translate(-276px, -85px)`;
+      const lensRx = lerp(3, 16, t);
+      for (const el of lensParts) {
+        el.setAttribute('rx', String(lensRx * Number(el.dataset.k) + Number(el.dataset.o)));
+      }
+
+      /* The box stands on the lens and is rotated about it. Its height is the
+         distance to the farthest copy plus a fade, so the light dies a little
+         past what it is lighting rather than running on to the nav. */
+      const lensHalf = LENS_HALF * s;
+      const fade = clamp(len * 0.16, 80, 200);
+      const H = len + fade;
+      const Wd = 2 * (lensHalf + H * Math.tan(half));
+      const bs = beam!.style;
+      bs.width = `${Wd}px`;
+      bs.height = `${H}px`;
+      bs.transform = `translate(${x - Wd / 2}px, ${y - H}px) rotate(${dir / DEG}deg)`;
+      // The trapezoid's two slanted sides, each a feathered gradient edge.
+      // FE = half the feather width; 8px matches the old blur(5px) best.
+      const FE = 8;
+      const a = Wd / 2 - lensHalf;            // how far each side leans out over the height
+      const th = Math.atan2(a, H);            // side angle from vertical
+      const d0 = a * Math.cos(th);            // distance from the box corner to the side line
+      const ang = 90 - (th * 180) / Math.PI;  // CSS angle of the left side's inward normal
+      const sides =
+        `linear-gradient(${ang}deg, transparent ${d0 - FE}px, #000 ${d0 + FE}px), ` +
+        `linear-gradient(${-ang}deg, transparent ${d0 - FE}px, #000 ${d0 + FE}px)`;
+      const cs = core!.style;
+      cs.clipPath = '';
+      cs.webkitMaskImage = sides;
+      cs.maskImage = sides;
+      cs.webkitMaskComposite = 'source-in';
+      cs.maskComposite = 'intersect';
+      const reach = (len / H) * 100;
+      const mask = `linear-gradient(to top, #000 0%, rgba(0,0,0,.92) ${reach * 0.7}%, rgba(0,0,0,.7) ${reach}%, transparent 100%)`;
+      bs.webkitMaskImage = mask;
+      bs.maskImage = mask;
+
+      /* Dev-only readout, so a change to the pose can be checked as numbers
+         rather than argued about from screenshots. */
+      if (import.meta.env.DEV) {
+        (window as any).__torch = {
+          x: +x.toFixed(2), y: +y.toFixed(2), scale: +s.toFixed(4),
+          rotation: +(dir / DEG - 90).toFixed(3),
+          dir: +(dir / DEG).toFixed(3), half: +(half / DEG).toFixed(3),
+          len: +len.toFixed(2), beamW: +Wd.toFixed(2), beamH: +H.toFixed(2),
+        };
+      }
+
+      /* THE DECK. s counts changes, not pixels: 0 is card one alone, 1 is card
+         two landed, 2 is card three landed, and the rest is the closing line
+         and the hold. MOVE animates the first 60% of each step so there is a
+         beat to read the quote in before the next one starts moving. */
+      if (pinned) {
+        const sp = clamp(-next!.getBoundingClientRect().top / step, 0, cards.length);
+        const last = cards.length - 1;
+        for (let i = 0; i < cards.length; i++) {
+          let tr = '';
+          if (i >= 1) {
+            /* Slides up from below the screen into the deck. */
+            const inT = easeOut(clamp((sp - (i - 1)) / MOVE));
+            tr = `translateY(${((1 - inT) * slide).toFixed(1)}px)`;
+          }
+          if (i < last) {
+            /* And settles back as the next one covers it, so the pile reads as
+               depth rather than as one card changing its words. */
+            const under = easeOut(clamp((sp - i) / MOVE));
+            tr += ` scale(${(1 - 0.04 * under).toFixed(4)})`;
+            cards[i].style.filter = `brightness(${(1 - 0.35 * under).toFixed(3)})`;
+          } else {
+            cards[i].style.filter = '';
+          }
+          cards[i].style.transform = tr;
+        }
+        if (closing) {
+          const c = easeOut(clamp((sp - last) / MOVE));
+          closing.style.opacity = c.toFixed(3);
+          closing.style.transform = `translateY(${((1 - c) * 12).toFixed(1)}px)`;
+        }
+      }
+
+      const heroOn = reduce.matches ? (p < 0.5 ? 1 : 0) : 1 - smooth(0, 0.12, p);
+      const nextOn = reduce.matches ? (p < 0.5 ? 0 : 1) : smooth(0.72, 0.9, p);
+
+      /* AND THE TORCH SWITCHES OFF AS YOU LEAVE.
+       *
+       * Measured against the SECTION'S COPY, not the stage. The stage runs on
+       * past the copy through the black hand-off, so keying the fade to its
+       * bottom edge kept the beam at full strength with the next section
+       * already filling half the screen — 0.997 with 420px of it in view.
+       * Clipping the overlay stopped the light painting ON that section but
+       * did nothing about the torch still visibly burning above it.
+       *
+       * The light belongs to the copy it is lighting, so it goes out with it:
+       * full while the closing line is on screen, dark by the time that line
+       * has left the top. */
+      const leaving = smooth(0, V * 0.55, next!.getBoundingClientRect().bottom);
+      /* The lamp is dimmer once it has travelled. In the hero it is the only
+         thing on screen and can be as bright as it likes; over the quotes it
+         is lighting copy that has to be read, and the same output there was
+         washing them out. Tied to the travel rather than to the section, so
+         it fades down over the move instead of stepping at the boundary. */
+      const pw = Math.max(heroOn, nextOn) * introPower(now) * leaving * lerp(1, 0.62, t);
+      root.style.setProperty('--pw', pw.toFixed(3));
+      root.style.setProperty('--son', (nextOn * leaving).toFixed(3));
+
+      /* A fixed overlay is on screen for the whole document, so it has to be
+         switched off once the stage it belongs to has gone by — otherwise the
+         beam would hang over every section below. */
+      const rootR = rootR0;
+      const onScreen = rootR.bottom > 0 && rootR.top < V;
+      fx!.style.setProperty('--fx-on', onScreen ? '1' : '0');
+
+      /* NOT clipped to the stage any more. Clipping was how the beam was
+         stopped from painting on the next section, and it worked, but it cut
+         the light off along a hard horizontal line at the stage's bottom edge
+         — which is exactly what made two sections of one continuous black page
+         read as two separate blocks. The fade above already takes the light to
+         zero as the copy it belongs to leaves, so the falloff can simply run
+         off the end of the section like light does. */
+
+      view = { x, y, dir, half, lensHalf, len, H, pw: onScreen ? pw : 0 };
+    }
+
+    function dust(now: number) {
+      const w = canvas!.width / dpr;
+      const h = canvas!.height / dpr;
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx!.clearRect(0, 0, w, h);
+      if (reduce.matches || view.pw <= 0.01) return;
+      for (const m of motes) {
+        m.y -= m.v / h;
+        if (m.y < 0) m.y = 1;
+        const px = m.x * w + Math.sin(now / 2400 + m.ph) * 6;
+        const py = m.y * h;
+        const vx = px - view.x;
+        const vy = py - view.y;
+        /* The same trapezoid the beam is clipped to: along it, and inside the
+           width it actually has at that distance. */
+        const ux = Math.sin(view.dir), uy = -Math.cos(view.dir);
+        const u = vx * ux + vy * uy;
+        if (u < 12 || u > view.H) continue;
+        const v = Math.abs(vx * -uy + vy * ux);
+        const halfW = view.lensHalf + u * Math.tan(view.half);
+        if (v > halfW) continue;
+        const alpha =
+          view.pw * 0.5 * (1 - v / halfW) *
+          Math.max(0, 1 - u / view.len) *
+          (0.5 + 0.5 * Math.sin(now / 700 + m.ph * 3));
+        if (alpha <= 0.002) continue;
+        ctx!.fillStyle = `rgba(255,238,215,${alpha})`;
+        ctx!.beginPath();
+        ctx!.arc(px, py, m.r, 0, Math.PI * 2);
+        ctx!.fill();
+      }
+    }
+
+    let running = false;
+    let raf = 0;
+    const frame = (now: number) => {
+      raf = requestAnimationFrame(frame);
+      if (document.hidden) return;
+      dust(now);
+      if (introStart >= 0) {
+        update(now);
+        if (now - introStart > 520) root.classList.remove('is-intro');
+        if (now - introStart > 1000) introStart = -1;
+      }
+    };
+    const start = () => { if (!running) { running = true; raf = requestAnimationFrame(frame); } };
+    const halt = () => { running = false; cancelAnimationFrame(raf); };
+
+    /* One update per frame, straight off native scroll: exactly reversible,
+       never fights the reader, and nothing is pinned. */
+    let queued = false;
+    addEventListener('scroll', () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame((now) => { queued = false; update(now); });
+    }, { passive: true });
+
+    /* A phone's address bar sliding away is a height change of roughly a
+       hundred pixels and nothing else. Re-running layout on it would re-measure
+       the deck and jump the page under the reader's thumb, so width changes and
+       big height changes relayout, and that one does not. */
+    let lastW = 0;
+    let lastH = 0;
+    const onResize = () => {
+      const w = innerWidth;
+      const h = innerHeight;
+      if (w === lastW && Math.abs(h - lastH) < 150) return;
+      lastW = w;
+      lastH = h;
+      layout();
+    };
+    addEventListener('resize', onResize, { passive: true });
+    addEventListener('orientationchange', onResize);
+    COMPACT.addEventListener('change', layout);
+    DECK.addEventListener('change', layout);
+    reduce.addEventListener('change', layout);
+    document.fonts?.ready.then(layout);
+    addEventListener('load', layout);
+    layout();
+
+    new IntersectionObserver(([e]) => (e.isIntersecting ? start() : halt()), { threshold: 0 }).observe(root);
+    start();
+
+    if (!reduce.matches && window.scrollY < 10 && !location.hash) {
+      root.classList.add('is-intro');
+      introStart = performance.now();
+    }
+    document.documentElement.classList.remove('intro-pending');
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-torch-stage]').forEach(init);
+</script>

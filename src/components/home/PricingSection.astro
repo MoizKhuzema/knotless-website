@@ -1,0 +1,869 @@
+---
+/**
+ * Section 04 — What it costs.
+ *
+ * The price, on the page, in a table. A firm whose entire pitch is "we do the
+ * maths and we show the working" cannot put its own number behind a contact
+ * form, so this is the section the rest of the page is buying the right to
+ * publish.
+ *
+ * A REAL <table>, not a grid of divs. Four rows of three values where every
+ * column means one thing down its length is the definition of tabular data:
+ * the semantics give a screen reader the column header with each cell for
+ * free, and no ARIA has to be invented to get it back.
+ *
+ * The figures are set in the mono face with tabular figures, per the type
+ * rules: mono is rendered arithmetic only, and table columns are named in the
+ * rule explicitly. The column HEADERS are sans, because they are words.
+ *
+ * The narrow layout is not a horizontal scroller. Three columns at 390px gives
+ * the price column about 110px and "$7,500 to $12,000" needs roughly 150, so
+ * below 48rem each row becomes its own block with the header repeated beside
+ * each value through a data attribute. The table semantics are untouched; only
+ * the boxes move.
+ */
+import { PRICING } from '../../data/homepage';
+
+/* The compact mobile rows, derived from the table's own data rather than
+ * written out again — a second copy of four prices is a second copy that can
+ * go stale. The hours are relabelled here, not just shortened: "3 hours" in a
+ * column headed YOUR TEAM'S TIME is unambiguous, but the moment that header is
+ * dropped to save space the number has to carry the meaning itself, or it
+ * reads as the length of the whole engagement. */
+const compact = PRICING.rows.map((r) => {
+  const n = Number(r.workflows);
+  const hrs = r.time.replace(/\s*hours?$/i, '');
+  return {
+    count: `${r.workflows} workflow${n === 1 ? '' : 's'}`,
+    time: `${hrs} hrs of your team`,
+    timeAria: `${hrs} hours of your team's time`,
+    price: r.price.replace(/\s+to\s+/i, '\u2013'),
+    priceAria: r.price,
+  };
+});
+---
+
+<section class="price" id="pricing">
+  <div class="shell">
+    <div class="price__head" data-reveal>
+      <h2 class="h-section price__h r" style="--i: 1">{PRICING.heading}</h2>
+    </div>
+
+    {/* THE RECEIPT.
+        The card is the same table it always was; what is new is that it comes
+        out of a machine. The printer head is decoration, the paper is the
+        card, and the printing is a clip — the paper keeps its full layout
+        height from the first frame, so nothing below it ever moves. */}
+    <div class="receipt r" data-receipt data-reveal>
+      <div class="receipt-printer" aria-hidden="true">
+        <div class="rp-body"></div>
+        <div class="rp-grip"></div>
+        <i class="rp-band"></i>
+        <div class="rp-led" data-rp-led data-led="off"></div>
+        <div class="rp-slot"></div>
+        <div class="rp-spill"></div>
+      </div>
+      <div class="rc-edge" data-rp-line aria-hidden="true"></div>
+      <div class="receipt-glow" data-rp-glow aria-hidden="true"></div>
+
+      <div class="receipt-paper" data-rp-paper data-avoid-badge>
+        <div class="rc-head" data-line>
+          <span class="rc-muted">Knotless</span>
+          <span class="rc-muted">Quote · {PRICING.stage}</span>
+        </div>
+
+        <h3 class="price__stage" data-line>{PRICING.stage}</h3>
+
+        <table class="ptable">
+          {/* A caption, visually hidden. The heading above says "What it costs"
+              and the subheading says "Assessment"; neither is inside the table,
+              so a reader landing on the table alone would get four rows of
+              numbers with no idea what they price. */}
+          <caption class="sr-only">
+            Assessment pricing by number of workflows
+          </caption>
+          <thead>
+            <tr data-line>
+              {
+                PRICING.columns.map((c, i) => (
+                  <th scope="col" class:list={['ptable__th', 'rc-muted', i > 0 && 'ptable__th--num']}>
+                    {c}
+                  </th>
+                ))
+              }
+            </tr>
+          </thead>
+          <tbody>
+            {
+              PRICING.rows.map((row) => (
+                <tr class="ptable__row" data-line>
+                  {/* The workflow count is the row's key, so it is the row
+                      header rather than a fourth anonymous cell. */}
+                  <th scope="row" class="ptable__cell ptable__cell--key rc-num" data-label={PRICING.columns[0]}>
+                    <span class="rc-val">{row.workflows}</span>
+                  </th>
+                  <td class="ptable__cell rc-muted" data-label={PRICING.columns[1]}>
+                    <span class="rc-val">{row.time}</span>
+                  </td>
+                  <td class="ptable__cell ptable__cell--price rc-price" data-label={PRICING.columns[2]}>
+                    <span class="rc-val">{row.price}</span>
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+
+        {/* The same four options, for the stacked layout. Only one of the two
+            is ever displayed, so a screen reader meets one of them, not both. */}
+        <div class="rc-list">
+          <div class="rc-cols" data-line>
+            <span class="rc-muted">{PRICING.columns[0]}</span>
+            <span class="rc-muted">{PRICING.columns[2]}</span>
+          </div>
+          {
+            compact.map((c) => (
+              <div class="rc-line" data-line>
+                <span class="rc-left">
+                  <span class="rc-num">{c.count}</span>
+                  <span class="rc-muted rc-time" aria-label={c.timeAria}>{c.time}</span>
+                </span>
+                <span class="rc-dots" aria-hidden="true" />
+                <span class="rc-price" aria-label={c.priceAria}>{c.price}</span>
+              </div>
+            ))
+          }
+        </div>
+
+        <p class="price__note rc-note rc-muted" data-line>{PRICING.note}</p>
+
+        {/* The build, stated rather than left as a hole. A reader who has just
+            been shown four exact numbers will notice the absence of a fifth,
+            and an unexplained absence reads worse than "quoted separately"
+            does. It is the receipt's last line now rather than a paragraph
+            under the card: same words, printed by the same machine. */}
+        <div class="rc-build" data-line>
+          <span class="rc-muted">{PRICING.build.split(':')[0]}</span>
+          <span class="rc-dots" aria-hidden="true"></span>
+          <span class="rc-strong">{PRICING.build.split(':').slice(1).join(':').trim().replace(/\.$/, '')}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<style>
+  .price {
+    padding-top: var(--spacing-section-lg);
+  }
+
+  .price__h {
+    margin: 1.25rem 0 0;
+  }
+
+  /* --- The receipt ----------------------------------------------------
+   *
+   * The one card on the page that is deliberately NOT the shared glass. Every
+   * other pane is a surface the light falls on; this one is paper coming out
+   * of a machine, and paper is opaque. It keeps the same border and radius so
+   * it is still recognisably of the same set — it has simply been printed.
+   *
+   * The gap above it is the printer's: the head sits 24px up, so the space
+   * between the heading and the paper can never close below that. */
+  .receipt {
+    position: relative;
+    overflow: visible;
+    margin-top: max(2.75rem, clamp(2.5rem, 5vw, 4rem));
+  }
+
+  .receipt-paper {
+    position: relative;
+    z-index: 1;
+    padding: clamp(1.25rem, 2.6vw, 2.25rem);
+    border-radius: var(--radius-lg);
+    background-color: #0c0b0a;
+    border: 1px solid var(--color-glass-soft-edge);
+    /* No top edge: that end of the paper is inside the printer. */
+    border-top: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  /* The clip is applied ONLY once the script is running. Without it the
+     receipt is simply a card, fully printed, which is what a reader with no
+     JavaScript or a thrown error should get. */
+  .js-print .receipt-paper {
+    clip-path: var(--rc-clip, none);
+  }
+
+  /* --- The printer head ------------------------------------------------ */
+  .receipt-printer {
+    position: absolute;
+    left: -12px;
+    right: -12px;
+    top: -24px;
+    height: 26px;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .rp-body {
+    position: absolute;
+    inset: 0;
+    border: 1.5px solid var(--color-cream, #efe8dc);
+    border-radius: 8px;
+    background: #0e0c0a;
+  }
+  /* Knurling, as a repeating gradient rather than a row of elements. */
+  .rp-grip {
+    position: absolute;
+    left: 14px;
+    top: 7px;
+    width: 42px;
+    height: 12px;
+    opacity: 0.55;
+    background-image: repeating-linear-gradient(
+      90deg,
+      var(--color-cream, #efe8dc) 0 1px,
+      transparent 1px 4px
+    );
+  }
+  .rp-band {
+    position: absolute;
+    left: 62px;
+    top: 10px;
+    width: 12px;
+    height: 3px;
+    border-radius: 1px;
+    background: var(--color-ember, #c65a31);
+  }
+  /* Three states, not two: dark before the machine has anything to do, dim
+     while it is idle with paper in it, and bright on each line. */
+  .rp-led {
+    position: absolute;
+    right: 16px;
+    top: 9px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #2a1409;
+    transition: background 180ms ease, box-shadow 180ms ease;
+  }
+  .rp-led[data-led='idle'] {
+    background: #8a3a1c;
+  }
+  .rp-led[data-led='on'] {
+    background: #ff8a55;
+    box-shadow: 0 0 8px 2px rgba(255, 138, 85, 0.55);
+    transition: none;
+  }
+
+  /* The light spilling out of the slot itself. Always on once the paper is
+     there, brighter while it is moving. This is the one that says the machine
+     is switched on even before anything has printed. */
+  .rp-spill {
+    position: absolute;
+    left: 20%;
+    right: 20%;
+    bottom: -38px;
+    height: 40px;
+    opacity: 0.45;
+    background: radial-gradient(
+      ellipse 50% 100% at 50% 0%,
+      rgba(255, 226, 188, 0.35),
+      transparent 70%
+    );
+    transition: opacity 0.3s ease;
+  }
+  .receipt[data-printing] .rp-spill {
+    opacity: 1;
+  }
+
+  /* The print head's leading edge, travelling down the paper. */
+  .rc-edge {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+    z-index: 4;
+    pointer-events: none;
+    opacity: 0;
+    background: #ffe3bd;
+    box-shadow: 0 0 14px 4px rgba(255, 214, 170, 0.45);
+    transition: opacity 300ms ease;
+  }
+  .receipt[data-printing] .rc-edge {
+    opacity: 1;
+    transition: none;
+  }
+  /* The slot the paper comes out of. */
+  .rp-slot {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 3px;
+    height: 4px;
+    border-radius: 2px;
+    background: #070605;
+    box-shadow: inset 0 0 0 1px rgba(239, 232, 220, 0.22);
+  }
+
+  /* The light spilling out of the slot onto what has just been printed. */
+  .receipt-glow {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 0;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0.6;
+    /* Stretched over the whole receipt rather than dying 180px in. The stops
+       are re-spaced for the longer run: the same strength at the slot, but
+       carried down far enough that the last row of the table is still inside
+       the light instead of sitting below it in the dark. */
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 228, 194, 0.22),
+      rgba(255, 228, 194, 0.12) 38%,
+      rgba(255, 228, 194, 0.05) 68%,
+      rgba(255, 228, 194, 0.02) 88%,
+      transparent
+    );
+  }
+
+  /* --- Receipt furniture ------------------------------------------------ */
+  .rc-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 0 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px dashed var(--color-line);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-cream-dim);
+  }
+
+  .rc-build {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin: 1.25rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--color-line);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-cream-dim);
+  }
+  .rc-dots {
+    flex: 1;
+    border-bottom: 1px dotted rgba(255, 255, 255, 0.18);
+    transform: translateY(-3px);
+  }
+
+  /* THREE STATES, NOT TWO.
+   *
+   * A line is unprinted, then flashing, then LIT — and lit is where it stays.
+   * It used to cool all the way back to the page's own colours, which meant
+   * the receipt ended up looking exactly as it would have with no machine at
+   * all: the only evidence it had been printed was gone half a second after it
+   * happened. Now .fresh is the flash and .lit is the state it eases into when
+   * the flash is removed, so the paper keeps the warmth it came out with.
+   *
+   * Every rule reaches the children too. The cells set their own colour, so a
+   * rule that only paints the row paints nothing anybody can see. */
+  .receipt-paper [data-line],
+  .receipt-paper [data-line] * {
+    transition: color 0.7s ease, text-shadow 0.7s ease;
+  }
+  .receipt-paper [data-line].lit,
+  .receipt-paper [data-line].lit * {
+    transition: color 0.7s ease, text-shadow 0.7s ease;
+  }
+
+  /* The flash. Brightest, and instant — it is the print head passing. */
+  .receipt-paper [data-line].fresh,
+  .receipt-paper [data-line].fresh * {
+    color: #ffe9cf !important;
+    text-shadow: 0 0 12px rgba(255, 214, 170, 0.65);
+    transition: none;
+  }
+
+  /* Then the steady state, by what the text IS. --falloff dims each line by
+     how far it sits from the printer, so the glow reads as light coming from
+     one place rather than as a style applied to every line equally. */
+  /* Each of these has to match the line ITSELF as well as its children. The
+     title and the build line ARE [data-line] elements, so a descendant-only
+     selector silently skipped them — the heading kept its ordinary cream and
+     no shadow at all while every row around it glowed. */
+  /* The prices keep the level they were set at — they are the thing the
+     section exists to state, and they were already reading correctly. */
+  .receipt-paper .lit .rc-price,
+  .receipt-paper .lit.rc-price {
+    color: #fbe6cc;
+    text-shadow: 0 0 10px rgba(255, 210, 160, calc(0.42 * var(--falloff, 1)));
+  }
+  /* The workflow counts came off the same rule as the prices, which pinned
+     them to the one level that was NOT to change. Split out so they can be
+     lit harder without touching the figures beside them. */
+  .receipt-paper .lit .rc-num,
+  .receipt-paper .lit.rc-num {
+    color: #ffeeda;
+    text-shadow: 0 0 10px rgba(255, 214, 170, min(0.45, calc(0.58 * var(--falloff, 1))));
+  }
+  .receipt-paper h3.lit,
+  .receipt-paper .lit h3,
+  .receipt-paper .lit .rc-strong,
+  .receipt-paper .lit.rc-strong {
+    color: #fff0dc;
+    text-shadow: 0 0 12px rgba(255, 214, 170, calc(0.35 * var(--falloff, 1)));
+  }
+  /* The muted tier was the faintest thing on the paper by a long way: a 0.22
+     base, then multiplied by a falloff that reaches 0.6 at the foot, left the
+     column heads and the hours glowing at about 0.13 against the prices' 0.41.
+     Lifted in colour as much as in shadow — at 12px, colour does more of the
+     work than a blur can. min() holds it under the readability ceiling. */
+  .receipt-paper .lit .rc-muted,
+  .receipt-paper .lit.rc-muted,
+  .receipt-paper .lit .ptable__cell::before {
+    color: #e3d6c2;
+    text-shadow: 0 0 10px rgba(255, 214, 170, min(0.45, calc(0.46 * var(--falloff, 1))));
+  }
+
+  /* THE LAST TWO LINES NEED THEIR OWN STEP.
+   *
+   * The closing note and the build line are the furthest things from the print
+   * head, so the falloff is hardest on them — and they were also on the muted
+   * tier, which multiplied out to about 0.14 alpha against the prices' 0.41.
+   * Technically glowing, visibly not. They are the only prose on the receipt
+   * rather than figures, so rather than weakening the falloff everywhere they
+   * take a stronger base that lands them alongside the rows once it is
+   * applied. min() holds them under the readability ceiling whatever the
+   * falloff works out to. */
+  .receipt-paper .rc-note.lit,
+  .receipt-paper .rc-build.lit .rc-muted {
+    color: #eadcc6;
+    text-shadow: 0 0 10px rgba(255, 214, 170, min(0.45, calc(0.62 * var(--falloff, 1))));
+  }
+  /* The brief's 12px radius suits the 26px title; on the 10.5px mono of the
+     build line it is wider than the letters are tall and the words go soft.
+     Small mono keeps the tighter radius and takes the strength as alpha. */
+  .receipt-paper .rc-build.lit .rc-strong {
+    color: #fff0dc;
+    text-shadow: 0 0 8px rgba(255, 214, 170, min(0.45, calc(0.74 * var(--falloff, 1))));
+  }
+
+  /* "Assessment". Same step as the stage names in "What you get", because it
+     names the same thing. Sans at 26px, well under the serif's 32px floor. */
+  .price__stage {
+    margin: 0 0 1.5rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-xl);
+    line-height: 1.2;
+    letter-spacing: var(--tracking-display);
+    font-weight: 600;
+    color: var(--color-cream);
+  }
+
+  .ptable {
+    width: 100%;
+    border-collapse: collapse;
+    /* Stated on the table as well as inherited from html, because this is the
+       one place on the page where a column of figures has to line up down its
+       length rather than merely look even. lining-nums keeps the digits at cap
+       height so "$3,000" and "$12,000" share a baseline and a ceiling. */
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  .ptable__th {
+    /* WORDS, so sans. The rule that puts mono in this table covers the figure
+       columns, not the labels over them. */
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-meta);
+    color: var(--color-cream-dim);
+    text-align: left;
+    padding: 0 0 0.9rem;
+    border-bottom: 1px solid var(--color-line);
+    white-space: nowrap;
+  }
+
+  .ptable__cell {
+    /* The figures. Mono, 400, the rendered-arithmetic register. */
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: var(--text-md);
+    text-align: left;
+    padding: 1rem 0;
+    color: var(--color-cream-dim);
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  /* The row key and the price are what the reader is actually here for, so
+     they take full-strength cream; the middle column stays dimmed. Hierarchy
+     inside a table, done with contrast rather than with weight, because a
+     heavier mono is a different texture rather than a louder one. */
+  .ptable__cell--key,
+  .ptable__cell--price {
+    color: var(--color-cream);
+  }
+  .ptable__cell--price {
+    font-weight: 500;
+  }
+
+  /* Last row: no rule under it. The panel's own edge closes the table, and a
+     hairline a few pixels above it reads as a mistake. */
+  .ptable__row:last-child .ptable__cell {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  @media (min-width: 48rem) {
+    /* Columns sized to content, with the price column taking the slack. The
+       workflow count is one character wide and should not be handed a third of
+       the table for it — but 7rem left the count crowding the hours beside it,
+       so the gap is opened out. */
+    .ptable__th:first-child,
+    .ptable__cell--key {
+      width: 12rem;
+    }
+    .ptable__th:nth-child(2),
+    .ptable__cell:nth-child(2) {
+      width: 32%;
+    }
+    /* The price goes to the right edge rather than floating in the middle of
+       the slack it was handed. Right-aligned, not merely pushed across: on a
+       receipt the figures are what the eye runs down, and a ragged left with a
+       flush right is how a column of money is set. Tabular figures already
+       hold the digits in line, so the decimals stack. */
+    .ptable__th:last-child,
+    .ptable__cell--price {
+      text-align: right;
+    }
+  }
+
+  /* --- Narrow: the compact receipt ------------------------------------
+   *
+   * The stacked table repeated WORKFLOWS / YOUR TEAM'S TIME / PRICE four
+   * times over — twelve label-and-value lines to say four things. One header
+   * and one line per option says the same in a third of the height, which is
+   * what a receipt would actually print.
+   *
+   * The two layouts are the same data rendered twice and only one is ever
+   * displayed, so a screen reader is never offered both. */
+  .rc-list {
+    display: none;
+  }
+
+  @media (max-width: 47.99rem) {
+    .ptable {
+      display: none;
+    }
+    .rc-list {
+      display: block;
+    }
+    .receipt-paper {
+      padding: 16px 14px 20px;
+    }
+
+    .rc-cols {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      font-family: var(--font-sans);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .rc-line {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 11px 0;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+    .rc-line:last-of-type {
+      border-bottom: 0;
+    }
+    .rc-left {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .rc-list .rc-num {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.2;
+    }
+    .rc-time {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.2;
+    }
+    .rc-list .rc-price {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      /* The figure is the whole point of the line; it does not wrap. */
+      white-space: nowrap;
+    }
+    .rc-list .rc-dots {
+      flex: 1;
+      min-width: 10px;
+    }
+  }
+
+  .price__note {
+    margin: 1.5rem 0 0;
+    padding-top: 1.25rem;
+    border-top: 1px dashed var(--color-line);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--color-cream-dim);
+    text-wrap: pretty;
+  }
+
+  @media (max-width: 639px) {
+    /* Mobile body floor, same as the hero note and the quote attributions.
+       This one is a sentence about what the reader will actually be charged,
+       which is the last thing on the page to set as fine print. */
+    .price__note {
+      font-size: var(--text-md);
+    }
+  }
+
+  /* Outside the panel on purpose: it is not a row of the table and it is not a
+     footnote to the table, it is the other half of the price. */
+  .price__build {
+    margin: clamp(1.5rem, 2.5vw, 2rem) 0 0;
+    font-size: var(--text-base);
+    line-height: 1.6;
+    color: var(--color-cream-dim);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
+
+<script>
+  /* The receipt prints when it arrives, on its own clock.
+   *
+   * IT USED TO BE SCRUBBED BY SCROLL, AND THAT IS WHY NOBODY SAW IT. The
+   * reveal was mapped across about five hundred pixels of scrolling, which is
+   * one flick of a wheel: the whole receipt appeared in a frame or two and all
+   * nine line flashes fired inside the same frame, correctly applied and gone
+   * before the next paint. Printing is a machine doing a job, and a machine
+   * takes the time it takes — so scroll only decides WHEN it starts, and the
+   * print runs on requestAnimationFrame at its own speed after that.
+   *
+   * It prints once per visit. Coming back to it does not feed the paper in
+   * again; ?replay-print puts it back for looking at.
+   */
+  function receipt(root: HTMLElement) {
+    const paper = root.querySelector<HTMLElement>('[data-rp-paper]');
+    const glow = root.querySelector<HTMLElement>('[data-rp-glow]');
+    const led = root.querySelector<HTMLElement>('[data-rp-led]');
+    const edge = root.querySelector<HTMLElement>('[data-rp-line]');
+    if (!paper || !glow || !led || !edge) return;
+    /* Both layouts live in the DOM and one is display:none, so the lines are
+       re-gathered from what is actually laid out. A hidden line measures zero
+       on every axis, which would put its end at the top of the paper and have
+       it "print" before anything else — four phantom lines and four LED blinks
+       at the moment the machine starts. */
+    const allLines = Array.from(paper.querySelectorAll<HTMLElement>('[data-line]'));
+    let lines: HTMLElement[] = allLines;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    const replay = location.search.includes('replay-print');
+
+    const TOOTH = 9, DEPTH = 5, SPEED = 520;
+    let H = 0, W = 0, revealed = 0;
+    let ends: number[] = [];
+    /* Printed-ness belongs to the ELEMENT, not to an index: the list changes
+       length when the layout switches, and an index would then point at a
+       different line than it did before. */
+    let printedSet = new Set<HTMLElement>();
+    let started = false, running = false, raf = 0, t0 = 0, dur = 1100;
+    let jitter = 0, ledTimer: ReturnType<typeof setTimeout> | undefined;
+
+    function measure() {
+      const pr = paper!.getBoundingClientRect();
+      H = paper!.offsetHeight;
+      W = paper!.offsetWidth;
+      lines = allLines.filter((el) => el.offsetHeight > 0);
+      ends = lines.map((el) => el.getBoundingClientRect().bottom - pr.top);
+      dur = Math.max(1100, Math.min(2200, (H / SPEED) * 1000));
+      /* How much of the printer's light reaches each line. The head is at the
+         top, so the first lines sit under it and the last barely catch it —
+         which is the difference between light coming from somewhere and a
+         glow applied evenly to everything. */
+      for (const el of lines) {
+        el.style.setProperty('--falloff', (1 - 0.45 * (el.offsetTop / Math.max(H, 1))).toFixed(3));
+      }
+    }
+
+    /* The torn edge, which stays once the paper is off the roll. */
+    function clipTo(y: number) {
+      const pts: string[] = ['0px 0px', `${W}px 0px`];
+      let up = false;
+      for (let x = W; x > 0; x -= TOOTH / 2) {
+        pts.push(`${x.toFixed(1)}px ${(up ? y - DEPTH : y).toFixed(1)}px`);
+        up = !up;
+      }
+      pts.push(`0px ${y.toFixed(1)}px`);
+      return `polygon(${pts.join(',')})`;
+    }
+
+    function draw() {
+      const y = Math.min(revealed, H);
+      paper!.style.setProperty('--rc-clip', clipTo(y));
+      /* Follows the print the whole way down, so the finished receipt is lit
+         end to end rather than only at its head. */
+      glow!.style.height = `${Math.min(revealed, H).toFixed(0)}px`;
+      edge!.style.transform = `translateY(${Math.max(0, y - 6).toFixed(1)}px)`;
+    }
+
+    function strike(el: HTMLElement) {
+      /* .lit first and permanently, .fresh on top of it for the flash. When
+         .fresh is dropped the line eases into .lit rather than back to the
+         page's own colours — the receipt keeps the warmth it printed with. */
+      el.classList.add('lit');
+      el.classList.add('fresh');
+      setTimeout(() => el.classList.remove('fresh'), 700);
+      led!.setAttribute('data-led', 'on');
+      clearTimeout(ledTimer);
+      ledTimer = setTimeout(() => led!.setAttribute('data-led', 'idle'), 140);
+    }
+
+    /* Linear most of the way, easing only at the end — a feed motor does not
+       accelerate into the job, it slows as it finishes. */
+    const ease = (t: number) =>
+      t < 0.75 ? t : 0.75 + 0.25 * (1 - Math.pow(1 - (t - 0.75) / 0.25, 2));
+
+    function frame(now: number) {
+      const t = Math.min(1, (now - t0) / dur);
+      revealed = ease(t) * H;
+      draw();
+      for (let i = 0; i < lines.length; i++) {
+        if (!printedSet.has(lines[i]) && revealed >= ends[i]) {
+          printedSet.add(lines[i]);
+          strike(lines[i]);
+        }
+      }
+      /* A shake of six tenths of a pixel, ninety milliseconds apart. Any more
+         and it is a fault; any less and it is not a machine. */
+      const j = Math.floor((now - t0) / 90) % 2 ? 0.6 : 0;
+      if (j !== jitter) {
+        jitter = j;
+        paper!.style.transform = `translateY(${j}px)`;
+      }
+      if (t < 1) {
+        raf = requestAnimationFrame(frame);
+        return;
+      }
+      running = false;
+      raf = 0;
+      paper!.style.transform = '';
+      root.removeAttribute('data-printing');
+      led!.setAttribute('data-led', 'idle');
+    }
+
+    function finishNow() {
+      started = true;
+      revealed = H;
+      printedSet = new Set(lines);
+      /* Straight to lit: nothing flashes for a reader who was not there to
+         see it print. */
+      for (const el of lines) {
+        el.classList.remove('fresh');
+        el.classList.add('lit');
+      }
+      draw();
+      led!.setAttribute('data-led', 'idle');
+    }
+
+    function startPrint() {
+      if (running) return;
+      started = true;
+      running = true;
+      measure();
+      revealed = 0;
+      printedSet = new Set();
+      for (const el of allLines) {
+        el.classList.remove('fresh');
+        el.classList.remove('lit');
+      }
+      draw();
+      root.setAttribute('data-printing', '');
+      t0 = performance.now();
+      raf = requestAnimationFrame(frame);
+    }
+
+    root.classList.add('js-print');
+    measure();
+    revealed = 0;
+    draw();
+
+    if (reduce.matches) {
+      finishNow();
+      return;
+    }
+    /* Loaded with the card already BEHIND the reader — its bottom above the
+       top of the screen. Only then is it too late to print: the old test used
+       the card's top against a fifth of the viewport, which would have fired
+       for a card merely sitting high on a freshly loaded page. */
+    if (paper.getBoundingClientRect().bottom < 0) {
+      finishNow();
+    } else {
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (!e.isIntersecting) continue;
+            if (started && !replay) {
+              io.disconnect();
+              return;
+            }
+            startPrint();
+          }
+        },
+        /* The root, shortened by a quarter at the bottom: the paper's top
+           crossing three quarters of the way down the screen is what starts
+           the machine. */
+        { rootMargin: '0px 0px -25% 0px', threshold: 0 },
+      );
+      io.observe(paper);
+    }
+
+    /* Re-measuring must never un-print anything. */
+    const remeasure = () => {
+      const was = revealed >= H;
+      measure();
+      if (was) revealed = H;
+      if (!running) draw();
+    };
+    addEventListener('resize', remeasure, { passive: true });
+    document.fonts?.ready.then(remeasure);
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-receipt]').forEach(receipt);
+</script>

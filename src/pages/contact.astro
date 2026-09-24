@@ -1,33 +1,42 @@
 ---
 /**
- * /contact
+ * /contact — "Quiet light".
  *
- * Rebuilt on the system /what-we-do settled: the shared type ladder with its
- * step-down under 50rem of HEIGHT, the measured thread, the cursor-light rules,
- * and no utility classes. What went with it: the typewriter H1, the eyebrow,
- * and the "pressed in" success wipe.
+ * THE PAGE IS A DESK IN A DARK ROOM. The left column is the ask, spoken in the
+ * homepage's serif; the right is the form, and the only light in the room is a
+ * small lamp hanging over it. Everything else the site does with light — the
+ * torch, the picture lamps, the floodlight — is a fixture drawn in the browser
+ * and aimed at the thing it wants you to read. This is the same idea at its
+ * quietest: one lamp, one pool, over the three fields the page exists for.
  *
- * The hero does NOT hold the screen on its own here, and that is the one place
- * this page departs from the other two. On those, what follows the hero is a
- * section; here it is the form the page exists for, and a hero that pushes the
- * first field under the fold is a hero that costs enquiries.
+ * THE POOL FOLLOWS THE FOCUS. `--ly` is a registered custom property, so the
+ * pool's vertical centre is an animatable percentage rather than a repainted
+ * gradient; on focusin the script measures the field once and sets it, and the
+ * light glides. It is not decoration — on a form with no boxes, the light IS
+ * the indication of where you are, alongside the drawn underline and the
+ * brightened label. It returns to rest when nothing is focused, and sits a
+ * little higher once the form has been sent.
  *
- * Fields are glass — the same material as the vignette cards and the delivery
- * pane, and catchers like them, so an edge lights as the cursor passes it. They
- * were hairline-ruled first, which is the quieter answer and the wrong one: the
- * page has one job, and the thing you type into should look like a surface you
- * can put something on.
+ * THE FIELDS HAVE NO BOXES. An underline and a label, and a warm line that
+ * draws in under the active one. Boxes were the previous answer and they were
+ * three backdrop-filters and a lot of chrome around three short answers.
+ *
+ * VALIDATION IS INLINE, NOT NATIVE. `reportValidity()` puts the browser's own
+ * bubble over the field, in the browser's own voice, and it vanishes on the
+ * next click. Each field owns a `.fld__err` line that its input points at with
+ * aria-describedby: filled on blur when the answer is wrong, cleared the
+ * moment it becomes right, and filled for everything at once on submit.
  *
  * FORM HANDLING — Netlify Forms (no third-party service):
  *   - The <form> carries `data-netlify="true"`, a matching hidden `form-name`
  *     field, and a `netlify-honeypot` field for spam. Netlify detects the form
  *     in the static HTML at deploy time and handles submissions itself.
  *   - The script POSTs the fields (url-encoded, incl. form-name) to Netlify and
- *     shows the inline success state; native validation runs first.
+ *     shows the inline success state; validation runs first.
  *   - Netlify stores submissions in the site's Forms dashboard. To get them in
  *     the Outlook/M365 inbox, add ONE email notification in the Netlify UI:
  *       Site configuration → Forms → Form notifications → Add notification →
- *       Email notification → send to SITE.contactEmail (hello@knotless.com.au).
+ *       Email notification → send to SITE.contactEmail (support@knotless.com.au).
  *   - Netlify Forms only processes on the deployed Netlify site (not local dev).
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -42,95 +51,571 @@ const FORM_ACTION = withBase('/contact');
 ---
 
 <BaseLayout title="Contact Us" description={CONTACT.metaDescription}>
-  {/* --- The ask ---------------------------------------------------------- */}
-  {/* No opening thread: the thread marks a section within a page, and the top
-      of a page is not one. */}
-  <section class="chero" data-reveal>
-    <h1 class="chero__h r" style="--i: 0">{CONTACT.heading}</h1>
-    <p class="chero__body r" style="--i: 1">{CONTACT.body}</p>
-  </section>
+  <section class="contact">
+    {/* --- The ask ------------------------------------------------------- */}
+    {/* The reveal stays on this half only. The form must never depend on a
+        script having run to be visible. */}
+    <div class="intro" data-reveal>
+      <h1 class="intro__h r" style="--i: 0">{CONTACT.heading}</h1>
+      <p class="intro__lead r" style="--i: 1">{CONTACT.body}</p>
 
-  {/* --- The form --------------------------------------------------------- */}
-  {/* Netlify Forms: `name` + the hidden `form-name` must match, and
-      `netlify-honeypot` names the anti-spam field. Native validation runs
-      first; the script below submits via fetch and shows the success state. */}
-  <section class="cform" data-reveal>
-    <form
-      class="form r"
-      style="--i: 0"
-      name={FORM_NAME}
-      method="POST"
-      action={FORM_ACTION}
-      data-netlify="true"
-      netlify-honeypot="bot-field"
-      novalidate
-      aria-describedby="form-status"
-    >
-      {/* Required by Netlify for the dashboard/notification routing. */}
-      <input type="hidden" name="form-name" value={FORM_NAME} />
-      {/* Honeypot: hidden from people; bots that fill it are dropped by Netlify. */}
-      <p class="form__pot" aria-hidden="true">
-        <label>
-          Don’t fill this in if you’re human:
-          <input name="bot-field" tabindex="-1" autocomplete="off" />
-        </label>
-      </p>
+      {/* The lit line. A list, so it reads as three facts rather than one
+          run-on; the separators are drawn by CSS and never spoken. */}
+      <ul class="promise r" style="--i: 2">
+        {CONTACT.promise.map((item) => <li>{item}</li>)}
+      </ul>
+    </div>
 
-      <div class="form__grid">
+    {/* --- The form, under the lamp -------------------------------------- */}
+    <div class="col">
+      <span class="lamp" aria-hidden="true"></span>
+      <span class="pool" data-pool aria-hidden="true"></span>
+
+      {/* Netlify Forms: `name` + the hidden `form-name` must match, and
+          `netlify-honeypot` names the anti-spam field. */}
+      <form
+        class="form"
+        data-form
+        name={FORM_NAME}
+        method="POST"
+        action={FORM_ACTION}
+        data-netlify="true"
+        netlify-honeypot="bot-field"
+        novalidate
+        aria-describedby="form-status"
+      >
+        {/* Required by Netlify for the dashboard/notification routing. */}
+        <input type="hidden" name="form-name" value={FORM_NAME} />
+        {/* Honeypot: hidden from people; bots that fill it are dropped by Netlify. */}
+        <p class="form__pot" aria-hidden="true">
+          <label>
+            Don’t fill this in if you’re human:
+            <input name="bot-field" tabindex="-1" autocomplete="off" />
+          </label>
+        </p>
+
         {
           CONTACT.fields.map((field) => (
-            <div class:list={['field', !field.half && 'field--full']}>
-              <label class="meta field__label" for={field.id}>
+            <div class="fld">
+              <label class="meta fld__label" for={field.id}>
                 {field.label}
               </label>
-              <span class="field__box" data-catch="ring">
+              {/* The input is wrapped so the warm line can be anchored to the
+                  input's own bottom edge. On .fld it would hang off the error
+                  line instead, and move whenever a message wrapped. */}
+              <span class="fld__wrap">
                 <input
-                  class="field__input"
                   id={field.id}
                   name={field.id}
                   type={field.type}
                   inputmode={field.inputmode}
                   autocomplete={field.autocomplete}
                   placeholder={field.placeholder || undefined}
+                  aria-describedby={`${field.id}-err`}
                   required
                 />
               </span>
+              <span class="fld__err" id={`${field.id}-err`}></span>
             </div>
           ))
         }
+
+        <button type="submit" class="send">
+          {CONTACT.submitLabel}
+          <span aria-hidden="true">→</span>
+        </button>
+
+        <p class="fine">{CONTACT.fine}</p>
+
+        {/* Visible, not sr-only, so a failed submit is not silent for sighted
+            users; `:empty` keeps the live region registered and out of the
+            layout until it has something to say. Not display:none — that drops
+            it from the a11y tree and some screen readers miss it. */}
+        <p id="form-status" class="form__status" role="status" aria-live="polite"></p>
+      </form>
+
+      {/* Swapped in for the form on a successful submit. */}
+      <div class="sent" data-sent hidden aria-live="polite" tabindex="-1">
+        <h2 class="sent__h" data-sent-h>{CONTACT.success.heading}</h2>
+        <p class="sent__body">{CONTACT.success.body}</p>
       </div>
-
-      <button type="submit" class="form__submit">{CONTACT.submitLabel}</button>
-
-      {/* Visible, not sr-only, so a failed submit is not silent for sighted
-          users; `:empty` keeps the live region registered and out of the layout
-          until it has something to say. Not display:none — that drops it from
-          the a11y tree and some screen readers then miss the announcement. */}
-      <p id="form-status" class="form__status" role="status" aria-live="polite"></p>
-    </form>
-
-    {/* Swapped in for the form on a successful submit. */}
-    <div class="sent" data-sent hidden aria-live="polite" tabindex="-1">
-      <span class="rule-thread r" data-catch="line" aria-hidden="true" style="--i: 0"></span>
-      <h2 class="sent__h r" style="--i: 1">{CONTACT.success.heading}</h2>
-      <p class="sent__body r" style="--i: 2">{CONTACT.success.body}</p>
     </div>
-
-    <p class="alt r" style="--i: 1">
-      <span class="alt__label">{CONTACT.altLabel}</span>{' '}
-      <a class="alt__link" href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>
-    </p>
   </section>
 </BaseLayout>
 
-<script is:inline>
+<style>
+  /* --- The page fills the screen ----------------------------------------
+   *
+   * This is the shortest page on the site: a headline, three fields and the
+   * footer come to 987px, so on anything taller than that the footer stopped
+   * partway down and the rest of the screen was bare ground — 163px of it on
+   * a 1440x1150 display, 93px at 1920x1080. It reads as the page having been
+   * cut off rather than having ended.
+   *
+   * The standard sticky-footer column. :global because body and main belong to
+   * BaseLayout, and safe to reach for because Astro emits this stylesheet for
+   * /contact alone — no other page loads it. Both of body's in-flow children
+   * are main and footer: .skip is absolutely positioned and the grain overlay
+   * on body::after is fixed, so neither becomes a flex item.
+   *
+   * Inert wherever the content is already taller than the screen, which is
+   * every other page on the site. */
+  :global(body) {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+  }
+  :global(main) {
+    flex: 1 0 auto;
+  }
+
+  /* AND ON A WIDE SCREEN THE CONTENT SITS IN THE MIDDLE OF IT.
+   *
+   * Filling the screen only moved the footer to the bottom; the ask and the
+   * form still started directly under the wordmark with the whole lower half
+   * of the screen empty under them. `margin-block: auto` on a flex item splits
+   * the free space evenly above and below, which centres the block between the
+   * masthead and the footer — and collapses to nothing the moment the content
+   * is taller than the screen, so a short window simply scrolls as before.
+   *
+   * main's other child is the Masthead, which is absolutely positioned and so
+   * takes no part in this. */
+  @media (min-width: 64rem) {
+    :global(main) {
+      display: flex;
+      flex-direction: column;
+    }
+    :global(main > .shell) {
+      flex: 1 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  /* --- The room ---------------------------------------------------------- */
+  /* No viewport floor. `main section { min-height: 100svh }` in global.css
+     gives the homepage's sections a screen each so one section's light clears
+     before the next arrives; here it only inflated a headline and three lines
+     into a full screen and dropped the form under the fold. */
+  .contact {
+    min-height: 0;
+    padding: 36px 0 96px;
+    /* The pool bleeds 80px past the form column on each side so the light has
+       somewhere to fall off to. Inside the shell's 24px gutter on a phone that
+       is 56px wider than the page, and the page scrolled sideways. `clip`, not
+       `hidden`: hidden on one axis computes the other to `auto` and would make
+       this a scroll container, which would also cut the lamp off above. */
+    overflow-x: clip;
+  }
+
+  @media (min-width: 64rem) {
+    .contact {
+      margin-block: auto;
+      /* Symmetric, so the centring lands the CONTENT in the middle rather than
+         the border box: an uneven pair would offset it by half the difference.
+         It is also the floor — what the block keeps above and below itself on a
+         window too short to have any free space to share out. */
+      padding: 60px 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 96px;
+      align-items: start;
+    }
+  }
+
+  /* --- The ask ----------------------------------------------------------- */
+  .intro__h {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 600;
+    /* 64px at 1440, 40px on a phone. */
+    font-size: clamp(2.5rem, 1.4rem + 3.9vw, 4rem);
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    color: var(--color-cream);
+    /* Breaks as "Book your / Fit Call." without putting markup in the copy. */
+    max-width: 9ch;
+  }
+  .intro__lead {
+    margin: 24px 0 0;
+    font-size: var(--text-lead);
+    line-height: 1.5;
+    color: var(--color-cream-dim);
+    max-width: 28em;
+  }
+
+  /* --- The lit line ------------------------------------------------------ */
+  .promise {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    margin: 34px 0 0;
+    padding: 0;
+    list-style: none;
+    font:
+      500 13px/1 var(--font-sans);
+    letter-spacing: var(--tracking-meta);
+    text-transform: uppercase;
+    color: #f4e3cb;
+    text-shadow:
+      0 0 14px rgba(255, 208, 156, 0.55),
+      0 0 2px rgba(255, 220, 180, 0.4);
+  }
+  .promise li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  /* Decorative separators, drawn rather than typed, so the list reads as three
+     items to a screen reader and not as "30 minutes dot Free dot". */
+  .promise li + li::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #ff9a66;
+    box-shadow: 0 0 8px 2px rgba(255, 140, 90, 0.6);
+  }
+  /* A faint pool of light behind the line. */
+  .promise::before {
+    content: '';
+    position: absolute;
+    left: -40px;
+    right: -60px;
+    top: -26px;
+    bottom: -26px;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse 50% 50% at 42% 50%,
+      rgba(255, 210, 160, 0.09),
+      transparent 72%
+    );
+  }
+
+  /* --- The lamp and its pool --------------------------------------------- */
+  .col {
+    position: relative;
+  }
+  @media (min-width: 64rem) {
+    .col {
+      max-width: 30rem;
+    }
+  }
+  /* Below the two-column layout the lamp hangs into the space above the form,
+     which is why there is 120px of it: less and the bar would sit on the
+     promise line. */
+  @media (max-width: 1023px) {
+    .col {
+      margin-top: 120px;
+    }
+  }
+
+  /* THE PROMISE IS ONE LINE. Three facts split across two lines stop being a
+     line of facts and become a paragraph, and the glow behind them smears over
+     both. At 13px it needs 338px and a 375px phone offers 327, so it wrapped on
+     every iPhone narrower than a 14 — it only "fitted" at 390 by four pixels.
+     The type is sized to the screen instead, down to 10.5px at 320, and the
+     separators tighten with it. flex-wrap stays on: if a font ever renders
+     wider than this allows, a wrap is a worse line but a clipped one is a lost
+     fact, and the section clips its overflow. */
+  @media (max-width: 767px) {
+    .promise {
+      font-size: clamp(10.5px, 3vw, 13px);
+      gap: 8px 10px;
+    }
+    .promise li {
+      gap: 10px;
+    }
+  }
+
+  .lamp {
+    position: absolute;
+    left: 50%;
+    top: -150px;
+    width: 1px;
+    height: 70px;
+    pointer-events: none;
+    background: linear-gradient(rgba(239, 233, 221, 0), rgba(239, 233, 221, 0.5));
+  }
+  .lamp::after {
+    content: '';
+    position: absolute;
+    left: -18px;
+    bottom: -4px;
+    width: 37px;
+    height: 4px;
+    border-radius: 2px;
+    background: #f6e6cc;
+    box-shadow: 0 0 18px 4px rgba(255, 210, 160, 0.35);
+  }
+  @media (max-width: 1023px) {
+    .lamp {
+      top: -78px;
+      height: 34px;
+    }
+  }
+
+  /* --ly is REGISTERED, which is the whole trick: an unregistered custom
+     property is a string, and a string cannot be interpolated, so the pool
+     would jump between fields instead of gliding. Browsers without @property
+     get the jump, which is a perfectly good fallback. */
+  @property --ly {
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: 38%;
+  }
+  .pool {
+    position: absolute;
+    left: -80px;
+    right: -80px;
+    top: -150px;
+    bottom: -60px;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse 48% 42% at 50% var(--ly),
+      rgba(255, 216, 170, 0.11),
+      rgba(255, 210, 160, 0.035) 55%,
+      transparent 75%
+    );
+    transition: --ly 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  @media (max-width: 1023px) {
+    .pool {
+      top: -100px;
+    }
+  }
+
+  /* Switching on: two catches and then steady, the same gesture the torch
+     makes on the homepage, at a twentieth of the size. */
+  .lamp,
+  .pool {
+    animation: lamp-on 0.8s var(--ease-out) both;
+  }
+  @keyframes lamp-on {
+    0% {
+      opacity: 0;
+    }
+    12% {
+      opacity: 0.85;
+    }
+    22% {
+      opacity: 0.1;
+    }
+    38%,
+    100% {
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lamp,
+    .pool {
+      animation: none;
+      opacity: 1;
+    }
+    .pool {
+      transition: none;
+    }
+  }
+
+  /* --- The fields -------------------------------------------------------- */
+  .form__pot {
+    display: none;
+  }
+
+  .fld {
+    position: relative;
+    margin: 0 0 26px;
+  }
+  .fld__label {
+    display: block;
+    margin: 0 0 4px;
+    color: var(--color-cream-dim);
+    transition: color 0.3s;
+  }
+  .fld__wrap {
+    position: relative;
+    display: block;
+  }
+  .fld input {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid rgba(239, 233, 221, 0.16);
+    border-radius: 0;
+    color: var(--color-cream);
+    font:
+      400 22px/1.3 var(--font-sans);
+    padding: 10px 0 12px;
+    appearance: none;
+    transition: border-color 0.35s;
+  }
+  .fld input::placeholder {
+    color: #4f4a43;
+  }
+  .fld input:focus {
+    outline: none;
+  }
+  /* A warm line draws in under the active field. With the drawn line and the
+     label brightening together, this IS the focus indicator — checked against
+     the unfocused state rather than assumed. */
+  .fld__wrap::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, #ffd9a6, transparent);
+    box-shadow: 0 0 12px 1px rgba(255, 210, 160, 0.5);
+    transform: scaleX(0);
+    transition: transform 0.45s ease;
+  }
+  .fld:focus-within .fld__wrap::after {
+    transform: scaleX(1);
+  }
+  .fld:focus-within .fld__label {
+    color: var(--color-cream);
+  }
+  .fld.is-ok .fld__label::after {
+    content: '  ✓';
+    color: var(--color-accent-type);
+  }
+  .fld.is-bad input {
+    border-bottom-color: #e58a64;
+  }
+  .fld__err {
+    display: block;
+    min-height: 18px;
+    margin-top: 6px;
+    font: 400 13px var(--font-sans);
+    color: #e58a64;
+  }
+  @media (max-width: 767px) {
+    .fld input {
+      font-size: 19px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fld__wrap::after,
+    .fld__label,
+    .fld input {
+      transition: none;
+    }
+  }
+
+  /* Chrome paints its own solid fill behind an autofilled field, which would
+     put a flat blue rectangle where the underline is. The huge transition
+     delay is the standard way to keep that fill from ever arriving; the text
+     colour has to be set through -webkit-text-fill-color, which autofill
+     overrides. */
+  .fld input:-webkit-autofill,
+  .fld input:-webkit-autofill:hover,
+  .fld input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-cream);
+    -webkit-box-shadow: 0 0 0 100px transparent inset;
+    transition: background-color 100000s ease-in-out 0s;
+    caret-color: var(--color-cream);
+  }
+
+  /* --- Send -------------------------------------------------------------- */
+  .send {
+    margin-top: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    justify-content: center;
+    min-height: 3rem;
+    padding: 0 1.6rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background-color: var(--color-terracotta);
+    color: var(--color-on-accent);
+    font-family: var(--font-sans);
+    font-size: var(--text-label);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-meta);
+    cursor: pointer;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+  .send:hover,
+  .send:focus-visible {
+    background-color: var(--color-accent-hover-bg);
+    color: var(--color-accent-hover-fg);
+  }
+  .send:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+  @media (max-width: 639px) {
+    .send {
+      min-height: 2.75rem;
+      padding: 0 1.25rem;
+    }
+  }
+
+  .fine {
+    margin: 16px 0 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #7f786e;
+  }
+
+  /* Wire, not ember: the page already spends its one accent on the button. */
+  .form__status {
+    margin: 1.5rem 0 0;
+    border-left: 2px solid var(--color-wire);
+    padding-left: 1rem;
+    font-size: var(--text-md);
+    line-height: 1.5;
+    color: var(--color-cream);
+  }
+  .form__status :global(a) {
+    color: var(--color-accent-type);
+  }
+  .form__status:empty {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* --- Sent -------------------------------------------------------------- */
+  .sent__h {
+    margin: 0;
+    font:
+      600 clamp(1.75rem, 1.2rem + 1.4vw, 2.125rem) / 1.1 var(--font-serif);
+    letter-spacing: -0.02em;
+    color: var(--color-cream);
+  }
+  .sent__body {
+    margin: 18px 0 0;
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--color-cream-dim);
+    max-width: 34em;
+  }
+</style>
+
+<script is:inline define:vars={{ ERRORS: CONTACT.errors, MAIL: SITE.contactEmail }}>
   (() => {
-    const form = document.querySelector('.form');
+    const form = document.querySelector('[data-form]');
     if (!form) return;
     const status = form.querySelector('#form-status');
-    const submit = form.querySelector('.form__submit');
+    const submit = form.querySelector('.send');
     const sent = document.querySelector('[data-sent]');
-    const submitLabel = submit ? submit.textContent : '';
+    const pool = document.querySelector('[data-pool]');
+    const submitHtml = submit ? submit.innerHTML : '';
 
     const setStatus = (msg) => {
       if (status) status.textContent = msg;
@@ -146,25 +631,112 @@ const FORM_ACTION = withBase('/contact');
       if (v && !/^[a-z][a-z0-9+.-]*:\/\//i.test(v)) site.value = 'https://' + v;
     };
 
+    /* ---- the light follows the focus -------------------------------------
+       Measured on focus changes only. Per frame it would be a layout read on
+       every frame of every scroll, for a light that only moves when the caret
+       does. */
+    const REST = 38;
+    const AFTER_SEND = 30;
+    /* Once the form is gone the pool holds its sent position. Without this the
+       focusout below fires as focus moves to the success block — which is not
+       inside the form — and drags the light straight back to rest. */
+    let done = false;
+    const setPool = (pct) => pool && pool.style.setProperty('--ly', pct + '%');
+    const aim = (el) => {
+      if (!pool || !el) return;
+      const p = pool.getBoundingClientRect();
+      if (!p.height) return;
+      const r = el.getBoundingClientRect();
+      setPool((((r.top + r.height / 2 - p.top) / p.height) * 100).toFixed(2));
+    };
+    form.addEventListener('focusin', (e) => {
+      if (e.target.matches('input:not([type="hidden"])')) aim(e.target);
+    });
+    form.addEventListener('focusout', () => {
+      /* One tick, so moving from one field to the next does not flash the
+         light back to rest on the way. */
+      setTimeout(() => {
+        if (done) return;
+        if (!form.contains(document.activeElement)) setPool(REST);
+      }, 0);
+    });
+
+    /* ---- validation ----------------------------------------------------- */
+    const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+    const inputs = Array.from(form.querySelectorAll('.fld input'));
+    const fldOf = (el) => el.closest('.fld');
+    const errOf = (el) => document.getElementById(el.id + '-err');
+
+    /** null when the answer is good, else 'empty' or 'invalid'. */
+    const check = (el) => {
+      const v = el.value.trim();
+      if (!v) return 'empty';
+      if (el.id === 'name') return v.length >= 2 ? null : 'invalid';
+      if (el.id === 'email') return el.checkValidity() && EMAIL.test(v) ? null : 'invalid';
+      if (el.id === 'website') return /\.[a-z]{2,}/i.test(v) ? null : 'invalid';
+      return null;
+    };
+
+    const showErr = (el, kind) => {
+      const f = fldOf(el);
+      const e = errOf(el);
+      if (f) {
+        f.classList.add('is-bad');
+        f.classList.remove('is-ok');
+      }
+      el.setAttribute('aria-invalid', 'true');
+      if (e) e.textContent = (ERRORS[el.id] || {})[kind] || '';
+    };
+    const clearErr = (el, ok) => {
+      const f = fldOf(el);
+      const e = errOf(el);
+      if (f) {
+        f.classList.remove('is-bad');
+        f.classList.toggle('is-ok', !!ok);
+      }
+      el.removeAttribute('aria-invalid');
+      if (e) e.textContent = '';
+    };
+
+    inputs.forEach((el) => {
+      /* On blur, say what is wrong — but an empty field is not yet wrong, it
+         is unfinished, and telling someone off for a field they have not
+         reached is how a form feels hostile. */
+      el.addEventListener('blur', () => {
+        const bad = check(el);
+        if (bad === 'empty') return clearErr(el, false);
+        if (bad) showErr(el, bad);
+        else clearErr(el, true);
+      });
+      /* While typing, only ever REMOVE a message. */
+      el.addEventListener('input', () => {
+        const f = fldOf(el);
+        if (f && f.classList.contains('is-bad') && !check(el)) clearErr(el, true);
+      });
+    });
+
+    /* ---- success --------------------------------------------------------- */
     const showSuccess = () => {
-      // Clear the form and restore the button first, so no submitted data
-      // lingers in the DOM and a returning reader never sees a stale "Sending…".
+      /* Read the name BEFORE the reset, or the greeting loses its subject. */
+      const nameEl = form.querySelector('#name');
+      const first = nameEl ? nameEl.value.trim().split(/\s+/)[0] : '';
+
       if (submit) {
         submit.disabled = false;
-        submit.textContent = submitLabel;
+        submit.innerHTML = submitHtml;
       }
       setStatus('');
       form.reset();
+      inputs.forEach((el) => clearErr(el, false));
       form.hidden = true;
 
       if (sent) {
+        const h = sent.querySelector('[data-sent-h]');
+        if (h) h.textContent = first ? 'Thanks, ' + first + '.' : 'Thanks.';
         sent.hidden = false;
-        // Focus + aria-live announce immediately, not gated by the animation.
+        done = true;
         sent.focus();
-        // .is-visible on the next two frames so the reveal runs from its start
-        // state instead of snapping. Under reduced motion the CSS defines no
-        // transitions, so it simply shows.
-        requestAnimationFrame(() => requestAnimationFrame(() => sent.classList.add('is-visible')));
+        setPool(AFTER_SEND);
       }
     };
 
@@ -172,10 +744,19 @@ const FORM_ACTION = withBase('/contact');
       e.preventDefault();
       normaliseUrl();
 
-      // Native validation: surface the browser's own messages on invalid fields.
-      if (!form.checkValidity()) {
-        form.reportValidity();
-        setStatus('Please complete the three fields.');
+      let firstBad = null;
+      inputs.forEach((el) => {
+        const bad = check(el);
+        if (bad) {
+          showErr(el, bad);
+          if (!firstBad) firstBad = el;
+        } else {
+          clearErr(el, true);
+        }
+      });
+      if (firstBad) {
+        firstBad.focus();
+        setStatus('Please check the highlighted field.');
         return;
       }
 
@@ -196,269 +777,21 @@ const FORM_ACTION = withBase('/contact');
         if (!res.ok) throw new Error('Request failed');
         showSuccess();
       } catch (err) {
-        setStatus('Something went wrong. Please email us instead.');
+        /* The address is here because the "Prefer email?" line is gone: if the
+           form cannot reach us, the page still has to say how to. */
+        if (status) {
+          status.textContent = '';
+          status.append('Something went wrong. Please email us at ');
+          const a = document.createElement('a');
+          a.href = 'mailto:' + MAIL;
+          a.textContent = MAIL;
+          status.append(a, '.');
+        }
         if (submit) {
           submit.disabled = false;
-          submit.textContent = submitLabel;
+          submit.innerHTML = submitHtml;
         }
       }
     });
   })();
 </script>
-
-<style>
-  /* --- The ask ----------------------------------------------------------- */
-  /* Air above the headline where there is screen for it, on the same gates the
-     other two pages use: none on a phone or a short viewport, where it would
-     come straight out of the first field. */
-  .chero {
-    padding-top: 0;
-  }
-  @media (min-width: 48rem) and (min-height: 46rem) {
-    .chero {
-      padding-top: clamp(1.5rem, 4vh, 3rem);
-    }
-  }
-  @media (min-width: 48rem) and (min-height: 50rem) {
-    .chero {
-      padding-top: clamp(2.5rem, 7vh, 5rem);
-    }
-  }
-  .chero__h {
-    margin: 0;
-    /* The local display step the inner pages share: 72px at 1440, a fifth above
-       the section headings, and nowhere near --text-display, which is the size
-       the homepage sets a wordmark at rather than a sentence. */
-    font-size: clamp(2.5rem, 1.4rem + 3.9vw, 4.5rem);
-    line-height: 1.02;
-    letter-spacing: var(--tracking-display);
-    font-weight: 600;
-    color: var(--color-cream);
-    text-wrap: balance;
-    max-width: 16ch;
-  }
-  .chero__body {
-    margin: clamp(1.75rem, 3vw, 2.5rem) 0 0;
-    font-size: var(--text-lead);
-    line-height: 1.5;
-    color: var(--color-cream-dim);
-    /* 52ch — the site's prose measure, and calibrated rather than assumed: a ch
-       is the width of a ZERO, which in Inter is 0.63em while the average
-       character is nearer 0.5em. */
-    max-width: 52ch;
-  }
-  /* A laptop is a WIDE screen and a SHORT one — a 1440x900 display is a 1440x760
-     viewport once the browser takes its chrome — so the type steps down by
-     HEIGHT, which is the constraint that actually binds there. */
-  @media (max-height: 50rem) {
-    .chero__h {
-      font-size: clamp(2.25rem, 1.6rem + 2vw, 3.25rem);
-    }
-    .chero__body {
-      font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
-      margin-top: clamp(1rem, 2vh, 1.5rem);
-    }
-  }
-
-  /* --- The form ---------------------------------------------------------- */
-  .cform {
-    padding-top: clamp(2.5rem, 6vw, 4.5rem);
-  }
-  .form__pot {
-    display: none;
-  }
-  .form {
-    max-width: 44rem;
-  }
-  .form__grid {
-    display: grid;
-    gap: clamp(1.75rem, 3vw, 2.25rem);
-  }
-  @media (min-width: 48rem) {
-    .form__grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      column-gap: var(--grid-cell);
-    }
-    .field--full {
-      grid-column: 1 / -1;
-    }
-  }
-
-  .field {
-    display: grid;
-  }
-  .field__label {
-    color: var(--color-cream-dim);
-    transition: color var(--dur-fast) var(--ease-out);
-  }
-  .field:focus-within .field__label {
-    color: var(--color-cream);
-  }
-
-  /* The site's glass, on the thing you type into: low-alpha fill, hairline
-     edge, specular top line, blur, and no drop shadow — the same material the
-     vignette cards and the delivery pane are made of. The material carries the
-     box now, which is why the box is allowed to exist.
-
-     It is also a catcher, so the edge lights as the cursor passes it, exactly
-     as a card's does. */
-  .field__box {
-    position: relative;
-    display: block;
-    /* No padding here. The input fills the box, so its focus ring traces the
-       glass edge instead of a rectangle floating somewhere inside it. */
-    padding: 0;
-    border-radius: var(--radius-sm);
-    background-color: var(--color-glass-soft);
-    border: 1px solid var(--color-glass-soft-edge);
-    box-shadow: inset 0 1px 0 var(--color-glass-soft-spec);
-    backdrop-filter: blur(14px) saturate(140%);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
-    transition: border-color var(--dur-fast) var(--ease-out);
-  }
-  .field__box:focus-within {
-    border-color: var(--color-glass-edge);
-  }
-  .field__input {
-    width: 100%;
-    /* The glass pane's own padding, at the scale of a single line. 0.85rem top
-       and bottom puts the box at 52px on a phone, well over the 44px floor. */
-    padding: 0.85rem 1rem;
-    background: none;
-    border: 0;
-    border-radius: inherit;
-    font-family: var(--font-sans);
-    /* Over 16px, which is the point at which iOS Safari stops zooming the page
-       on focus, and the design's mobile body minimum as well. */
-    font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
-    line-height: 1.4;
-    letter-spacing: var(--tracking-tight);
-    color: var(--color-cream);
-    appearance: none;
-  }
-  .field__input::placeholder {
-    color: var(--color-wire-lit);
-  }
-  .field__input:focus {
-    outline: none; /* replaced immediately below — never simply removed (§11.7) */
-  }
-  .field__input:focus-visible {
-    outline: 2px solid var(--color-ember);
-    outline-offset: 3px;
-  }
-  /* Chrome paints its own solid fill behind an autofilled field, which would
-     put a flat blue rectangle where the glass is. The huge transition delay is
-     the standard way to keep that fill from ever arriving; the text colour has
-     to be set through -webkit-text-fill-color, which autofill overrides. */
-  .field__input:-webkit-autofill,
-  .field__input:-webkit-autofill:hover,
-  .field__input:-webkit-autofill:focus {
-    -webkit-text-fill-color: var(--color-cream);
-    -webkit-box-shadow: 0 0 0 100px transparent inset;
-    transition: background-color 100000s ease-in-out 0s;
-    caret-color: var(--color-cream);
-  }
-  /* The browser's own invalid state, and only once the reader has been told —
-     :user-invalid fires after they have interacted, not while they are typing
-     the first character of an email address. */
-  .field__box:has(.field__input:user-invalid) {
-    border-color: var(--color-wire-lit);
-  }
-
-  /* The action. The pill every other call to action on the site wears, as a
-     real <button> because it submits a form. */
-  .form__submit {
-    margin-top: clamp(2.25rem, 4vw, 3rem);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 3rem;
-    padding: 0 1.6rem;
-    border: 1px solid transparent;
-    border-radius: 999px;
-    background-color: var(--color-terracotta);
-    color: var(--color-on-accent);
-    font-family: var(--font-sans);
-    font-size: var(--text-label);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-meta);
-    cursor: pointer;
-    transition:
-      background-color var(--dur-fast) var(--ease-out),
-      color var(--dur-fast) var(--ease-out);
-  }
-  .form__submit:hover,
-  .form__submit:focus-visible {
-    background-color: var(--color-accent-hover-bg);
-    color: var(--color-accent-hover-fg);
-  }
-  .form__submit:disabled {
-    cursor: not-allowed;
-    opacity: 0.7;
-  }
-  @media (max-width: 639px) {
-    .form__submit {
-      min-height: 2.75rem;
-      padding: 0 1.25rem;
-    }
-  }
-
-  /* Wire, not ember: the page already spends its one accent on the button, and
-     a second terracotta mark in the same composition is 11.3. */
-  .form__status {
-    margin: 1.5rem 0 0;
-    border-left: 2px solid var(--color-wire);
-    padding-left: 1rem;
-    font-size: var(--text-md);
-    line-height: 1.5;
-    color: var(--color-cream);
-  }
-  .form__status:empty {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
-  /* --- Sent -------------------------------------------------------------- */
-  .sent__h {
-    margin: 1.25rem 0 0;
-    font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
-    line-height: 1.2;
-    letter-spacing: var(--tracking-display);
-    font-weight: 600;
-    color: var(--color-cream);
-  }
-  .sent__body {
-    margin: 1.25rem 0 0;
-    font-size: clamp(1.0625rem, 0.95rem + 0.55vw, 1.3125rem);
-    line-height: 1.5;
-    color: var(--color-cream-dim);
-    max-width: 52ch;
-  }
-
-  /* --- The other way to reach us ----------------------------------------- */
-  .alt {
-    margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
-    font-size: var(--text-md);
-    line-height: 1.6;
-    color: var(--color-cream-dim);
-  }
-  .alt__link {
-    color: var(--color-cream);
-    text-decoration: underline;
-    text-decoration-color: var(--color-wire);
-    text-underline-offset: 0.3em;
-    transition: text-decoration-color var(--dur-fast) var(--ease-out);
-  }
-  .alt__link:hover,
-  .alt__link:focus-visible {
-    text-decoration-color: var(--color-cream);
-  }
-</style>

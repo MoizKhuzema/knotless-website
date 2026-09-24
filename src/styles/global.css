@@ -37,9 +37,22 @@
    * an opacity of the one below, so text contrast stays predictable. */
   --color-*: initial;
 
-  --color-ink: #0d0c0a; /* page                                    */
-  --color-ink-raised: #131210; /* raised bands                     */
-  --color-ink-panel: #1a1815; /* cards, insets                     */
+  /* THE GROUND, on the cream's own hue.
+   *
+   * Hue 38 is where #EFE9DD sits, so the page and the type it carries are the
+   * same colour at two ends of the lightness scale rather than two colours
+   * that happen to agree. What makes it warm is CHROMA, not lightness: sat 26
+   * against the old value's 13, at L* 5.9. It reads as a warm ink, not as a
+   * brown, and it stays dark enough to be unmistakably the ground.
+   *
+   * Every step below moved with it. The ladder keeps the L* DELTAS it had on
+   * the old near-black (+2.4 raised, +4.7 panel, +9.2 line, -1.2 figure) and
+   * rotates them onto the new hue, so the surfaces separate from the page by
+   * exactly what they did before. Raising the page alone would have closed
+   * that gap and the glass cards would have dissolved into it. */
+  --color-ink: #000000; /* page                                    */
+  --color-ink-raised: #191611; /* raised bands                     */
+  --color-ink-panel: #201c16; /* cards, insets                     */
   --color-cream: #efe9dd; /* primary text                          */
   --color-cream-dim: #a29b91; /* secondary text, metadata          */
   /* MARKS on ink, at 24px and above: rules, indices, carets, the logo strike.
@@ -74,13 +87,13 @@
      mark this has to sit beside is #a04a2c. 70% is a step, not a new colour. */
   --color-terracotta: #b0461f;
   --color-paper: #efe9dd; /* the one light panel                   */
-  --color-line: #262320; /* hairlines                              */
-  --color-wire: #4c4640; /* inert diagram: the manual process       */
-  --color-wire-lit: #8b7f72; /* live diagram: the built pipeline    */
+  --color-line: #2e281f; /* hairlines                              */
+  --color-wire: #4f4b44; /* inert diagram: the manual process       */
+  --color-wire-lit: #8c8578; /* live diagram: the built pipeline    */
 
   /* Roles that were previously hardcoded at call sites. Naming them is what
    * makes the ground swappable — see the light theme below. */
-  --color-figure: #0a0907; /* inside the diagram frame; node fills   */
+  --color-figure: #0e0d0a; /* inside the diagram frame; node fills   */
   /* Cream, not near-black. The logo's terracotta carries dark type at only
      3.18:1 — under AA — which is why the button was lifted to orange in the
      first place. Cream on terracotta passes, so the fill can sit on the brand
@@ -154,7 +167,7 @@
   /* --- Type scale ----------------------------------------------------
    * Deliberately wide dynamic range. The display sizes are fluid and go far
    * larger than an ordinary page would dare; the reading sizes stay quiet. */
-  --text-meta: 0.6875rem; /* 11px — eyebrows, indices, labels      */
+  --text-meta: 0.75rem; /* 11px — eyebrows, indices, labels      */
   --text-meta--line-height: 1.4;
   --text-sm: 0.8125rem; /* 13px — captions, fine print             */
   --text-sm--line-height: 1.6;
@@ -231,16 +244,25 @@
   --dur-slow: 1100ms;
 }
 
-/* Tailwind v4 tree-shakes theme variables no utility references, and nothing
-   uses `font-serif` yet — so `var(--font-serif)` resolved to an empty string
-   and any raw CSS asking for it silently fell back to the browser default.
-   Re-declaring it on :root guarantees the value exists whether it is reached
-   through a utility or through raw CSS. Delete this once a call site uses the
-   `font-serif` utility, or leave it: it costs one declaration and removes a
-   class of silent failure. */
+/* Tailwind v4 tree-shakes any @theme variable no utility references. Every
+   call site for these three is raw CSS in a component's <style> block calling
+   var(--font-sans) / var(--font-serif) / var(--font-mono) — not a `font-serif`
+   utility class — so the tree-shaker sees no reference, drops the variable,
+   and var() resolves to an empty string. The declaration then falls back to
+   the browser default and the page silently ships in Times.
+
+   It is a SILENT failure, which is what makes it worth three lines: nothing
+   errors, nothing warns, the type is just wrong. Re-declaring all three here
+   guarantees the value exists however it is reached. Do not delete one of
+   these because a utility happens to reference it today — the next component
+   that reaches for it in raw CSS brings the bug back. */
 :root {
   --font-serif: 'Plex Serif', 'Plex Serif Fallback', Georgia, 'Times New Roman',
     serif;
+  --font-sans: 'Plex Sans', 'Plex Sans Fallback', system-ui, -apple-system,
+    'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Plex Mono', 'Plex Mono Fallback', ui-monospace, 'SF Mono', Menlo,
+    monospace;
 }
 
 
@@ -341,7 +363,7 @@
        body without taking six lines to say four. */
     --text-lead: 1.0625rem;
     --text-sm: 0.8125rem;
-    --text-meta: 0.625rem;
+    --text-meta: 0.71875rem;
     --spacing-section: 4rem;
     --spacing-section-lg: 6rem;
   }
@@ -379,7 +401,11 @@
     color: var(--color-cream);
     font-size: var(--text-base);
     line-height: 1.75;
-    overflow-x: hidden;
+    /* clip, NOT hidden. overflow-x:hidden makes body a scroll container, and a
+       scroll container is the scrollport its descendants stick to — which
+       quietly breaks position:sticky everywhere below it. clip does the same
+       job of stopping sideways overflow without creating one. */
+    overflow-x: clip;
   }
 
   /* --- The layout grid ------------------------------------------------
@@ -398,23 +424,28 @@
    *
    * The column count is odd at both side-by-side breakpoints — see body::before
    * for why that is load-bearing rather than aesthetic. */
-  /* The fixed bar's footprint. These lived on .nav, which meant nothing else
-     could clear it without copying the numbers — and the hero, which sits
-     underneath it, was doing exactly that with a 7rem padding that had no
-     stated relationship to the thing it was clearing. Declared here, the nav
-     still reads them by inheritance and everything else can too. */
+  /* The masthead's footprint.
+     
+     Nothing is fixed at the top of the page any more: the mark up there is
+     absolute inside the block it belongs to and scrolls away with it. So these
+     numbers are not a clearance the whole page has to live under — they are
+     just where the mark sits, and what a page wants below it before its first
+     line. Declared here because the masthead and the things that clear it are
+     in different files, and a second copy is how the last set drifted apart. */
   :root {
-    --nav-inset-top: clamp(0.65rem, 1.2vw, 1rem);
-    --nav-inset-x: clamp(0.75rem, 1.2vw, 1.25rem);
-    --nav-h: 4.25rem;
-    /* Everything the bar occupies, measured from the top of the viewport. */
-    --nav-space: calc(var(--nav-inset-top) + var(--nav-h));
-    /* The bar, plus the air a page wants under it before its first element.
-       Three places need this exact figure — main's own padding, the homepage
-       hero's top, and any hero that has to fill the viewport EXCEPT this much,
-       so that nothing below it shows on load. Three copies of one clamp is how
-       the last set of numbers drifted apart. */
-    --main-clear: calc(var(--nav-space) + clamp(3rem, 5vw, 4.5rem));
+    --mast-top: 40px;
+    --mast-h: 26px;
+    /* Everything the mark occupies, measured from the top of its block. */
+    --mast-space: calc(var(--mast-top) + var(--mast-h));
+    /* The mark, plus the air a page wants under it before its first element.
+       Two places need this exact figure: main's own padding, and the homepage
+       hero's. */
+    --main-clear: calc(var(--mast-space) + clamp(3rem, 5vw, 4.5rem));
+    /* Smaller, and clear of the notch. */
+    @media (max-width: 767px) {
+      --mast-top: calc(24px + env(safe-area-inset-top, 0px));
+      --mast-h: 22px;
+    }
 
     --vw: 100vw;
     --page-pad: var(--spacing-gutter);
@@ -451,87 +482,107 @@
     z-index: 1;
   }
 
-  /* Measured ground: a faint grid the whole site sits on.
+  /* THE GROUND IS BLACK, AND THAT IS ALL IT IS.
    *
-   * It is DERIVED FROM THE CONTENT COLUMN, not from the viewport. A fixed
-   * 160px pitch drawn from the viewport edge and a centred max-width column
-   * only agree at the handful of widths where the arithmetic happens to work
-   * — at 1440 the column's content box started at 120px against lines at 80,
-   * 240, 400, so every card edge sat 40px off a line. One of the two has to
-   * derive from the other, and the content is the thing the reader is looking
-   * at.
+   * What stood here was a whole lit-ground system: a fixed vignette on
+   * body::before, a bloom behind every section on ::before, a grid over it on
+   * ::after, candle-flicker keyframes driving both, per-section phase offsets
+   * so no two pulsed together, and a WebGL canvas that painted the same three
+   * layers in float to keep them off the 8-bit banding floor.
    *
-   * So: the content box is divided into a whole number of columns, and the
-   * grid draws those. Lines land on the content edges by construction, at
-   * every width, with no rounding. The column count is ODD above the stacking
-   * breakpoint on purpose — two cards with a one-column gap need (n-1)/2
-   * columns each, which is only a whole number when n is odd, and that is what
-   * puts the cards' inner edges on lines too.
-   *
-   * Tiles are exactly one cell, not a repeating gradient across the whole
-   * element. A repeating gradient tiled at element width would seam wherever
-   * the element is not a whole number of cells wide, which is almost always
-   * once the background is offset to the column.
-   *
-   * Horizontal lines run at TWICE the cell. They align to nothing — nothing on
-   * the page is positioned against them — so their pitch is free, and pinning
-   * them to the cell would mean the whole mesh doubled in density every time
-   * the column count went up to tighten a gap. At 2x they hold the 160px
-   * rhythm the page was built on while the vertical lines follow the layout.
-   * A 1:2 cell reads as a column grid, which is what this is. */
-  body::before {
-    content: '';
-    position: fixed;
-    /* Oversized so it has somewhere to move vertically. */
-    inset: -5rem;
-    z-index: 0;
-    pointer-events: none;
-    /* VERTICAL parallax only. A horizontal shift moved the grid up to 18px at
-       1440, which is 13% of a cell — enough to take every card edge off its
-       line and undo the alignment above. The depth cue survives on one axis;
-       exact alignment does not survive on either. */
-    transform: translate3d(0, var(--gy, 0px), 0);
-    will-change: transform;
-    background-image:
-      linear-gradient(to right, var(--color-grid) 0 1px, transparent 1px),
-      linear-gradient(to bottom, var(--color-grid) 0 1px, transparent 1px);
-    background-size: var(--grid-cell) 100%, 100% calc(var(--grid-cell) * 2);
-    /* +5rem cancels the inset, so the first vertical line lands exactly on the
-       content column's left edge. */
-    background-position:
-      calc(var(--page-x) + 5rem) 0,
-      0 0;
-    mask-image: radial-gradient(150% 100% at 50% 0%, #000 14%, transparent 84%);
-    -webkit-mask-image: radial-gradient(150% 100% at 50% 0%, #000 14%, transparent 84%);
+   * All of it is gone. The page has real light sources now — the torch in the
+   * first two sections and the picture lamps in the third — and an ambient
+   * glow behind every block of content was a second, sourceless one competing
+   * with them. A grid drawn over that glow only made the competition visible.
+   * Black ground, and the only light is light something in the page is
+   * casting.
+   * ------------------------------------------------------------------- */
+
+  main section {
+    min-height: 100svh;
+  }
+  /* Except the last one, which has nothing after it to be kept clear of.
+     The floor exists so a section's light has a screen to itself before the
+     next one arrives; at the end of the page the only thing arriving is the
+     footer, and the floor was simply padding the closing section out past its
+     own content — 57px of dead black on a wide screen and 195px on a tablet,
+     between the floodlight and the footer. */
+  main section:last-child {
+    min-height: 0;
   }
 
-  /* Graph paper, not a vignette: on the light ground the grid runs the whole
-     page, because a grid that stops halfway down reads as a rendering fault
-     rather than as atmosphere. */
-  [data-theme='light'] body::before {
-    mask-image: linear-gradient(to bottom, #000 0 62%, rgba(0, 0, 0, 0.45) 100%);
-    -webkit-mask-image: linear-gradient(to bottom, #000 0 62%, rgba(0, 0, 0, 0.45) 100%);
-  }
-
-  /* Film grain over the whole page. Fixed, so it reads as a property of the
-     surface rather than something that scrolls with the content. Pointer
-     events off; sits under the nav but over the sections. */
+  /* Film grain, and DITHER — the second job is the one that earns it.
+   *
+   * THE PROBLEM. Every gradient here spans very few levels over a very large
+   * area, because the ground is dark and the light on it is faint. Measured at
+   * 1440: the hero's bloom travels 28 levels across 1094px, so one 8-bit step
+   * every 40px; the fixed vignette travels about 5 levels across 334px, one
+   * step every 68px. A step reads as an edge once it is wider than three or
+   * four pixels, so both drew concentric rings — worst on a bright display,
+   * where the dark end of the ramp is lifted clear of the black point.
+   *
+   * No number of extra colour stops fixes it. The bands are quantisation, not
+   * interpolation: the browser has 256 values and the ramp wants a thousand.
+   *
+   * WHAT THIS IS AND IS NOT. True dither perturbs the value BEFORE it is
+   * rounded, and needs only about one least-significant bit. This layer
+   * composites over a gradient the browser has already rasterised and rounded,
+   * so it cannot do that — it MASKS a contour that is already baked in, and
+   * masking needs amplitude comparable to the step rather than a fraction of
+   * it. Getting below that floor means computing the gradient in float and
+   * dithering before output, which is a shader, not a stylesheet. This is the
+   * cheap ninety percent.
+   *
+   * WHY IT IS BLUE NOISE. The previous version used feTurbulence, which is
+   * fractal by construction: energy at every scale, including the low
+   * frequencies the eye is most sensitive to. That energy shows as blotching,
+   * so it had to run loud to mask anything. This tile is void-and-cluster blue
+   * noise; measured, its low-frequency variance is about a quarter of white
+   * noise's and well under fractal noise's, so the same masking costs far less
+   * visible texture. The amplitude is down from a seven-level swing to three.
+   *
+   * ONE TEXEL PER DEVICE PIXEL, which the old version got wrong. At
+   * background-size 160px on a 2x display every noise pixel covered a 2x2
+   * block, halving the spatial frequency and doubling how visible it was for
+   * no extra masking. The tile is 64px, so the size divides by the device
+   * ratio, and image-rendering keeps the browser from smoothing the texels
+   * back into each other.
+   *
+   * WHY soft-light. It stays alive in shadow, and unlike screen or
+   * plus-lighter it can go DOWN as well as up — an additive-only layer lifts
+   * the black point several levels and washes the page out. overlay, which
+   * this used to use, collapses in shadow instead: it returns twice the
+   * backdrop times the blend below 0.5, which at this page's 19/255 scaled the
+   * noise down about sevenfold and moved the ground by 0.4 of one level. There
+   * was texture over the midtones and nothing where the banding lives. */
   body::after {
     content: '';
     position: fixed;
     inset: 0;
     z-index: 60;
     pointer-events: none;
-    opacity: 0.32;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.14'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-size: 200px 200px;
-    mix-blend-mode: overlay;
-  }
-  /* Overlay against a light ground darkens into visible speckle; soft-light
-     keeps the same texture without the dirt. */
-  [data-theme='light'] body::after {
+    opacity: 0.06;
+    --noise-tile: 64px;
+    background-image: url('data:image/png;base64,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');
+    background-size: var(--noise-tile) var(--noise-tile);
+    background-repeat: repeat;
+    image-rendering: pixelated;
     mix-blend-mode: soft-light;
-    opacity: 0.5;
+  }
+  @media (min-resolution: 1.5dppx) {
+    body::after {
+      --noise-tile: 32px;
+    }
+  }
+  @media (min-resolution: 2.5dppx) {
+    body::after {
+      --noise-tile: 21.333px;
+    }
+  }
+  /* Paper bands far less on the same ramp, and soft-light is much gentler at
+     the light end — the same swing costs roughly twice the opacity there. */
+  [data-theme='light'] body::after {
+    opacity: 0.13;
   }
 
   ::selection {
@@ -579,6 +630,10 @@
 @layer components {
   /* --- Type roles ---------------------------------------------------- */
 
+  /* SANS, deliberately, despite the name. Its one call site is the founder
+     card name, which clamps 24px to 34px — under the serif's 32px floor for
+     most of that range. The rule is a size rule, so a class called "display"
+     does not get the display face unless it is always above the floor. */
   .display {
     font-family: var(--font-sans);
     font-weight: 600;
@@ -587,12 +642,22 @@
   }
 
   /* The section heading. Serif, huge, tight — the counterweight to all the
-     small sans metadata around it. */
+     small sans metadata around it.
+   *
+   * It says "serif" and it was setting var(--font-sans), which is how the one
+   * face the system self-hosts for display went unused on every page. It is
+   * the serif now, and the size token is what keeps that legal: --text-h2
+   * clamps 34px to 60px and has no mobile override, so this heading is above
+   * the 32px display floor at every width the site is read at. Anything that
+   * would take it below 32px has to move to the sans instead — that floor is
+   * the rule, not a guideline.
+   *
+   * Plex Serif self-hosts at 600 only, so the weight is not a choice. */
   .h-section {
-    font-family: var(--font-sans);
+    font-family: var(--font-serif);
     font-size: var(--text-h2);
     font-weight: 600;
-    line-height: 0.98;
+    line-height: 1;
     letter-spacing: var(--tracking-display);
     color: var(--color-cream);
   }
@@ -610,15 +675,19 @@
     color: var(--color-cream-dim);
   }
 
-  /* The light ground needs a touch more weight to hold the same presence. */
-  [data-theme='light'] .display,
-  [data-theme='light'] .h-section {
+  /* The light ground needs a touch more weight to hold the same presence.
+     .h-section is excluded now: Plex Serif self-hosts at 600 and nothing else,
+     so asking for 620 gets a SYNTHESISED weight — the browser smearing the
+     600 outline — which is the one thing the type rules forbid outright. The
+     sans is variable across 100-700, so it can honour the request. */
+  [data-theme='light'] .display {
     font-weight: 620;
   }
 
-  /* Eyebrow / label. WORDS, so the sans — the mono was carrying "Get in touch"
-     and the copyright line, neither of which is data, and a monospaced face on
-     running words is the loudest technical signal a page can make. 13px rather than 11: a label smaller than the text it introduces is a
+  /* Eyebrow / label. WORDS, so the sans — the mono was carrying "Get in touch",
+     "Co-Founder & CEO" and the copyright line, none of which are data, and a
+     monospaced face on running words is the loudest technical signal a page can
+     make. 13px rather than 11: a label smaller than the text it introduces is a
      label nobody reads. */
   .meta {
     font-family: var(--font-sans);
@@ -639,45 +708,6 @@
     font-weight: 400;
     font-variant-numeric: tabular-nums;
     letter-spacing: var(--tracking-meta);
-  }
-
-  /* A section's opening rule: a measured hairline running off to the right,
-     fading out. The thread, continued.
-
-     It used to carry an ember [01] / [02] / [03] at its left end and was named
-     .index for it. The numbering moved onto the stages themselves, where it
-     says something — first the Assessment, then the Implementation — rather
-     than counting sections the reader was not asked to count. What is left is
-     the rule, so it is named for the rule.
-
-     Decorative: no child, no text, aria-hidden at every call site. */
-  .rule-thread {
-    /* The pattern is a custom property drawn in currentColor so the glow layer
-       can reuse it verbatim at a different colour. Two copies of these stops
-       would drift the first time either changed. */
-    --thread-img:
-      linear-gradient(to right, currentColor 0 100%),
-      repeating-linear-gradient(to right, currentColor 0 1px, transparent 1px 16px);
-    display: block;
-    height: 5px;
-    color: var(--color-line);
-    background-image: var(--thread-img);
-    background-size: 100% 1px, 100% 5px;
-    background-position: 0 2px, 0 0;
-    background-repeat: no-repeat, repeat-x;
-    mask-image: linear-gradient(to right, #000 55%, transparent);
-    -webkit-mask-image: linear-gradient(to right, #000 55%, transparent);
-  }
-  /* More specific than [data-catch='line']::after so it wins on specificity
-     rather than on source order. The generic variant paints a solid fill, which
-     on a ruled scale would be a 5px ember band instead of lit ticks. */
-  .rule-thread[data-catch]::after {
-    color: var(--catch-lit);
-    background-color: transparent;
-    background-image: var(--thread-img);
-    background-size: 100% 1px, 100% 5px;
-    background-position: 0 2px, 0 0;
-    background-repeat: no-repeat, repeat-x;
   }
 
   /* --- Emphasis ------------------------------------------------------
@@ -748,9 +778,9 @@
   .legal-prose > * + * { margin-top: 1.1rem; }
   .legal-prose > h2 {
     margin-top: 3rem;
-    /* Cleared from the bar the page actually has, rather than from a round
-       number that happened to be bigger than it. */
-    scroll-margin-top: calc(var(--nav-space) + 1.5rem);
+    /* Air, not clearance: nothing is fixed at the top of the page for a
+       heading to land underneath any more. */
+    scroll-margin-top: 2rem;
     font-family: var(--font-sans);
     font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.625rem);
     line-height: 1.25;
@@ -824,172 +854,15 @@
     border-radius: var(--radius-sm);
   }
 
-  /* --- How hard things catch the light ---------------------------------
-   * One number for the whole lit scene. The ring, the line and the bead all
-   * derive from it, so they brighten and calm together and there is a single
-   * place to turn it.
-   *
-   * The line and the bead were painting at full-strength ember — alpha 1.0,
-   * a delta of 189 in 8 bits against the bead's unlit glass, against the
-   * ring's 0.55. Three different intensities for one effect, the loudest of
-   * them louder than the light source itself.
-   *
-   * At 0.28 the bead reads a delta of 57 and the hairline 51: well clear of
-   * the ~12 an eye needs on this ground, and a quarter of what it was.
-   *
-   * This is NOT the background illumination, which keeps its own weight. That
-   * one is the light; these are things the light falls on, and an object
-   * brighter than its source reads as a fault rather than as lighting. */
-  :root {
-    --catch-peak: 0.28;
-    --catch-lit: rgba(207, 91, 48, var(--catch-peak));
-    --catch-soft: rgba(207, 91, 48, calc(var(--catch-peak) * 0.3));
-    --catch-halo: rgba(207, 91, 48, calc(var(--catch-peak) * 0.4));
-  }
+  /* The pointer "catch" system lived here: every [data-catch] element got the
+   * cursor's position in its own coordinates and lit its edge in ember as the
+   * pointer came near. It has been removed along with the attributes that
+   * registered for it. The cards are lit by the torch and the picture lamps
+   * now, and those are light sources in the scene; a second, invisible one
+   * following the mouse and tinting every edge orange was competing with them.
+   * The pointer glow itself is still in BaseLayout, still behind its flag. */
 
-  /* --- Catching the light ----------------------------------------------
-   * An element marked data-catch brightens along its EDGE as the cursor light
-   * passes near it, so the page reads as one lit scene rather than a flat
-   * ground with a torch over it.
-   *
-   * Edge luminance only — no lift, no fill, no colour shift, no cursor change.
-   * That distinction is what keeps it clear of 11.8: a hover state says "this
-   * responds to you", and these cards are not all interactive. Ambient light
-   * falling on a surface says nothing about whether you can click it, and this
-   * fires on PROXIMITY, not on the pointer being over the element at all.
-   *
-   * --cx/--cy are the pointer in the element's own coordinates and --cnear is
-   * 1 at the edge falling to 0 at the falloff distance; both are written from
-   * the one pointer rAF in BaseLayout. The ATTRIBUTE is the registration — the
-   * script picks up [data-catch] whatever its value — and the VALUE chooses how
-   * the element spends the signal, because a 1px border ring is the right
-   * answer for a card and the wrong one for a hairline or an 8px dot.
-   *
-   *   ring  a gradient clipped to the 1px border. Cards.
-   *   line  the line's own mark, relit in ember under the cursor. Rules.
-   *   dot   the whole mark warms. Anything too small to position a gradient in.
-   */
-  [data-catch] {
-    position: relative;
-  }
 
-  /* RING. The gradient is clipped to a 1px frame by two masks composited to
-     exclude each other — the standard way to get a gradient border without a
-     second element or a background-clip hack that eats the radius. */
-  [data-catch='ring']::after {
-    content: '';
-    position: absolute;
-    inset: -1px; /* sits exactly over the existing 1px border */
-    border-radius: inherit;
-    padding: 1px; /* the thickness of the ring */
-    pointer-events: none;
-    opacity: 0;
-    background: radial-gradient(
-      18rem 18rem at var(--cx, 50%) var(--cy, 50%),
-      var(--catch-lit),
-      var(--catch-soft) 45%,
-      transparent 72%
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-  }
-  /* LINE. A rule has no interior to put a ring around — the mark IS the
-     element. So the glow is the same mark drawn again in ember and masked to a
-     pool under the cursor, which lights the ticks it passes over and leaves the
-     rest alone. Positioned by --cx, so it tracks along the rule. */
-  [data-catch='line']::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0;
-    background-color: var(--catch-lit);
-    mask-image: radial-gradient(
-      12rem 12rem at var(--cx, -999px) var(--cy, 50%),
-      #000 0%,
-      rgba(0, 0, 0, 0.35) 35%,
-      transparent 72%
-    );
-    -webkit-mask-image: radial-gradient(
-      12rem 12rem at var(--cx, -999px) var(--cy, 50%),
-      #000 0%,
-      rgba(0, 0, 0, 0.35) 35%,
-      transparent 72%
-    );
-  }
-
-  /* DOT. Eight pixels across: there is nothing to position a gradient inside,
-     and a ring around it would be a ring around a ring. --cnear alone is the
-     signal, so the whole mark warms and throws a little light. */
-  [data-catch='dot']::after {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    border-radius: 50%;
-    pointer-events: none;
-    opacity: 0;
-    background-color: var(--catch-lit);
-    box-shadow: 0 0 0.5rem var(--catch-halo);
-  }
-
-  :root[data-pointer-lit] [data-catch]::after {
-    opacity: var(--cnear, 0);
-  }
-  /* The transition lives on the UNLIT rule only. Putting it on the lit one
-     would restart a 420ms animation on every frame that --cnear changes, which
-     leaves the ring permanently chasing a value it never reaches. Here it does
-     one job: fading the whole scene down when the pointer leaves the window. */
-  :root:not([data-pointer-lit]) [data-catch]::after {
-    transition: opacity 420ms var(--ease-out);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    [data-catch]::after {
-      display: none;
-    }
-  }
-
-  /* Registration marks at the corners, the way a component is called out on a
-     technical drawing. Drawn with gradients, so no extra elements. */
-  .bracket {
-    position: relative;
-  }
-  .bracket::before,
-  .bracket::after {
-    content: '';
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    border: 1px solid var(--color-ember);
-    pointer-events: none;
-  }
-  .bracket::before {
-    top: -1px;
-    left: -1px;
-    border-right: 0;
-    border-bottom: 0;
-  }
-  .bracket::after {
-    bottom: -1px;
-    right: -1px;
-    border-left: 0;
-    border-top: 0;
-  }
-
-  .rule {
-    height: 1px;
-    background-color: var(--color-line);
-    border: 0;
-  }
-
-  /* A measured rule — hairline with ticks, like the edge of a scale. Marks the
-     break between movements and keeps the "we put a number on it" register
-     present even where there is nothing to count. */
   /* --- Reveal --------------------------------------------------------
    * One reveal primitive. Children of a [data-reveal] block stagger via a
    * --i index set in markup, so a whole section moves as one gesture rather
@@ -1042,4 +915,31 @@
 
 @utility prose-measure {
   max-width: var(--container-prose);
+}
+
+/* ---------------------------------------------------------------------
+ * .h-section is ALSO a Tailwind utility, by accident.
+ *
+ * Tailwind v4 builds its h-* utilities from the --spacing-* namespace, and
+ * this stylesheet defines --spacing-section. So `h-section` — meant here as
+ * "the section heading" — additionally generates
+ *
+ *     .h-section { height: var(--spacing-section) }
+ *
+ * in the utilities layer, which outranks the components layer this file's own
+ * .h-section lives in. Every section heading on the site has therefore been
+ * pinned to a fixed height: 96px on desktop, 64px on a phone.
+ *
+ * Two lines fit inside that, which is why it went unseen for so long. A
+ * heading needing a third simply overflowed its own box — "Industries we
+ * specialise in" wraps to three lines on a 375px screen and the third sat
+ * outside the element. Harmless-looking while the type was opaque; it became
+ * MISSING TEXT once that heading was painted with background-clip:text,
+ * because paint only exists inside the element's box, and a glyph with no
+ * paint and transparent fill-colour renders as nothing at all.
+ *
+ * Unlayered, so it beats the utilities layer whatever the specificity.
+ * ------------------------------------------------------------------- */
+.h-section {
+  height: auto;
 }

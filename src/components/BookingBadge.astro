@@ -1,0 +1,463 @@
+---
+/**
+ * The round mark, bottom-right: the site's only persistent brand element once
+ * the hero has gone, and a standing link to the booking page.
+ *
+ * THE ARTWORK IS THE LOGO'S, not a copy of it. knotless-icon-reverse.svg is
+ * already exactly this mark — the `o` and the terracotta strike through it, as
+ * two paths — so it is inlined rather than redrawn, and rather than shipped as
+ * an <img>: inlining is what lets the `o` take currentColor and the strike
+ * carry a glow of its own. If the mark is ever redrawn, this follows it.
+ *
+ * IT EXPANDS, on pointers that can hover. Collapsed it is a 48px circle with
+ * no words in it, which is a brand mark and not an offer; a mark alone in a
+ * corner is also a control whose purpose nobody can guess. So hovering or
+ * focusing it opens the circle leftward into a pill that says what it does.
+ * On touch there is no hover to open it with, and an expansion that only
+ * happens on the way to a tap is a flicker, so a tap just follows the link.
+ *
+ * IT STEPS OUT, IT NEVER MOVES. Fixed to a corner means sitting over
+ * whatever scrolls through that corner for the whole of the page, and this
+ * site puts real things there — the parcel machine, the receipt's last rows.
+ * Anything marked [data-avoid-badge] that reaches the corner takes the badge
+ * off the screen until the corner is clear again. It does NOT relocate: a
+ * badge that slides up the right edge to dodge something is a badge halfway
+ * up the screen with nothing holding it there, and it reads as a fault. The
+ * corner is the badge's only address.
+ */
+import { href } from '../lib/href';
+import iconRaw from '../assets/logo/knotless-icon-reverse.svg?raw';
+
+/* Prepared once, at build time. The c2pa metadata block is most of the file's
+   9KB and none of its pixels; the title and role would give the SVG an
+   accessible name of its own, competing with the link's. */
+const icon = iconRaw
+  .replace(/<metadata>[\s\S]*?<\/metadata>/, '')
+  .replace(/<title[^>]*>[\s\S]*?<\/title>/, '')
+  .replace(/\s(?:role|aria-labelledby|width|height|xmlns:c2pa)="[^"]*"/g, '')
+  .replace('<svg ', '<svg aria-hidden="true" ')
+  /* The `o` follows the badge's colour; the strike keeps the mark's own
+     terracotta and gets a class, so the glow can reach it alone. */
+  .replace('fill="#EFE9DD"', 'fill="currentColor"')
+  .replace('fill="#CF5B30"', 'class="badge__strike" fill="var(--color-ember)"');
+
+/* A second copy carrying nothing but the strike, to hold the BRIGHT end of the
+   pulse. The `o` is dropped from it, so the only thing that fades in and out
+   is the stronger glow. */
+const iconGlow = icon
+  .replace('fill="currentColor"', 'fill="none"')
+  .replace('class="badge__strike"', 'class="badge__glow"');
+
+/* Every call to action on the site routes to /contact. */
+const BOOKING = href('/contact');
+
+/* Not on the booking page itself. A floating "Book a fit call" in the corner
+   of /contact is a link to the page you are already reading, over the form it
+   would send you to. Same normalisation Masthead uses for `isHome`, because
+   `trailingSlash: 'always'` means the live path carries a slash and href() may
+   not. */
+const strip = (p: string) => p.replace(/\/+$/, '') || '/';
+const onBookingPage = strip(Astro.url.pathname) === strip(BOOKING);
+---
+
+{!onBookingPage && (
+<a class="badge" href={BOOKING} aria-label="Book a free fit call" data-booking-badge>
+  {/* Label first in the DOM as well as on screen: it opens to the LEFT of the
+      mark, and a reading order that disagrees with the visual one is a bug
+      waiting for the first person who tabs through it. aria-hidden because the
+      link already has its full name; without it the button announces twice. */}
+  <span class="badge__label" aria-hidden="true">
+    Book a fit call <span class="badge__arrow">→</span>
+  </span>
+  <span class="badge__mark">
+    <Fragment set:html={icon} />
+    {/* The pulse. See the note on .badge__glow for why it is a second element
+        rather than an animated filter on the first. */}
+    <span class="badge__pulse" aria-hidden="true"><Fragment set:html={iconGlow} /></span>
+  </span>
+</a>
+)}
+
+<style>
+  .badge {
+    position: fixed;
+    right: 20px;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    /* Over the torch, the machine, the printer and the floodlight, all of
+       which draw inside their own sections. Under anything that takes the
+       whole screen. */
+    z-index: 70;
+
+    /* A two-track grid whose first track animates minmax(0,0fr) -> (0,1fr).
+       This is the only way to transition to a child's OWN width: max-width
+       needs a number, and any number big enough to clear the label makes the
+       easing finish early and the motion read as a snap. The badge is
+       shrink-to-fit, so its width follows the track frame by frame. */
+    display: grid;
+    grid-template-columns: minmax(0, 0fr) 48px;
+    align-items: center;
+    height: 48px;
+    padding-left: 0;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    /* The solid fallback first; where the blur is supported the fill drops to
+       72% and the blur supplies the rest. An untinted 72% black over moving
+       artwork with no blur is a smear, so those browsers get the slab. */
+    background-color: #121010;
+    color: var(--color-cream);
+    text-decoration: none;
+
+    /* The resting state is the hidden one: over the hero there is a wordmark
+       in the other corner already. */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: scale(0.6);
+    transition:
+      opacity 250ms var(--ease-out),
+      transform 250ms var(--ease-out),
+      grid-template-columns 250ms var(--ease-out),
+      padding-left 250ms var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      /* Held until the fade has finished, or it would vanish mid-flight. */ visibility 0s linear
+        250ms;
+  }
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .badge {
+      background-color: rgba(18, 16, 14, 0.72);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  }
+
+  .badge.is-on {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: scale(1);
+    transition:
+      opacity 250ms var(--ease-out),
+      transform 250ms var(--ease-out),
+      grid-template-columns 250ms var(--ease-out),
+      padding-left 250ms var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      visibility 0s;
+  }
+
+  @media (min-width: 768px) {
+    .badge {
+      right: 28px;
+      bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+    }
+  }
+
+  .badge__mark {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+  }
+  /* 27px box, not 24. The glyph is 485 x 546, so `meet` fits it to the HEIGHT
+     and it renders 0.888 of the box wide — 27 is what puts the mark at the
+     ~24px across the brief asks for. */
+  .badge :global(svg) {
+    display: block;
+    width: 27px;
+    height: 27px;
+  }
+
+  /* The glow pulses, the mark does not. Animating the strike's own opacity
+     down to .55 would dim the terracotta itself — the logo fading in and out
+     rather than a light behind it — so it is the drop-shadow that moves
+     between .55 and .8.
+
+     NOT by animating the filter, though. A filter is a paint-time effect, so
+     an animated one repaints the element on every frame for as long as the
+     page is open, idle or not — visible in Paint flashing as a square that
+     never stops going green. So the two ends are two static elements: the
+     strike below holds the resting glow and never changes, a strike-only copy
+     above holds the bright one, and only the copy's OPACITY animates. Opacity
+     on its own element is a compositor property: each glow is painted once and
+     then cross-faded. */
+  .badge :global(.badge__strike) {
+    filter: drop-shadow(0 0 4px rgba(198, 90, 49, 0.55));
+  }
+
+  .badge__pulse {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    opacity: 0;
+    will-change: opacity;
+    animation: badge-pulse 3s ease-in-out infinite;
+  }
+  .badge :global(.badge__glow) {
+    filter: drop-shadow(0 0 6px rgba(198, 90, 49, 0.8));
+  }
+  @keyframes badge-pulse {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  /* Off screen is off: a hidden badge has nothing to animate, and leaving it
+     running keeps the compositor busy on every page for the whole of a visit. */
+  .badge:not(.is-on) .badge__pulse {
+    animation-play-state: paused;
+  }
+
+  .badge__label {
+    overflow: hidden;
+    min-width: 0;
+    white-space: nowrap;
+    opacity: 0;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-cream);
+    transition: opacity 180ms var(--ease-out);
+  }
+  .badge__arrow {
+    /* Held off the text's own tracking, which would otherwise put 0.12em of
+       air between the arrow and nothing. */
+    margin-left: 0.25em;
+    letter-spacing: 0;
+  }
+
+  /* --- the expansion ---------------------------------------------------
+   * Focus opens it at any pointer type: a keyboard user needs the words as
+   * much as a mouse user, and more, because they cannot see a tooltip either.
+   * Hover only opens it where hovering is a thing that happens — on a phone
+   * :hover fires on the way to a tap and the pill would flicker open as the
+   * link is already being followed. */
+  .badge:focus-visible {
+    grid-template-columns: minmax(0, 1fr) 48px;
+    padding-left: 16px;
+  }
+  .badge:focus-visible .badge__label {
+    opacity: 1;
+  }
+  @media (hover: hover) {
+    .badge:hover {
+      grid-template-columns: minmax(0, 1fr) 48px;
+      padding-left: 16px;
+      border-color: rgba(255, 255, 255, 0.24);
+    }
+    .badge:hover .badge__label {
+      opacity: 1;
+    }
+  }
+
+  /* Reduced motion: it fades, it does not grow, and nothing pulses. The pill
+     still opens — that is a disclosure, not decoration — but instantly. */
+  @media (prefers-reduced-motion: reduce) {
+    .badge,
+    .badge.is-on {
+      transform: none;
+    }
+    .badge {
+      transition:
+        opacity 250ms linear,
+        visibility 0s linear 250ms;
+    }
+    .badge.is-on {
+      transition:
+        opacity 250ms linear,
+        visibility 0s;
+    }
+    .badge__label {
+      transition: none;
+    }
+    .badge__pulse {
+      animation: none;
+      opacity: 0;
+    }
+  }
+</style>
+
+<script>
+  (() => {
+    const badge = document.querySelector<HTMLElement>('[data-booking-badge]');
+    if (!badge) return;
+
+    /* ---- when it is allowed on screen at all -------------------------
+     * The hero and the closing card only exist on the homepage; on every
+     * other page those observers are skipped and their flags stay false, so
+     * the badge is there from the first paint and leaves only over the
+     * footer. */
+    const hero = document.querySelector('[data-hero-gate]');
+    const closing = document.querySelector('[data-flood-lens]');
+    const foot = document.querySelector('footer');
+
+    let heroShowing = !!hero;
+    let closingShowing = false;
+    let footShowing = false;
+
+    /* ---- and whether the corner is free ------------------------------ */
+    let blocked = false;
+    /* Hysteresis, one way only. Blocking happens on the frame it is needed;
+       unblocking waits, because the corner can come clear for a few frames
+       between two cards of the same deck or between a section's last block
+       and the next one's first, and a badge that pops back for 200ms in each
+       of those gaps reads as a fault rather than as a badge. */
+    const CLEAR_DELAY = 400;
+    let unblockTimer: ReturnType<typeof setTimeout> | undefined;
+    const setBlocked = (want: boolean) => {
+      clearTimeout(unblockTimer);
+      if (want) {
+        blocked = true;
+        return;
+      }
+      if (!blocked) return;
+      unblockTimer = setTimeout(() => {
+        blocked = false;
+        apply();
+      }, CLEAR_DELAY);
+    };
+
+    const apply = () => {
+      const on = !heroShowing && !closingShowing && !footShowing && !blocked;
+      badge.classList.toggle('is-on', on);
+      /* inert, not aria-hidden: it takes this out of the tab order AND out of
+         the accessibility tree in one attribute, and unlike aria-hidden it
+         cannot leave a focusable element reachable. */
+      if (on) badge.removeAttribute('inert');
+      else badge.setAttribute('inert', '');
+    };
+
+    /* Thresholds every 5% rather than one value at the boundary. A single
+       threshold only reports the crossing itself, which is fine until the
+       element is resized or the page is restored mid-scroll and the crossing
+       never happens; a dense list means every callback carries a usable
+       ratio — and, for the avoidance below, keeps them coming while the
+       element travels. */
+    const STEPS = Array.from({ length: 21 }, (_, i) => i / 20);
+
+    const watch = (el: Element | null, read: (e: IntersectionObserverEntry) => void) => {
+      if (!el) return;
+      new IntersectionObserver(
+        ([entry]) => {
+          read(entry);
+          apply();
+        },
+        { threshold: STEPS },
+      ).observe(el);
+    };
+
+    // More than ~30% of the hero on screen: its own wordmark is in the corner.
+    watch(hero, (e) => (heroShowing = e.intersectionRatio > 0.3));
+    // A quarter of the closing card: it is a "Book a free Fit Call" the size
+    // of the screen, and a second one floating over it is noise.
+    watch(closing, (e) => (closingShowing = e.intersectionRatio >= 0.25));
+    // ANY of the footer, not a fifth of it: the closing card can fall under
+    // its own 25% before the footer is a fifth of the way in, and the badge
+    // blinked back on for the two frames in between.
+    watch(foot, (e) => (footShowing = e.isIntersecting));
+
+    /* ---- avoidance ---------------------------------------------------
+     * The trigger is an observer whose root is CROPPED to the corner the
+     * badge lives in, so "is something in the badge's way" is answered by the
+     * browser's own intersection test rather than by arithmetic on scroll
+     * position. The corner is a square of the viewport, so it is rebuilt when
+     * the viewport changes. */
+    const CORNER = 96;
+    const GAP = 12;
+    const targets = Array.from(document.querySelectorAll('[data-avoid-badge]'));
+    const inCorner = new Set<Element>();
+    let cornerIO: IntersectionObserver | null = null;
+
+    /** The badge's resting bottom edge, in viewport coordinates. */
+    const restBottom = () => {
+      const bottom = parseFloat(getComputedStyle(badge).bottom) || 0;
+      return window.innerHeight - bottom;
+    };
+
+    const measure = () => {
+      if (!inCorner.size) {
+        setBlocked(false);
+        apply();
+        return;
+      }
+      /* Does anything in the corner actually reach the badge?
+       *
+       * `need` is how far the badge would have had to travel to clear the
+       * highest obstruction. Nothing travels any more, so it is only a test:
+       * any positive value means the corner is occupied and the badge leaves.
+       * A FULL-BLEED BLOCK (the receipt, a quote card on a phone) is occupied
+       * by definition — it spans the column, so there is no part of the corner
+       * it is not in. */
+      let need = 0;
+      let full = false;
+      for (const el of inCorner) {
+        const r = el.getBoundingClientRect();
+        if (r.width > window.innerWidth * 0.7) {
+          full = true;
+          continue;
+        }
+        need = Math.max(need, restBottom() - (r.top - GAP));
+      }
+
+      setBlocked(full || need > 0);
+      apply();
+    };
+
+    const armCorner = () => {
+      cornerIO?.disconnect();
+      if (!targets.length) return;
+      const vh = window.innerHeight;
+      const vw = window.innerWidth;
+      /* top right bottom left. Cropping the root from the top and the left
+         leaves exactly the bottom-right CORNER x CORNER square. */
+      cornerIO = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) inCorner.add(e.target);
+            else inCorner.delete(e.target);
+          }
+          measure();
+        },
+        {
+          rootMargin: `${-Math.max(0, vh - CORNER)}px 0px 0px ${-Math.max(0, vw - CORNER)}px`,
+          threshold: 0,
+        },
+      );
+      targets.forEach((t) => cornerIO!.observe(t));
+    };
+
+    /* The corner observer reports arrival and departure. This one reports the
+       journey: dense thresholds against the whole viewport fire as the target
+       travels through it, which is what keeps the answer in step with an
+       obstruction that is still moving. Still no scroll listener. */
+    if (targets.length) {
+      const travel = new IntersectionObserver(() => measure(), { threshold: STEPS });
+      targets.forEach((t) => travel.observe(t));
+    }
+
+    armCorner();
+    apply();
+
+    /* Not a scroll listener: the corner is defined in viewport units, so it is
+       only wrong when the viewport itself changes. */
+    let t: ReturnType<typeof setTimeout>;
+    window.addEventListener(
+      'resize',
+      () => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+          armCorner();
+          measure();
+        }, 150);
+      },
+      { passive: true },
+    );
+  })();
+</script>
