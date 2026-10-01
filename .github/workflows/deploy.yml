@@ -27,21 +27,28 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      # Project Pages serve from a sub-path; these feed astro.config.mjs.
-      SITE_URL: https://moizkhuzema.github.io
-      BASE_PATH: /knotless-website
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run build
+      # This GitHub Pages address was an early preview of the site. The real
+      # site is https://knotless.com.au/ (Netlify). Every path here now sends
+      # visitors there, and is noindexed so search engines drop this copy.
+      - name: Build redirect stub
+        run: |
+          mkdir -p stub
+          cat > stub/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en-AU"><head><meta charset="utf-8">
+          <title>Knotless has moved</title>
+          <meta name="robots" content="noindex, nofollow">
+          <link rel="canonical" href="https://knotless.com.au/">
+          <meta http-equiv="refresh" content="0; url=https://knotless.com.au/">
+          <script>location.replace("https://knotless.com.au/");</script>
+          </head><body><p>Knotless is at <a href="https://knotless.com.au/">knotless.com.au</a>.</p></body></html>
+          HTML
+          cp stub/index.html stub/404.html
+          printf 'User-agent: *\nDisallow: /\n' > stub/robots.txt
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: ./stub
 
   deploy:
     needs: build
