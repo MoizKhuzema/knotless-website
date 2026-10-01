@@ -16,31 +16,46 @@
  * rules: mono is rendered arithmetic only, and table columns are named in the
  * rule explicitly. The column HEADERS are sans, because they are words.
  *
- * The narrow layout is not a horizontal scroller. Three columns at 390px gives
- * the price column about 110px and "$7,500 to $12,000" needs roughly 150, so
- * below 48rem each row becomes its own block with the header repeated beside
- * each value through a data attribute. The table semantics are untouched; only
- * the boxes move.
+ * THE PRICE DEPENDS ON ONE THING, SO THE READER SETS IT. A switch above the
+ * table picks the staff band, and changing it REPRINTS the figures: the same
+ * machine, the same flash and LED, four rows top to bottom. The default band
+ * is rendered on the server, so the page shows real prices before any script
+ * runs and a reader with no JavaScript still gets an answer.
+ *
+ * TWO COLUMNS AND A LEADER. Workflows and Price, with a dotted run between
+ * them — which is what a receipt does with a wide line, and what stops the
+ * table reading as two values marooned at opposite edges. The leader cell is
+ * aria-hidden: it is a ruling, not data.
+ *
+ * The narrow layout is not a horizontal scroller. Below 48rem each row becomes
+ * its own block with the header repeated beside each value through a data
+ * attribute. The table semantics are untouched; only the boxes move.
  */
 import { PRICING } from '../../data/homepage';
 
-/* The compact mobile rows, derived from the table's own data rather than
- * written out again — a second copy of four prices is a second copy that can
- * go stale. The hours are relabelled here, not just shortened: "3 hours" in a
- * column headed YOUR TEAM'S TIME is unambiguous, but the moment that header is
- * dropped to save space the number has to carry the meaning itself, or it
- * reads as the length of the whole engagement. */
-const compact = PRICING.rows.map((r) => {
-  const n = Number(r.workflows);
-  const hrs = r.time.replace(/\s*hours?$/i, '');
-  return {
-    count: `${r.workflows} workflow${n === 1 ? '' : 's'}`,
-    time: `${hrs} hrs of your team`,
-    timeAria: `${hrs} hours of your team's time`,
-    price: r.price.replace(/\s+to\s+/i, '\u2013'),
-    priceAria: r.price,
-  };
-});
+/* One formatter, at the point of use. The data holds numbers, because a
+   formatted string cannot be compared, summed or re-localised. */
+const money = (n: number) => '$' + n.toLocaleString('en-AU');
+
+const DEFAULT_SIZE = PRICING.sizes.find((s) => s.id === PRICING.defaultSize) ?? PRICING.sizes[0];
+
+/* The rows, keyed by index so the script can address them. The count is
+   written out in full for the stacked layout, where there is no column header
+   left to carry the word. */
+const rows = PRICING.workflows.map((n, i) => ({
+  i,
+  count: `${n} workflow${n === 1 ? '' : 's'}`,
+  n: String(n),
+}));
+
+/* Handed to the script as one attribute rather than re-derived there: the
+   prices are formatted once, by the helper above, and the script only ever
+   swaps text it was given. */
+const sizeData = PRICING.sizes.map((s) => ({
+  id: s.id,
+  aria: s.aria,
+  prices: s.prices.map(money),
+}));
 ---
 
 <section class="price" id="pricing">
@@ -54,7 +69,7 @@ const compact = PRICING.rows.map((r) => {
         out of a machine. The printer head is decoration, the paper is the
         card, and the printing is a clip — the paper keeps its full layout
         height from the first frame, so nothing below it ever moves. */}
-    <div class="receipt r" data-receipt data-reveal>
+    <div class="receipt r" data-receipt data-reveal data-sizes={JSON.stringify(sizeData)}>
       <div class="receipt-printer" aria-hidden="true">
         <div class="rp-body"></div>
         <div class="rp-grip"></div>
@@ -74,39 +89,66 @@ const compact = PRICING.rows.map((r) => {
 
         <h3 class="price__stage" data-line>{PRICING.stage}</h3>
 
+        {/* The band picker. A radiogroup rather than a <select>: three options
+            that each change the figures below are a choice to be seen, not one
+            to be opened. It is a [data-line], so it prints with the rest. */}
+        <div class="rc-size" data-line>
+          <span class="rc-muted rc-size__label" id="rc-size-label">{PRICING.sizeLabel}</span>
+          <div class="rc-seg" role="radiogroup" aria-labelledby="rc-size-label" data-size-switch>
+            {
+              PRICING.sizes.map((sz) => (
+                <button
+                  type="button"
+                  role="radio"
+                  class="rc-seg__opt"
+                  data-size={sz.id}
+                  aria-label={sz.aria}
+                  aria-checked={sz.id === PRICING.defaultSize ? 'true' : 'false'}
+                  tabindex={sz.id === PRICING.defaultSize ? '0' : '-1'}
+                >
+                  {sz.label}
+                </button>
+              ))
+            }
+          </div>
+        </div>
+        {/* Says what changed, for a reader who cannot see the figures move. */}
+        <p class="sr-only" aria-live="polite" data-size-status></p>
+
         <table class="ptable">
           {/* A caption, visually hidden. The heading above says "What it costs"
               and the subheading says "Assessment"; neither is inside the table,
               so a reader landing on the table alone would get four rows of
               numbers with no idea what they price. */}
-          <caption class="sr-only">
-            Assessment pricing by number of workflows
+          <caption class="sr-only" data-size-caption>
+            Assessment pricing by number of workflows, for {DEFAULT_SIZE.aria}
           </caption>
           <thead>
             <tr data-line>
-              {
-                PRICING.columns.map((c, i) => (
-                  <th scope="col" class:list={['ptable__th', 'rc-muted', i > 0 && 'ptable__th--num']}>
-                    {c}
-                  </th>
-                ))
-              }
+              <th scope="col" class="ptable__th rc-muted">{PRICING.columns[0]}</th>
+              {/* The leader's column. A ruling has no header — but it still
+                  carries the header's rule, or the line under WORKFLOWS and
+                  PRICE breaks in the middle where this cell sits. */}
+              <td class="ptable__thlead" aria-hidden="true"></td>
+              <th scope="col" class="ptable__th ptable__th--num rc-muted">{PRICING.columns[1]}</th>
             </tr>
           </thead>
           <tbody>
             {
-              PRICING.rows.map((row) => (
+              rows.map((row) => (
                 <tr class="ptable__row" data-line>
                   {/* The workflow count is the row's key, so it is the row
-                      header rather than a fourth anonymous cell. */}
+                      header rather than a third anonymous cell. */}
                   <th scope="row" class="ptable__cell ptable__cell--key rc-num" data-label={PRICING.columns[0]}>
-                    <span class="rc-val">{row.workflows}</span>
+                    <span class="rc-val">{row.count}</span>
                   </th>
-                  <td class="ptable__cell rc-muted" data-label={PRICING.columns[1]}>
-                    <span class="rc-val">{row.time}</span>
+                  {/* The dotted run across the middle. Decoration, so it is
+                      hidden rather than read out as a cell with no content. */}
+                  <td class="ptable__lead" aria-hidden="true">
+                    <span class="rc-dots"></span>
                   </td>
-                  <td class="ptable__cell ptable__cell--price rc-price" data-label={PRICING.columns[2]}>
-                    <span class="rc-val">{row.price}</span>
+                  <td class="ptable__cell ptable__cell--price rc-price" data-label={PRICING.columns[1]}>
+                    <span class="rc-val" data-price={row.i}>{money(DEFAULT_SIZE.prices[row.i])}</span>
                   </td>
                 </tr>
               ))
@@ -115,21 +157,21 @@ const compact = PRICING.rows.map((r) => {
         </table>
 
         {/* The same four options, for the stacked layout. Only one of the two
-            is ever displayed, so a screen reader meets one of them, not both. */}
+            is ever displayed, so a screen reader meets one of them, not both.
+            Count, leader, price — the same three parts as the wide row. */}
         <div class="rc-list">
           <div class="rc-cols" data-line>
             <span class="rc-muted">{PRICING.columns[0]}</span>
-            <span class="rc-muted">{PRICING.columns[2]}</span>
+            <span class="rc-muted">{PRICING.columns[1]}</span>
           </div>
           {
-            compact.map((c) => (
+            rows.map((row) => (
               <div class="rc-line" data-line>
                 <span class="rc-left">
-                  <span class="rc-num">{c.count}</span>
-                  <span class="rc-muted rc-time" aria-label={c.timeAria}>{c.time}</span>
+                  <span class="rc-num">{row.count}</span>
                 </span>
                 <span class="rc-dots" aria-hidden="true" />
-                <span class="rc-price" aria-label={c.priceAria}>{c.price}</span>
+                <span class="rc-price" data-price={row.i}>{money(DEFAULT_SIZE.prices[row.i])}</span>
               </div>
             ))
           }
@@ -368,6 +410,78 @@ const compact = PRICING.rows.map((r) => {
     transform: translateY(-3px);
   }
 
+  /* --- The band switch -------------------------------------------------
+   *
+   * Printed with the rest of the receipt, so it carries [data-line] and
+   * inherits the clip, the falloff and the flash. The selected option's glow
+   * is the SAME text-shadow the lit prices use, copied rather than invented:
+   * the switch and the figures it controls are lit by one machine. */
+  .rc-size {
+    margin: 0 0 1.25rem;
+  }
+  .rc-size__label {
+    display: block;
+    margin: 0 0 0.6rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-meta);
+  }
+  .rc-seg {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 999px;
+    border: 1px solid var(--color-line);
+    background: rgba(0, 0, 0, 0.35);
+  }
+  .rc-seg__opt {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    padding: 9px 16px;
+    border-radius: 999px;
+    color: var(--color-cream-dim);
+    transition:
+      color 0.25s,
+      background-color 0.25s,
+      box-shadow 0.25s,
+      text-shadow 0.25s;
+  }
+  .rc-seg__opt:hover {
+    color: var(--color-cream);
+  }
+  .rc-seg__opt[aria-checked='true'] {
+    background: #1d1914;
+    color: #fbe6cc;
+    text-shadow: 0 0 10px rgba(255, 210, 160, calc(0.42 * var(--falloff, 1)));
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 226, 190, 0.18),
+      0 0 18px -4px rgba(255, 200, 150, 0.35);
+  }
+  .rc-seg__opt:focus-visible {
+    outline: 2px solid var(--color-ember);
+    outline-offset: 2px;
+  }
+  /* On a phone the three bands share the width rather than huddling left. */
+  @media (max-width: 47.99rem) {
+    .rc-seg {
+      display: flex;
+      width: 100%;
+    }
+    .rc-seg__opt {
+      flex: 1;
+      padding: 9px 4px;
+      font-size: 12px;
+      letter-spacing: 0.02em;
+    }
+  }
+
   /* THREE STATES, NOT TWO.
    *
    * A line is unprinted, then flashing, then LIT — and lit is where it stays.
@@ -427,7 +541,7 @@ const compact = PRICING.rows.map((r) => {
   }
   /* The muted tier was the faintest thing on the paper by a long way: a 0.22
      base, then multiplied by a falloff that reaches 0.6 at the foot, left the
-     column heads and the hours glowing at about 0.13 against the prices' 0.41.
+     column heads glowing at about 0.13 against the prices' 0.41.
      Lifted in colour as much as in shadow — at 12px, colour does more of the
      work than a blur can. min() holds it under the readability ceiling. */
   .receipt-paper .lit .rc-muted,
@@ -478,7 +592,7 @@ const compact = PRICING.rows.map((r) => {
     /* Stated on the table as well as inherited from html, because this is the
        one place on the page where a column of figures has to line up down its
        length rather than merely look even. lining-nums keeps the digits at cap
-       height so "$3,000" and "$12,000" share a baseline and a ceiling. */
+       height so "$3,700" and "$10,100" share a baseline and a ceiling. */
     font-variant-numeric: tabular-nums lining-nums;
   }
 
@@ -509,9 +623,9 @@ const compact = PRICING.rows.map((r) => {
   }
 
   /* The row key and the price are what the reader is actually here for, so
-     they take full-strength cream; the middle column stays dimmed. Hierarchy
-     inside a table, done with contrast rather than with weight, because a
-     heavier mono is a different texture rather than a louder one. */
+     they take full-strength cream. Hierarchy inside a table, done with
+     contrast rather than with weight, because a heavier mono is a different
+     texture rather than a louder one. */
   .ptable__cell--key,
   .ptable__cell--price {
     color: var(--color-cream);
@@ -520,25 +634,45 @@ const compact = PRICING.rows.map((r) => {
     font-weight: 500;
   }
 
+  /* The dotted run between the two columns. Its vertical padding and its rule
+     are COPIED from .ptable__cell above rather than chosen: the leader shares
+     a row with those cells, so any other number would step the baseline. */
+  .ptable__lead {
+    width: 100%;
+    padding: 1rem 1rem;
+    border-bottom: 1px solid var(--color-line);
+  }
+  .ptable__lead .rc-dots {
+    display: block;
+  }
+  /* The header's share of the same rule. Padding and border copied from
+     .ptable__th, so the line is one line. */
+  .ptable__thlead {
+    padding: 0 0 0.9rem;
+    border-bottom: 1px solid var(--color-line);
+  }
+  /* Both data columns shrink to their text so the leader can have the rest. */
+  .ptable__cell--key,
+  .ptable__cell--price {
+    white-space: nowrap;
+  }
+
   /* Last row: no rule under it. The panel's own edge closes the table, and a
      hairline a few pixels above it reads as a mistake. */
-  .ptable__row:last-child .ptable__cell {
+  .ptable__row:last-child .ptable__cell,
+  .ptable__row:last-child .ptable__lead {
     border-bottom: 0;
     padding-bottom: 0;
   }
 
   @media (min-width: 48rem) {
-    /* Columns sized to content, with the price column taking the slack. The
-       workflow count is one character wide and should not be handed a third of
-       the table for it — but 7rem left the count crowding the hours beside it,
-       so the gap is opened out. */
+    /* Key and price shrink to their own text and the LEADER takes the slack,
+       which is what keeps the two columns where they already were while the
+       dots fill what used to be the time column. A width on the key would
+       fight the leader for the same pixels. */
     .ptable__th:first-child,
     .ptable__cell--key {
-      width: 12rem;
-    }
-    .ptable__th:nth-child(2),
-    .ptable__cell:nth-child(2) {
-      width: 32%;
+      width: 1%;
     }
     /* The price goes to the right edge rather than floating in the middle of
        the slack it was handed. Right-aligned, not merely pushed across: on a
@@ -553,10 +687,10 @@ const compact = PRICING.rows.map((r) => {
 
   /* --- Narrow: the compact receipt ------------------------------------
    *
-   * The stacked table repeated WORKFLOWS / YOUR TEAM'S TIME / PRICE four
-   * times over — twelve label-and-value lines to say four things. One header
-   * and one line per option says the same in a third of the height, which is
-   * what a receipt would actually print.
+   * The stacked table repeated WORKFLOWS / PRICE four times over — eight
+   * label-and-value lines to say four things. One header and one line per
+   * option says the same in a fraction of the height, which is what a receipt
+   * would actually print.
    *
    * The two layouts are the same data rendered twice and only one is ever
    * displayed, so a screen reader is never offered both. */
@@ -606,11 +740,6 @@ const compact = PRICING.rows.map((r) => {
     .rc-list .rc-num {
       font-family: var(--font-mono);
       font-size: 13px;
-      line-height: 1.2;
-    }
-    .rc-time {
-      font-family: var(--font-mono);
-      font-size: 11.5px;
       line-height: 1.2;
     }
     .rc-list .rc-price {
@@ -817,6 +946,113 @@ const compact = PRICING.rows.map((r) => {
       root.setAttribute('data-printing', '');
       t0 = performance.now();
       raf = requestAnimationFrame(frame);
+    }
+
+    /* ---- the band switch ------------------------------------------------
+     *
+     * Inside receipt() on purpose: changing the band REPRINTS the figures, and
+     * reprinting means the same strike() — the same flash, the same LED blink,
+     * the same settle into .lit. A second print system would be a second set
+     * of timings to keep in step with this one.
+     *
+     * The prices arrive pre-formatted in one attribute; this only ever swaps
+     * text it was handed.
+     *
+     * Wired BEFORE the reduced-motion branch below, which returns out of
+     * receipt() as soon as it has finished the print. Behind that return the
+     * switch would have had no listeners at all on exactly the machines that
+     * asked for less motion. */
+    const seg = root.querySelector<HTMLElement>('[data-size-switch]');
+    const status = root.querySelector<HTMLElement>('[data-size-status]');
+    const caption = root.querySelector<HTMLElement>('[data-size-caption]');
+    type Band = { id: string; aria: string; prices: string[] };
+    let bands: Band[] = [];
+    try {
+      bands = JSON.parse(root.dataset.sizes || '[]');
+    } catch {
+      bands = [];
+    }
+
+    if (seg && bands.length) {
+      const opts = Array.from(seg.querySelectorAll<HTMLButtonElement>('[data-size]'));
+      let reprint: ReturnType<typeof setTimeout>[] = [];
+
+      const select = (id: string, moveFocus: boolean) => {
+        const band = bands.find((b) => b.id === id);
+        if (!band) return;
+
+        for (const o of opts) {
+          const on = o.dataset.size === id;
+          o.setAttribute('aria-checked', on ? 'true' : 'false');
+          o.tabIndex = on ? 0 : -1;
+          if (on && moveFocus) o.focus();
+        }
+
+        if (caption) {
+          caption.textContent =
+            `Assessment pricing by number of workflows, for ${band.aria}`;
+        }
+        if (status) status.textContent = `Showing prices for ${band.aria}`;
+
+        /* A band changed mid-reprint starts over from the first row rather
+           than interleaving two runs down the same four lines. */
+        for (const t of reprint) clearTimeout(t);
+        reprint = [];
+
+        const setRow = (i: number) => {
+          for (const el of root.querySelectorAll<HTMLElement>(`[data-price="${i}"]`)) {
+            el.textContent = band.prices[i];
+          }
+        };
+
+        /* Before the paper is out there is nothing to reprint: the lines are
+           still clipped away, and the print itself will light them. */
+        if (!started) {
+          for (let i = 0; i < band.prices.length; i++) setRow(i);
+          return;
+        }
+
+        if (reduce.matches) {
+          for (let i = 0; i < band.prices.length; i++) setRow(i);
+          for (const el of allLines) el.classList.add('lit');
+          return;
+        }
+
+        /* Only the layout that is actually laid out gets struck — the same
+           offsetHeight test measure() uses, for the same reason. */
+        const rowsOf = (i: number) =>
+          Array.from(root.querySelectorAll<HTMLElement>(`[data-price="${i}"]`))
+            .map((el) => el.closest<HTMLElement>('[data-line]'))
+            .filter((el): el is HTMLElement => !!el && el.offsetHeight > 0);
+
+        for (let i = 0; i < band.prices.length; i++) {
+          reprint.push(
+            setTimeout(() => {
+              setRow(i);
+              for (const line of rowsOf(i)) strike(line);
+            }, i * 120),
+          );
+        }
+      };
+
+      seg.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-size]');
+        if (btn?.dataset.size) select(btn.dataset.size, false);
+      });
+
+      /* Roving tabindex: the group is one tab stop and the arrows move within
+         it, which is what a radiogroup is expected to do. */
+      seg.addEventListener('keydown', (e) => {
+        const key = e.key;
+        const back = key === 'ArrowLeft' || key === 'ArrowUp';
+        const fwd = key === 'ArrowRight' || key === 'ArrowDown';
+        if (!back && !fwd) return;
+        e.preventDefault();
+        const at = opts.findIndex((o) => o.getAttribute('aria-checked') === 'true');
+        const next = (at + (fwd ? 1 : -1) + opts.length) % opts.length;
+        const id = opts[next]?.dataset.size;
+        if (id) select(id, true);
+      });
     }
 
     root.classList.add('js-print');

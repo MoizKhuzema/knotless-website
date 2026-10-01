@@ -10,8 +10,10 @@
  * how to get started.
  *
  * COPY RULES. Curly apostrophes and curly quotes throughout (§11.12). NO EM
- * DASHES anywhere in this file's strings — ranges are written "3,000 to 4,500"
- * and asides are punctuated with a colon or a full stop. Australian spelling
+ * DASHES anywhere in this file's strings; asides are punctuated with a colon
+ * or a full stop. An EN dash is a different mark and is allowed where it is
+ * doing a number range's job, as in the "21–50" band label. There are no
+ * price ranges left to write: every figure is one number. Australian spelling
  * throughout ("specialise", not "specialize").
  */
 
@@ -156,20 +158,30 @@ export const INDUSTRIES = {
  * is quoted against what the Assessment finds, which is stated rather than
  * left as a gap for the reader to worry about.
  *
- * `time` and `price` render in the mono face with tabular figures: they are
- * arithmetic, and the columns have to line up down the table.
+ * ONE NUMBER PER CELL, not a range. The price was a span — "$3,000 to $4,500"
+ * — which is a firm declining to answer the question it put on the page. What
+ * decides the figure is how many people the work has to reach, so that is the
+ * question the reader answers: pick the band, read the price.
+ *
+ * The prices render in the mono face with tabular figures: they are
+ * arithmetic, and the columns have to line up down the table. They are stored
+ * as NUMBERS and formatted at the point of use — a formatted string is a
+ * string that cannot be compared, summed or re-localised.
  */
 export const PRICING = {
   heading: 'What it costs',
   stage: 'Assessment',
-  columns: ['Workflows', 'Your team’s time', 'Price'] as const,
-  rows: [
-    { workflows: '1', time: '3 hours', price: '$3,000 to $4,500' },
-    { workflows: '2', time: '4 hours', price: '$4,500 to $6,500' },
-    { workflows: '3', time: '6 hours', price: '$6,000 to $9,000' },
-    { workflows: '4', time: '8 hours', price: '$7,500 to $12,000' },
+  sizeLabel: 'Team size',
+  /** Staff count bands. Prices are AUD, excluding GST, fixed per number of workflows. */
+  sizes: [
+    { id: 'micro', label: 'Up to 20', aria: 'Up to 20 staff', prices: [2100, 3300, 4200, 5300] },
+    { id: 'small', label: '21–50', aria: '21 to 50 staff', prices: [3700, 5500, 6800, 8600] },
+    { id: 'medium', label: 'Over 50', aria: 'Over 50 staff', prices: [4600, 6700, 8100, 10100] },
   ],
-  note: 'Exact price and duration are set on the free Fit Call, before you sign anything.',
+  defaultSize: 'small',
+  workflows: [1, 2, 3, 4],
+  columns: ['Workflows', 'Price'] as const,
+  note: 'One fixed price, agreed on your free Fit Call before you sign anything. All prices AUD, excluding GST.',
   build: 'Build: quoted separately.',
 } as const;
 

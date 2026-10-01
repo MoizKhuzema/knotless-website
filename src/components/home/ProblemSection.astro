@@ -98,12 +98,12 @@ import { PROBLEM } from '../../data/homepage';
      leftover fell below the copy — 189px of black at 820 on top of the run-out
      the stage already adds. The floor buys nothing here: the section is a
      screen tall by itself at these widths. */
-  @media (max-width: 1023px) {
+  @media (max-width: 959px) {
     .prob {
       min-height: 0;
     }
   }
-  @media (min-width: 1024px) {
+  @media (min-width: 960px) {
     .prob {
       /* Room on the left for the torch to settle into and for its beam to open
          across the content. The torch's resting place is solved from the copy's
@@ -126,7 +126,7 @@ import { PROBLEM } from '../../data/homepage';
     display: grid;
     gap: 1.25rem;
   }
-  @media (min-width: 1024px) {
+  @media (min-width: 960px) {
     .prob__grid {
       /* Three across, which is the point: the reader is meant to see at a
          glance that these are three DIFFERENT businesses saying one thing.
@@ -155,7 +155,7 @@ import { PROBLEM } from '../../data/homepage';
    * PHONES ONLY. A tablet has the height to show all three quotes at once, and
    * a deck that hides two of them to save room nobody needed is a worse read
    * than the plain column. So the deck's breakpoint is not the same as the
-   * torch's: the torch keeps its top-left pose all the way to 1023 (there is
+   * torch's: the torch keeps its top-left pose all the way to 959 (there is
    * no gutter to sit in below that), while the stacking stops at 767. DECK in
    * the script matches this number, COMPACT matches the other. Every rule is
    * gated on data-deck-on, which only the script sets: absolutely stacked
@@ -171,7 +171,7 @@ import { PROBLEM } from '../../data/homepage';
    * level with the heading, which forces the same cone open to seventy
    * degrees to still contain it. So the tablet keeps the headroom: the column
    * is ordinary, the light above it is not re-aimed. */
-  @media (min-width: 768px) and (max-width: 1023px) {
+  @media (min-width: 768px) and (max-width: 959px) {
     .prob {
       display: block;
     }

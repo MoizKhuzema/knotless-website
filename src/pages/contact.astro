@@ -180,7 +180,7 @@ const FORM_ACTION = withBase('/contact');
    *
    * main's other child is the Masthead, which is absolutely positioned and so
    * takes no part in this. */
-  @media (min-width: 64rem) {
+  @media (min-width: 60rem) {
     :global(main) {
       display: flex;
       flex-direction: column;
@@ -208,7 +208,7 @@ const FORM_ACTION = withBase('/contact');
     overflow-x: clip;
   }
 
-  @media (min-width: 64rem) {
+  @media (min-width: 60rem) {
     .contact {
       margin-block: auto;
       /* Symmetric, so the centring lands the CONTENT in the middle rather than
@@ -298,7 +298,7 @@ const FORM_ACTION = withBase('/contact');
   .col {
     position: relative;
   }
-  @media (min-width: 64rem) {
+  @media (min-width: 60rem) {
     .col {
       max-width: 30rem;
     }
@@ -306,7 +306,7 @@ const FORM_ACTION = withBase('/contact');
   /* Below the two-column layout the lamp hangs into the space above the form,
      which is why there is 120px of it: less and the bar would sit on the
      promise line. */
-  @media (max-width: 1023px) {
+  @media (max-width: 959px) {
     .col {
       margin-top: 120px;
     }
@@ -350,7 +350,7 @@ const FORM_ACTION = withBase('/contact');
     background: #f6e6cc;
     box-shadow: 0 0 18px 4px rgba(255, 210, 160, 0.35);
   }
-  @media (max-width: 1023px) {
+  @media (max-width: 959px) {
     .lamp {
       top: -78px;
       height: 34px;
@@ -381,7 +381,7 @@ const FORM_ACTION = withBase('/contact');
     );
     transition: --ly 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
-  @media (max-width: 1023px) {
+  @media (max-width: 959px) {
     .pool {
       top: -100px;
     }

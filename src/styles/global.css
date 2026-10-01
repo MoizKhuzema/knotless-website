@@ -447,6 +447,20 @@
       --mast-h: 22px;
     }
 
+    /* THE THREE BANDS, and why the top one starts where it does.
+     *
+     *   phone    ...767      one column, cards stacked and pinned
+     *   tablet   768...959   one column, cards in a row, torch in the corner
+     *   desktop  960...      the full layout
+     *
+     * The desktop band used to start at 1024, and that put a hole in the
+     * middle of it: an iPhone asked to "Request Desktop Website" lays the page
+     * out at 980 CSS pixels, which landed inside the tablet band — so a reader
+     * who explicitly asked NOT to be given the mobile layout was handed the
+     * tablet one instead, on a phone. 960 closes that: 980 is now desktop,
+     * which is what the button they pressed says. Real tablets are untouched —
+     * an iPad Mini in landscape is 1024 and an iPad Air 1180, both already
+     * past it, and both are 768-834 in portrait, comfortably inside tablet. */
     --vw: 100vw;
     --page-pad: var(--spacing-gutter);
     --grid-cols: 4;
@@ -469,7 +483,7 @@
       --grid-cols: 9;
     }
   }
-  @media (min-width: 64rem) {
+  @media (min-width: 60rem) {
     :root {
       --grid-cols: 15;
     }

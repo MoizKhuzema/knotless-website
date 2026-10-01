@@ -143,7 +143,7 @@ const headHatch = Array.from({ length: 6 }, (_, i) => i);
      
      The figures match the run-outs the other sections use below the desktop
      layout, so every gap on a tablet or a phone is the same distance. */
-  @media (max-width: 1023px) {
+  @media (max-width: 959px) {
     .stage {
       padding-bottom: 48px;
     }
@@ -160,12 +160,28 @@ const headHatch = Array.from({ length: 6 }, (_, i) => i);
      over black — and a gradient whose only job was to disguise a colour change
      between two sections is the opposite of what continuity wants. */
 
+  /* HIDDEN UNTIL THE RIG HAS BEEN PLACED.
+   *
+   * The torch is an absolutely positioned SVG at 0,0 and its real position is
+   * a transform the script writes once it has measured the copy. This module
+   * is deferred, so between first paint and that measurement there is a window
+   * — about 300ms on a slow machine — where the torch painted at its natural
+   * 300x170 in the top-left corner of this overlay and then jumped to its pose
+   * at the bottom of the hero. A big flashlight in the corner, then gone.
+   *
+   * So the overlay starts invisible and `is-placed` turns it on, set at the
+   * moment the transform is first written. Without JavaScript it stays hidden,
+   * which is the right answer too: an unplaced torch is worse than no torch,
+   * and the copy does not depend on it. */
   .stage__fx {
     position: fixed;
     inset: 0;
     pointer-events: none;
     z-index: 0;
     overflow: clip;
+    opacity: 0;
+  }
+  .stage.is-placed .stage__fx {
     opacity: var(--fx-on, 1);
   }
   .stage__sticky {
@@ -318,7 +334,7 @@ const headHatch = Array.from({ length: 6 }, (_, i) => i);
          DECK    — small enough that three quotes will not fit at once, so they
                    stack. A tablet is compact but has the height for all three,
                    and hiding two of them there would buy nothing. */
-    const COMPACT = matchMedia('(max-width: 1023px)');
+    const COMPACT = matchMedia('(max-width: 959px)');
     const DECK = matchMedia('(max-width: 767px)');
 
     /* The pieces the compact deck is made of. The scroll maths for the torch
@@ -351,6 +367,8 @@ const headHatch = Array.from({ length: 6 }, (_, i) => i);
     let slide = 0;
     let step = 1;
     let introStart = -1;
+    /* Flipped once, the first time the torch is given a transform. */
+    let placed = false;
     let view = { x: 0, y: 0, dir: 0, half: 0.5, lensHalf: 30, len: 800, H: 900, pw: 1 };
 
     /* Line boxes for running text, the element box for anything with
@@ -639,6 +657,12 @@ const headHatch = Array.from({ length: 6 }, (_, i) => i);
       const tilt = COMPACT.matches && !DECK.matches ? TABLET_TILT * t : 0;
       torch!.style.transform =
         `translate(${x}px, ${y}px) rotate(${(dir - tilt) / DEG - 90}deg) scale(${s}) translate(-276px, -85px)`;
+      /* The rig now has a real position, so it may be shown. Here rather than
+         after layout(), because this is the line that places it. */
+      if (!placed) {
+        placed = true;
+        root.classList.add('is-placed');
+      }
       const lensRx = lerp(3, 16, t);
       for (const el of lensParts) {
         el.setAttribute('rx', String(lensRx * Number(el.dataset.k) + Number(el.dataset.o)));
