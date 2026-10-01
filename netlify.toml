@@ -6,3 +6,26 @@
 
 [build.environment]
   NODE_VERSION = "22"
+
+# Pages from the previous multi-page site. The new site is one page, so each
+# old URL is sent permanently (301) to where its content now lives. Anything
+# Google or another site has already linked to lands somewhere real instead of
+# a 404, and the old URL drops out of the index in favour of the new one.
+# Netlify matches these with or without the trailing slash.
+[[redirects]]
+  from = "/what-we-do/"
+  to = "/#what-you-get"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/about/"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/lab/"
+  to = "/"
+  status = 301
+  force = true

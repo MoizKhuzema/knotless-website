@@ -28,9 +28,14 @@ export function organization(site: string) {
   return {
     '@type': 'ProfessionalService',
     '@id': `${root}/#organization`,
-    name: SITE.legalEntityName,
+    // Trading name first: this is what Google shows as the business name.
+    name: SITE.brandName,
+    legalName: SITE.legalEntityName,
+    taxID: SITE.abn,
     url: `${root}/`,
     email: SITE.contactEmail,
+    ...(SITE.supportPhone ? { telephone: SITE.supportPhone } : {}),
+    logo: `${root}/apple-touch-icon.png`,
     image: `${root}/og-default.png`,
     slogan: SITE.tagline,
     address: { '@type': 'PostalAddress', addressCountry: 'AU' },
@@ -52,7 +57,9 @@ export function website(site: string) {
     '@type': 'WebSite',
     '@id': `${root}/#website`,
     url: `${root}/`,
-    name: SITE.legalEntityName,
+    // Google's "site name" in results reads this node. Brand, not Pty Ltd.
+    name: SITE.brandName,
+    alternateName: SITE.legalEntityName,
     inLanguage: SCHEMA_LANG,
     publisher: { '@id': `${root}/#organization` },
   };

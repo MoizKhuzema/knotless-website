@@ -9,11 +9,12 @@ import { SITE } from './src/config/site';
 // what Netlify serves from the `dist/` folder (see netlify.toml). No SSR
 // adapter is needed for a purely static build.
 //
-// `site` and `base` are env-driven so the same code serves three targets:
-//   - local dev / Netlify / custom domain → root (defaults below)
-//   - GitHub Pages project site → sub-path, set via SITE_URL + BASE_PATH in
-//     .github/workflows/deploy.yml
-// Internal links go through src/lib/href.ts so they respect `base`.
+// `site` and `base` default to the primary domain at the root, which is what
+// Netlify serves. They stay env-overridable (SITE_URL, BASE_PATH) for a build
+// to another host or sub-path — and any build whose host is not the primary
+// domain comes out noindexed, with a Disallow-all robots.txt, so a copy can
+// never compete with the real site in search. Internal links go through
+// src/lib/href.ts so they respect `base`.
 const SITE_URL = process.env.SITE_URL ?? `https://${SITE.primaryDomain}`;
 const BASE_PATH = process.env.BASE_PATH ?? '/';
 
@@ -26,7 +27,7 @@ export default defineConfig({
   trailingSlash: 'always',
   // Auto-generated XML sitemap (sitemap-index.xml + sitemap-0.xml), built from
   // `site` above (the primaryDomain by default). robots.txt points crawlers to
-  // it. lastmod is stamped at build; the 404 page is excluded.
+  // it. The 404 page is excluded.
   integrations: [
     sitemap({
       // 404 is the only route worth keeping out: it resolves, so it would be

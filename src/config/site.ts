@@ -41,6 +41,12 @@ export interface Founder {
 }
 
 export interface SiteConfig {
+  /**
+   * The trading name people search for. Google uses the WebSite and
+   * Organization `name` as the site name shown in results, so this — not the
+   * Pty Ltd — goes there. Must match the Google Business Profile name exactly.
+   */
+  brandName: string;
   /** Registered company name, e.g. on invoices and legal pages. */
   legalEntityName: string;
   /** Short brand tagline. Used in the hero. */
@@ -105,6 +111,7 @@ export interface SiteConfig {
 const SUPPORT_PHONE = '+61 416 588 531';
 
 export const SITE = {
+  brandName: 'Knotless',
   legalEntityName: 'Knotless AI Pty Ltd',
   tagline: 'AI Untangled.',
   abn: '75 702 285 050',

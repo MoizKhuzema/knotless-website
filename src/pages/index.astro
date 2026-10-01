@@ -35,6 +35,8 @@ import { META } from '../data/homepage';
 import { graph, organization, website, webPage } from '../lib/schema';
 
 const title = 'Home';
+// The homepage <title> is the line Google shows for a search on the brand.
+const fullTitle = 'Knotless | What AI is actually worth in your business';
 const description = META.description;
 const origin = Astro.site!.origin;
 const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
@@ -45,7 +47,7 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
 const schema = graph([
   organization(origin),
   website(origin),
-  webPage(origin, { url: pageUrl, name: title, description }),
+  webPage(origin, { url: pageUrl, name: fullTitle, description }),
 ]);
 ---
 
@@ -59,7 +61,7 @@ const schema = graph([
      there. With the lockup gone the animation has no destination, so leaving
      the component mounted would just run a gate script that hides the page and
      then tears itself down. -->
-<BaseLayout title={title} description={description} schema={schema} bleed>
+<BaseLayout title={title} fullTitle={fullTitle} description={description} schema={schema} bleed>
   {/* One torch lights both: it starts at the bottom of the hero and rides up,
       turns and grows into the problem section as the page scrolls. They are
       wrapped together because the light is continuous across them. */}

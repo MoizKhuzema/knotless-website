@@ -21,6 +21,12 @@ import plexMono500 from '../assets/fonts/plex-mono-500.woff2';
 
 interface Props {
   title: string;
+  /**
+   * Use this exact <title> instead of "{title} - Knotless". For the homepage,
+   * whose title is what Google shows for a search on the brand — "Home -
+   * Knotless" says nothing to someone deciding whether to click.
+   */
+  fullTitle?: string;
   description?: string;
   ogType?: string;
   schema?: unknown;
@@ -42,6 +48,7 @@ interface Props {
 
 const {
   title,
+  fullTitle: fullTitleOverride,
   description = '',
   ogType = 'website',
   schema,
@@ -62,8 +69,17 @@ const THEME: 'light' | 'dark' = 'dark';
  *  comparison the moment THEME is 'dark'. This also keeps the pairing explicit. */
 const THEME_COLOR = { light: '#efe9dd', dark: '#13100b' } as const;
 
-const fullTitle = `${title} - Knotless`;
-const ogImageAlt = `${SITE.legalEntityName} — ${SITE.tagline}`;
+const fullTitle = fullTitleOverride ?? `${title} - ${SITE.brandName}`;
+const ogImageAlt = `${SITE.brandName} — ${SITE.tagline}`;
+
+/**
+ * Only the primary domain may be indexed. Any other build of this code — the
+ * old GitHub Pages preview, a deploy to a sub-path — is a duplicate of the real
+ * site, and a duplicate that Google indexes competes with it. Those builds get
+ * noindex on every page (and robots.txt keeps crawlers out; see robots.txt.ts).
+ */
+const isPrimaryHost = Astro.site?.hostname === SITE.primaryDomain;
+const robotsNoindex = noindex || !isPrimaryHost;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL(href('/og-default.png'), Astro.site);
 
@@ -114,7 +130,7 @@ const fontFace = [
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    {robotsNoindex && <meta name="robots" content="noindex, nofollow" />}
 
     <style set:html={fontFace}></style>
     {/* Sans and Serif only. Both are above the fold - the hero headline is
@@ -129,7 +145,7 @@ const fontFace = [
     <link rel="apple-touch-icon" sizes="180x180" href={href('/apple-touch-icon.png')} />
 
     <meta property="og:type" content={ogType} />
-    <meta property="og:site_name" content={SITE.legalEntityName} />
+    <meta property="og:site_name" content={SITE.brandName} />
     <meta property="og:locale" content="en_AU" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />

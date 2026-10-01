@@ -4,8 +4,15 @@
  * group (AdsBot ignores the wildcard `User-agent: *`, so it must be named).
  */
 import type { APIRoute } from 'astro';
+import { SITE } from '../config/site';
 
 export const GET: APIRoute = ({ site }) => {
+  // Any build that is not the primary domain is a duplicate: keep it out.
+  if (site?.hostname !== SITE.primaryDomain) {
+    return new Response('User-agent: *\nDisallow: /\n', {
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    });
+  }
   const sitemap = new URL('sitemap-index.xml', site).href;
   const body = [
     'User-agent: *',
