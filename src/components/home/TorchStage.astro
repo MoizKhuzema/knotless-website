@@ -369,6 +369,26 @@ const headHatch = Array.from({ length: 6 }, (_, i) => i);
     let introStart = -1;
     /* Flipped once, the first time the torch is given a transform. */
     let placed = false;
+    /* ?debug-deck prints the fit arithmetic, so a real phone can be checked
+       over Web Inspector instead of guessed at. */
+    const debugDeck = location.search.includes('debug-deck');
+
+    /* 100svh in pixels, measured rather than taken from innerHeight.
+     *
+     * The pinned stage is sized in svh, which is the viewport with the
+     * browser's toolbars OUT. innerHeight is the CURRENT visual viewport and
+     * grows as they retract, so using it would over-report the room available
+     * and pin a deck that then clips. A probe reads the same unit the CSS
+     * uses. */
+    const svh = () => {
+      const el = document.createElement('div');
+      el.style.cssText =
+        'position:absolute;top:0;left:0;width:0;height:100svh;visibility:hidden;pointer-events:none';
+      document.body.appendChild(el);
+      const h = el.offsetHeight;
+      el.remove();
+      return h || innerHeight;
+    };
     let view = { x: 0, y: 0, dir: 0, half: 0.5, lensHalf: 30, len: 800, H: 900, pw: 1 };
 
     /* Line boxes for running text, the element box for anything with
@@ -489,25 +509,61 @@ const headHatch = Array.from({ length: 6 }, (_, i) => i);
            measuring the deck height we set last time. */
         next!.style.removeProperty('--deck-h');
         for (const c of cards) c.style.minHeight = '';
+
+        /* DECIDE IN THE STATE BEING DECIDED ABOUT.
+         *
+         * The deck's paddings, margins and card boxes are not the plain
+         * list's — the gap under the cards is 16px decked and up to 64px
+         * undecked, and the stage is 100svh decked and its own content height
+         * undecked. Reading them with the attribute off measured one layout
+         * and then applied the other, so the answer depended on what the
+         * previous run happened to leave behind: at 393x665 this read a stage
+         * of 1086px, which is the un-pinned list, not the screen. Put the
+         * attribute on, measure, and take it off again if it does not fit. */
+        next!.setAttribute('data-deck-on', '');
+
         let dh = 0;
         for (const c of cards) dh = Math.max(dh, c.offsetHeight);
 
-        const stageH = pin.offsetHeight;
-        const deckTop = deck.getBoundingClientRect().top - pin.getBoundingClientRect().top;
+        const ps = getComputedStyle(pin);
+        const padTop = parseFloat(ps.paddingTop) || 0;
+        const padBot = parseFloat(ps.paddingBottom) || 0;
+        const headEl = pin.querySelector<HTMLElement>('.prob__head');
+        const headH = headEl ? headEl.offsetHeight : 0;
+        const gapDeck = parseFloat(getComputedStyle(deck).marginTop) || 0;
+        const gapClose = closing ? parseFloat(getComputedStyle(closing).marginTop) || 0 : 0;
         const closeH = closing ? closing.offsetHeight : 0;
+        const stageH = svh();
+
+        /* What the deck ACTUALLY needs, added up, rather than where it
+           happened to land this time. The old test used the deck's measured
+           top, which with `justify-content: center` is a function of the slack
+           it was trying to measure. */
+        const need = padTop + headH + gapDeck + dh + gapClose + closeH + padBot;
+        const fits = need <= stageH + 4; /* subpixel tolerance */
+
+        if (debugDeck) {
+          console.info('[deck]', {
+            fits, stageH, need, spare: Math.round(stageH - need),
+            padTop, headH, gapDeck, card: dh, gapClose, closeH, padBot,
+            viewport: `${innerWidth}x${innerHeight}`,
+          });
+        }
 
         /* Very short screens cannot hold heading + card + closing at once.
            Rather than pin something that does not fit, show the plain list. */
-        if (deckTop + dh + closeH + 24 > stageH) resetStack();
+        if (!fits) resetStack();
         else {
           deckH = dh;
+          next!.style.setProperty('--deck-h', `${Math.round(dh)}px`);
+          /* Read AFTER --deck-h is set: until it is, the grid collapses to
+             nothing and the centring puts the deck somewhere it will not be. */
+          const deckTop = deck.getBoundingClientRect().top - pin.getBoundingClientRect().top;
           slide = stageH - deckTop;          /* deck top to the bottom edge */
           step = stageH * 0.55;              /* scroll distance per change */
-          next!.style.setProperty('--deck-h', `${Math.round(dh)}px`);
           /* (N-1) card changes, one closing reveal, then a short hold before
              the sticky releases of its own accord. */
           next!.style.setProperty('--track-h', `${Math.round(stageH + (cards.length + 0.3) * step)}px`);
-          next!.setAttribute('data-deck-on', '');
           pinned = true;
         }
       }

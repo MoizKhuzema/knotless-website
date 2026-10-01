@@ -200,7 +200,26 @@ import { PROBLEM } from '../../data/homepage';
          Centring splits that slack, and the half that goes above is headroom
          the composition wanted anyway. */
       justify-content: center;
-      padding: 132px 18px 24px;
+      /* HEADROOM THAT SCALES WITH THE SCREEN, because the screen is what the
+         deck has to fit inside. A phone's 100svh is the height with the
+         toolbars OUT — about 659px on an iPhone 15 in Safari, not the 844 the
+         spec sheet says — and a flat 132px there was a fifth of the whole
+         pinned screen spent above the heading. It left the deck fitting by
+         single-digit pixels, so one line of text wrapping differently in
+         WebKit tipped it over and the section fell back to the plain list on
+         real iPhones while looking fine in Chromium.
+
+         A RAMP, not a plain fraction: 16svh would hold 132px at 844 but still
+         hand 105 to a 659px screen, which measured out at 25px of slack —
+         less than the ~26px an extra wrapped line costs. This reaches exactly
+         132px at 844, so a tall phone is untouched, and bottoms out at 84px by
+         about 700, which is where the room is actually needed. The stage
+         centres its content, so the slack is shared above and below and the
+         heading never ends up against the top edge.
+
+         Only the DECK rule. The plain stage above is the tablet band's, and a
+         tablet is not short of height. */
+      padding: clamp(84px, calc(28svh - 104px), 132px) 18px 24px;
     }
     /* The pool is positioned against the section, which is now a track several
        screens tall, so it would smear across the whole of it. The beam alone
