@@ -1,0 +1,10 @@
+# Netlify redirects. Lives in public/ so it ships inside dist/ and works for
+# every deploy method, including drag-and-drop.
+#
+# Pages from the previous multi-page site. The new site is one page, so each
+# old URL is sent permanently (301) to where its content now lives: links and
+# search results pointing at them land somewhere real, and Google replaces the
+# old URL with the new one. Netlify matches with or without a trailing slash.
+/what-we-do/  /#what-you-get  301!
+/about/       /               301!
+/lab/         /               301!
