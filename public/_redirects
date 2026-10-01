@@ -8,3 +8,6 @@
 /what-we-do/  /#what-you-get  301!
 /about/       /               301!
 /lab/         /               301!
+
+# The share image was renamed when it was redrawn; keep the old URL working.
+/og-default.png  /og-image.png  301!

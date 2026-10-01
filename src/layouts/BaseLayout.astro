@@ -70,7 +70,7 @@ const THEME: 'light' | 'dark' = 'dark';
 const THEME_COLOR = { light: '#efe9dd', dark: '#13100b' } as const;
 
 const fullTitle = fullTitleOverride ?? `${title} - ${SITE.brandName}`;
-const ogImageAlt = `${SITE.brandName} — ${SITE.tagline}`;
+const ogImageAlt = `${SITE.brandName} — The truth about what AI is worth in your business`;
 
 /**
  * Only the primary domain may be indexed. Any other build of this code — the
@@ -81,7 +81,10 @@ const ogImageAlt = `${SITE.brandName} — ${SITE.tagline}`;
 const isPrimaryHost = Astro.site?.hostname === SITE.primaryDomain;
 const robotsNoindex = noindex || !isPrimaryHost;
 const canonical = new URL(Astro.url.pathname, Astro.site);
-const ogImage = new URL(href('/og-default.png'), Astro.site);
+// Renamed from og-default.png when it was redrawn in the current style: a new
+// URL makes WhatsApp, LinkedIn and Slack fetch it fresh instead of serving the
+// old picture from their caches.
+const ogImage = new URL(href('/og-image.png'), Astro.site);
 
 // @font-face here, not in CSS, so the URLs carry Astro's `base`.
 // Sans is variable (wght 100-700, measured from the binary - there is no 800).
@@ -139,10 +142,16 @@ const fontFace = [
     <link rel="preload" href={plexSans} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={plexSerif} as="font" type="font/woff2" crossorigin />
 
-    <link rel="icon" href={href('/favicon.ico')} sizes="any" />
+    {/* Tab icon: the struck `o` (knotless-icon-reverse) on ink. The SVG is
+        the sharp one modern browsers pick; .ico (16/32/48) covers the rest
+        and is what Google's search-result favicon reads. Regenerate the PNGs
+        from favicon.svg if the mark changes. */}
+    <link rel="icon" href={href('/favicon.ico')} sizes="48x48" />
+    <link rel="icon" type="image/svg+xml" href={href('/favicon.svg')} />
     <link rel="icon" type="image/png" sizes="32x32" href={href('/favicon-32.png')} />
     <link rel="icon" type="image/png" sizes="16x16" href={href('/favicon-16.png')} />
     <link rel="apple-touch-icon" sizes="180x180" href={href('/apple-touch-icon.png')} />
+    <link rel="manifest" href={href('/site.webmanifest')} />
 
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={SITE.brandName} />
