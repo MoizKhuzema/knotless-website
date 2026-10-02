@@ -129,12 +129,10 @@ export const SITE = {
   supportPhone: SUPPORT_PHONE,
 
   privacyEmail: 'privacy@knotless.com.au',
-  /* Empty until the page exists. It was a guessed URL carrying a TODO, and it
-     feeds schema.org sameAs as well as the footer — publishing an unverified
-     profile as sameAs is a claim about identity, not a broken link. Empty, the
-     Organization node omits sameAs entirely. The footer still shows a LinkedIn
-     row; see Footer.astro for where it points in the meantime. */
-  companyLinkedinUrl: '',
+  /* Confirmed company page (Oct 2026). Feeds the footer button and the
+     Organization node's schema.org sameAs, which tells Google the site and the
+     LinkedIn page are the same business. */
+  companyLinkedinUrl: 'https://www.linkedin.com/company/knotlessai/',
   primaryDomain: 'knotless.com.au',
   secondaryDomain: 'knotless.au',
   founders: [
