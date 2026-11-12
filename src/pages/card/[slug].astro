@@ -1,0 +1,718 @@
+---
+/**
+ * Digital business card — /card/<slug>/.
+ *
+ * Built for a phone held in one hand: the card is a physical object under the
+ * same lamp as the contact page. Drag it to turn it in the light, tap or flick
+ * it to flip it. The back is the paper side and carries the QR that opens this
+ * same page on someone else's phone. Two buttons sit in thumb reach: flip to
+ * the QR, and save the contact (a vCard, /card/<slug>.vcf).
+ *
+ * WHY CSS 3D AND NOT WEBGL: two flat faces and a few edge layers in a
+ * preserve-3d box are a real 3D object to the compositor, so the text stays
+ * crisp at every angle, nothing is downloaded, and it runs at 60fps on an old
+ * phone. A WebGL scene would cost a library and a canvas of blurred type for
+ * a rectangle.
+ *
+ * Not indexed: these are handed out by QR, not found by search.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { CARDS, dial, type Card } from '../../data/cards';
+import { SITE } from '../../config/site';
+import { href } from '../../lib/href';
+import wordmarkCream from '../../assets/logo/knotless-secondary-reverse.svg';
+import wordmarkInk from '../../assets/logo/knotless-secondary.svg';
+
+export function getStaticPaths() {
+  return CARDS.map((card) => ({ params: { slug: card.slug }, props: { card } }));
+}
+
+const { card } = Astro.props as { card: Card };
+const vcf = href(`/card/${card.slug}.vcf`);
+---
+
+<BaseLayout
+  title={`${card.name}, ${card.title}`}
+  description={`${card.name}, ${card.title} at ${SITE.brandName}. Save the contact or scan to share.`}
+  bare
+  noindex
+>
+  <main class="cc">
+    <div class="lamp" aria-hidden="true"></div>
+    <div class="pool" aria-hidden="true"></div>
+
+    <div
+      class="stage"
+      data-stage
+      tabindex="0"
+      role="button"
+      aria-label={`${card.name}'s card. Press to flip.`}
+    >
+      <div class="shadow" data-shadow aria-hidden="true"></div>
+      <div class="card" data-card>
+        {/* The card's thickness: three slabs between the faces. Seen flat they
+            are hidden behind the front; turned, they are the edge. */}
+        <div class="slab" style="--z:-1.2px" aria-hidden="true"></div>
+        <div class="slab" style="--z:0px" aria-hidden="true"></div>
+        <div class="slab" style="--z:1.2px" aria-hidden="true"></div>
+
+        <div class="face front" data-face="front">
+          <div class="metal" aria-hidden="true"></div>
+          <div class="shade" aria-hidden="true"></div>
+          <img class="front__mark" src={wordmarkCream.src} alt="Knotless" width="120" height="25" />
+
+          <div class="front__who">
+            <span class="front__rail" aria-hidden="true"></span>
+            <h1 class="front__name">
+              {card.givenName}<br />{card.familyName}
+            </h1>
+            <p class="front__title">{card.title}</p>
+          </div>
+
+          <ul class="front__lines">
+            <li>
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12v8H2z M2 4.5l6 4.5 6-4.5" /></svg>
+              <a href={`mailto:${card.email}`}>{card.email}</a>
+            </li>
+            <li>
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 2.5h-2a1 1 0 0 0-1 1C2.5 9 7 13.5 12.5 13.5a1 1 0 0 0 1-1v-2l-2.6-1-1.3 1.3A7 7 0 0 1 5.2 6.4L6.5 5.1z" /></svg>
+              <a href={`tel:${dial(card.phone)}`}>{card.phone}</a>
+            </li>
+            <li>
+              <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" /><path d="M2.5 8h11 M8 2.5c-2 2.8-2 8.2 0 11 M8 2.5c2 2.8 2 8.2 0 11" /></svg>
+              <a href={href('/')}>{SITE.primaryDomain}</a>
+            </li>
+          </ul>
+
+          <p class="front__tag">{SITE.tagline}</p>
+                  </div>
+
+        <div class="face back" data-face="back" aria-hidden="true">
+          <div class="metal" aria-hidden="true"></div>
+          <div class="shade" aria-hidden="true"></div>
+          <img class="back__mark" src={wordmarkInk.src} alt="" width="96" height="20" />
+          <div class="back__qr">
+            <svg
+              viewBox={`0 0 ${card.qr.size} ${card.qr.size}`}
+              shape-rendering="crispEdges"
+              role="img"
+              aria-label={`QR code for ${card.name}'s digital card`}
+            >
+              <path d={card.qr.path} />
+            </svg>
+          </div>
+          <p class="back__cap">Scan for {card.givenName}’s card</p>
+          <span class="back__rail" aria-hidden="true"></span>
+                  </div>
+      </div>
+    </div>
+
+    <p class="hint" aria-hidden="true">Drag to turn · Tap to flip</p>
+
+    <div class="actions">
+      <button type="button" class="btn btn--ghost" data-flip aria-pressed="false">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 2h5v5H2z M9 2h5v5H9z M2 9h5v5H2z M10 10h1.5v1.5H10z M12.5 12.5H14V14h-1.5z M12.5 9H14v1.5h-1.5z M9 12.5h1.5V14H9z" /></svg>
+        <span data-flip-label>Show QR</span>
+      </button>
+      <a class="btn btn--fill" href={vcf}>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="6.5" cy="5.5" r="2.5" /><path d="M2 13.5c.6-2.6 2.4-4 4.5-4s3.9 1.4 4.5 4 M12.5 5v5 M10 7.5h5" /></svg>
+        Save contact
+      </a>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  :global(body) {
+    min-height: 100svh;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  .cc {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: max(56px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* --- The lamp, as on /contact ----------------------------------------- */
+  .lamp {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 1px;
+    height: 34px;
+    background: linear-gradient(rgba(239, 233, 221, 0), rgba(239, 233, 221, 0.5));
+    pointer-events: none;
+    animation: lamp-on 0.8s var(--ease-out) both;
+  }
+  .lamp::after {
+    content: '';
+    position: absolute;
+    left: -18px;
+    bottom: -4px;
+    width: 37px;
+    height: 4px;
+    border-radius: 2px;
+    background: #f6e6cc;
+    box-shadow: 0 0 18px 4px rgba(255, 210, 160, 0.35);
+  }
+  .pool {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse 70% 46% at 50% 34%,
+      rgba(255, 216, 170, 0.12),
+      rgba(255, 210, 160, 0.035) 55%,
+      transparent 78%
+    );
+    animation: lamp-on 0.8s var(--ease-out) both;
+  }
+  @keyframes lamp-on {
+    0% { opacity: 0; }
+    12% { opacity: 0.85; }
+    22% { opacity: 0.1; }
+    38%, 100% { opacity: 1; }
+  }
+
+  /* --- Stage and card ---------------------------------------------------- */
+  .stage {
+    --w: min(74vw, 330px, calc((100svh - 232px) * 0.628));
+    position: relative;
+    width: var(--w);
+    aspect-ratio: 54 / 86;
+    perspective: 1100px;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    cursor: grab;
+    outline: none;
+  }
+  .stage:active {
+    cursor: grabbing;
+  }
+  .stage:focus-visible .card {
+    outline: 1px solid var(--color-accent-type);
+    outline-offset: 6px;
+    border-radius: 16px;
+  }
+
+  .card {
+    --rx: 0deg;
+    --ry: 0deg;
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transform: rotateX(var(--rx)) rotateY(var(--ry));
+  }
+
+  .face,
+  .slab {
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+  }
+  .slab {
+    transform: translateZ(var(--z));
+  }
+  .face {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow: hidden;
+    container-type: inline-size;
+  }
+
+  /* =====================================================================
+   * THE MATERIAL. Brushed metal, matte: no moving glare. The only thing the
+   * script feeds the faces is --diff (0..1, how squarely a face is turned to
+   * the lamp), so a face dims a little as it turns away.
+   *
+   * Layer order on a face: metal grain → shading → content.
+   * ===================================================================== */
+  .face > .metal,
+  .face > .shade {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+  .face > :not(.metal, .shade) {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Brushed grain: turbulence stretched along x is what a brushed finish is —
+     thousands of fine parallel scratches. Inline, so nothing is fetched. */
+  .metal {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.004 0.9' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.4 -0.45'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23b)'/%3E%3C/svg%3E");
+    background-size: 100% 260px;
+    mix-blend-mode: overlay;
+    opacity: 0.42;
+  }
+  /* The side of the card turned away from the lamp goes dark, as metal does. */
+  .shade {
+    background: #000;
+    opacity: calc((1 - var(--diff, 1)) * 0.62);
+  }
+  /* FRONT: dark bronze-gunmetal — the page's warm ink, made of metal. */
+  .front {
+    transform: translateZ(2px);
+    display: flex;
+    flex-direction: column;
+    padding: 9cqw 8.5cqw 7.5cqw;
+    background: linear-gradient(170deg, #2a241d 0%, #1b1712 45%, #120f0b 100%);
+    box-shadow:
+      inset 0 0 0 1px rgba(239, 233, 221, 0.1),
+      inset 0 1px 0 rgba(255, 240, 220, 0.12);
+    color: var(--color-cream);
+  }
+  .front__mark {
+    width: 40cqw;
+    height: auto;
+    display: block;
+  }
+  .front__who {
+    margin-top: auto;
+  }
+  /* The strike, as an inlaid copper bar. */
+  .front__rail {
+    display: block;
+    width: 13cqw;
+    height: 1.6cqw;
+    border-radius: 1cqw;
+    background: linear-gradient(180deg, #c9643b 0%, #b0461f 55%, #8f3615 100%);
+    box-shadow:
+      inset 0 0.3cqw 0 rgba(255, 210, 180, 0.35);
+    margin-bottom: 6cqw;
+  }
+  /* The name: satin foil, lighter at the top edge of each letter. */
+  .front__name {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: 13.2cqw;
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    color: var(--color-cream);
+    background: linear-gradient(180deg, #f4eee3 0%, #ddd4c5 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0.25cqw 0 rgba(0, 0, 0, 0.55));
+  }
+  .front__title {
+    margin: 4cqw 0 0;
+    font: 500 3.9cqw/1.2 var(--font-sans);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-accent-type);
+  }
+  .front__lines {
+    list-style: none;
+    margin: 9cqw 0 0;
+    padding: 6cqw 0 0;
+    border-top: 1px solid rgba(239, 233, 221, 0.12);
+    box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5);
+    display: grid;
+    gap: 3.4cqw;
+  }
+  .front__lines li {
+    display: flex;
+    align-items: center;
+    gap: 3.2cqw;
+    font: 400 4.4cqw/1.2 var(--font-sans);
+    color: var(--color-cream);
+    white-space: nowrap;
+  }
+  .front__lines a {
+    color: inherit;
+    text-decoration: none;
+    /* Links inside a draggable card only fire on a clean tap; see the script. */
+    pointer-events: none;
+  }
+  .front__lines svg,
+  .btn svg {
+    flex: none;
+    width: 4.6cqw;
+    height: 4.6cqw;
+    fill: none;
+    stroke: var(--color-accent-type);
+    stroke-width: 1.3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .front__tag {
+    margin: 7cqw 0 0;
+    font: 500 2.9cqw/1 var(--font-sans);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-cream-dim);
+  }
+
+  /* BACK: brushed champagne — the brand cream as satin metal. The QR sits on
+     a matte printed panel. */
+  .back {
+    transform: rotateY(180deg) translateZ(2px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 9cqw 8.5cqw 8cqw;
+    background: linear-gradient(170deg, #ece4d5 0%, #dcd1bd 50%, #cfc2ab 100%);
+    box-shadow:
+      inset 0 0 0 1px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    color: #16150f;
+  }
+  .back > .metal {
+    opacity: 0.7;
+    mix-blend-mode: soft-light;
+  }
+  .back > .shade {
+    opacity: calc((1 - var(--diff, 1)) * 0.5);
+  }
+  .back__mark {
+    width: 34cqw;
+    height: auto;
+    align-self: flex-start;
+  }
+  .back__qr {
+    margin-top: auto;
+    width: 78cqw;
+    padding: 5cqw;
+    border-radius: 3cqw;
+    background: #fbf8f2;
+    box-shadow:
+      0 0.4cqw 1cqw rgba(60, 45, 25, 0.18),
+      0 0 0 1px rgba(22, 21, 15, 0.08);
+  }
+  .back > .back__qr {
+    z-index: 4;
+  }
+  .back__qr svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    fill: #16150f;
+  }
+  .back__cap {
+    margin: 6cqw 0 0;
+    font: 500 3.6cqw/1.3 var(--font-sans);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #3d3830;
+  }
+  .back__rail {
+    margin-top: auto;
+    width: 13cqw;
+    height: 1.6cqw;
+    border-radius: 1cqw;
+    background: linear-gradient(180deg, #c9643b 0%, #b0461f 55%, #8f3615 100%);
+  }
+
+  /* The edge: machined metal. */
+  .slab {
+    background: #4a3f33;
+  }
+
+  .shadow {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: -7%;
+    height: 9%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.8), transparent);
+    filter: blur(var(--sb, 6px));
+    opacity: var(--so, 1);
+    transform: translateX(var(--sx, 0px)) scaleX(var(--ss, 1));
+    pointer-events: none;
+  }
+
+  /* --- Under the card ---------------------------------------------------- */
+  .hint {
+    margin: 14px 0 0;
+    font: 500 11px/1 var(--font-sans);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #6f685e;
+  }
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: min(100%, 360px);
+    margin-top: 8px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 52px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font: 500 13px/1 var(--font-sans);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color var(--dur-fast, 0.2s) var(--ease-out),
+      color var(--dur-fast, 0.2s) var(--ease-out),
+      transform 0.15s var(--ease-out);
+  }
+  .btn:active {
+    transform: scale(0.97);
+  }
+  .btn svg {
+    width: 16px;
+    height: 16px;
+  }
+  .btn--ghost {
+    border: 1px solid var(--color-glass-edge);
+    background: var(--color-glass);
+    box-shadow: inset 0 1px 0 var(--color-glass-spec);
+    color: var(--color-cream);
+    backdrop-filter: blur(10px);
+  }
+  .btn--fill {
+    border: 1px solid transparent;
+    background: var(--color-terracotta);
+    color: var(--color-on-accent);
+  }
+  .btn--fill svg {
+    stroke: currentColor;
+  }
+  @media (hover: hover) {
+    .btn--ghost:hover {
+      background: var(--color-glass-lift);
+    }
+    .btn--fill:hover {
+      background: var(--color-accent-hover-bg);
+      color: var(--color-accent-hover-fg);
+    }
+  }
+  @media (max-width: 359px) {
+    .btn {
+      gap: 7px;
+      padding: 0 10px;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+    }
+  }
+  .btn:focus-visible {
+    outline: 1px solid var(--color-accent-type);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lamp,
+    .pool {
+      animation: none;
+    }
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const stage = document.querySelector('[data-stage]');
+    const card = document.querySelector('[data-card]');
+    const shadow = document.querySelector('[data-shadow]');
+    const flipBtn = document.querySelector('[data-flip]');
+    const flipLabel = document.querySelector('[data-flip-label]');
+    const faces = { front: card.querySelector('.front'), back: card.querySelector('.back') };
+    if (!stage || !card) return;
+
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* Rotation is in degrees. `base` is the face the card rests on: a multiple
+       of 180, cumulative, so a flick to the left and one to the right both keep
+       turning the way the finger went. */
+    let base = 0;
+    let rx = 0, ry = 0, vx = 0, vy = 0;
+    let dragging = false;
+    let sx = 0, sy = 0, lx = 0, lt = 0, t0 = 0, flickV = 0, startRy = 0;
+    let lastInput = performance.now();
+
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const onBack = () => (((Math.round(base / 180) % 2) + 2) % 2) === 1;
+
+    const syncFace = () => {
+      const back = onBack();
+      faces.front.setAttribute('aria-hidden', String(back));
+      faces.back.setAttribute('aria-hidden', String(!back));
+      if (flipLabel) flipLabel.textContent = back ? 'Show card' : 'Show QR';
+      if (flipBtn) flipBtn.setAttribute('aria-pressed', String(back));
+    };
+
+    /* ---- shading --------------------------------------------------------
+       In the frame CSS uses (x right, y down, z toward the viewer, origin at
+       the card's centre); the lamp is the bar at the top of the screen. */
+    const D2R = Math.PI / 180;
+    let W = 1, H = 1, L = [0, -300, 420];
+    const measure = () => {
+      const s = stage.getBoundingClientRect();
+      const lamp = document.querySelector('.lamp');
+      W = stage.offsetWidth;
+      H = stage.offsetHeight;
+      const ly = lamp ? lamp.getBoundingClientRect().bottom : 30;
+      L = [0, ly - (s.top + s.height / 2), H * 0.95];
+    };
+    measure();
+    addEventListener('resize', measure, { passive: true });
+
+    const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    const norm = (a) => {
+      const l = Math.hypot(a[0], a[1], a[2]) || 1;
+      return [a[0] / l, a[1] / l, a[2] / l];
+    };
+
+    /* How squarely a face is turned to the lamp: it dims as it turns away. */
+    const light = (el, n) => {
+      const diff = Math.max(0, dot(n, norm(L)));
+      el.style.setProperty('--diff', (0.35 + diff * 0.65).toFixed(3));
+    };
+
+    const paint = () => {
+      card.style.setProperty('--rx', rx.toFixed(2) + 'deg');
+      card.style.setProperty('--ry', ry.toFixed(2) + 'deg');
+
+      /* The card's rotation as CSS applies it: rotateX(rx) rotateY(ry). */
+      const a = rx * D2R, b = ry * D2R;
+      const ca = Math.cos(a), sa = Math.sin(a), cb = Math.cos(b), sb = Math.sin(b);
+      const u = [cb, sa * sb, -ca * sb];
+      const n = [sb, -sa * cb, ca * cb];
+
+      light(faces.front, n);
+      light(faces.back, [-n[0], -n[1], -n[2]]);
+
+      /* The shadow is the card's footprint under an overhead lamp: as wide as
+         the card looks from above, and softer the further the card tips. */
+      if (shadow) {
+        shadow.style.setProperty('--sx', (n[0] * -26).toFixed(1) + 'px');
+        shadow.style.setProperty('--ss', Math.max(0.35, Math.abs(u[0])).toFixed(3));
+        shadow.style.setProperty('--sb', (6 + Math.abs(n[1]) * 10).toFixed(1) + 'px');
+        shadow.style.setProperty('--so', (0.75 + Math.abs(u[0]) * 0.25).toFixed(3));
+      }
+    };
+
+    const buzz = () => navigator.vibrate && navigator.vibrate(8);
+
+    const flip = (dir = 1) => {
+      base += 180 * dir;
+      lastInput = performance.now();
+      syncFace();
+      buzz();
+      if (still) {
+        ry = base;
+        rx = 0;
+        paint();
+      }
+    };
+
+    /* One loop: a spring toward the resting face, plus a slow idle sway once
+       nobody has touched the card for a moment, so it reads as an object
+       hanging in the light rather than a picture of one. */
+    const tick = (now) => {
+      if (!dragging && !still) {
+        const idle = now - lastInput > 1800;
+        const tx = idle ? Math.sin(now / 1700) * 4 : 0;
+        const ty = base + (idle ? Math.sin(now / 2300) * 7 : 0);
+        vy = vy * 0.8 + (ty - ry) * 0.075;
+        vx = vx * 0.8 + (tx - rx) * 0.075;
+        ry += vy;
+        rx += vx;
+      }
+      paint();
+      requestAnimationFrame(tick);
+    };
+
+    stage.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      stage.setPointerCapture(e.pointerId);
+      sx = lx = e.clientX;
+      sy = e.clientY;
+      t0 = lt = performance.now();
+      startRy = ry;
+      flickV = 0;
+      lastInput = t0;
+    });
+
+    stage.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const now = performance.now();
+      const dx = e.clientX - sx;
+      const dy = e.clientY - sy;
+      ry = startRy + dx * 0.5;
+      rx = clamp(-dy * 0.3, -28, 28);
+      const dt = Math.max(1, now - lt);
+      flickV = flickV * 0.6 + ((e.clientX - lx) / dt) * 0.4; // px/ms, smoothed
+      lx = e.clientX;
+      lt = now;
+      lastInput = now;
+      if (still) paint();
+    });
+
+    const release = (e) => {
+      if (!dragging) return;
+      dragging = false;
+      const moved = Math.hypot(e.clientX - sx, e.clientY - sy);
+      const dur = performance.now() - t0;
+      lastInput = performance.now();
+
+      /* A tap: open a contact line if one was tapped, otherwise flip. */
+      if (moved < 8 && dur < 400) {
+        const link = document
+          .elementsFromPoint(e.clientX, e.clientY)
+          .map((el) => el.closest && el.closest('.front__lines li'))
+          .find(Boolean);
+        if (link && !onBack()) {
+          const a = link.querySelector('a');
+          if (a) location.href = a.href;
+          return;
+        }
+        flip(1);
+        return;
+      }
+
+      /* A drag or flick: carry the momentum, then settle on the nearest face. */
+      const projected = ry + flickV * 220;
+      const steps = clamp(Math.round((projected - base) / 180), -1, 1);
+      if (steps !== 0) {
+        base += 180 * steps;
+        syncFace();
+        buzz();
+      }
+      vy = flickV * 10;
+      if (still) {
+        ry = base;
+        rx = 0;
+        paint();
+      }
+    };
+    stage.addEventListener('pointerup', release);
+    stage.addEventListener('pointercancel', release);
+
+    stage.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        flip(1);
+      }
+    });
+    if (flipBtn) flipBtn.addEventListener('click', () => flip(1));
+
+    syncFace();
+    paint();
+    if (!still) requestAnimationFrame(tick);
+  })();
+</script>

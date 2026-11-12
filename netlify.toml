@@ -9,3 +9,12 @@
 
 # Redirects live in public/_redirects (copied into dist/), so they apply
 # however the site is deployed — Git, CLI or drag-and-drop of dist/.
+
+# Digital cards: serve the "Save contact" vCards as vCards, so iOS opens its
+# "Add to Contacts" sheet and Android hands them to Contacts, instead of either
+# showing the file as text.
+[[headers]]
+  for = "/card/*.vcf"
+  [headers.values]
+    Content-Type = "text/vcard; charset=utf-8"
+    Content-Disposition = "inline"
