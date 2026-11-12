@@ -108,7 +108,7 @@ export interface SiteConfig {
  * founder record and the footer's support row. A number typed twice is a
  * number that gets changed once.
  */
-const SUPPORT_PHONE = '+61 416 588 531';
+const SUPPORT_PHONE = '+61 432 197 553';
 
 export const SITE = {
   brandName: 'Knotless',

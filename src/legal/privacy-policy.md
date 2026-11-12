@@ -95,7 +95,7 @@ what you share, and when.
 
 **The enquiry form.** Our website has no automated booking calendar. When you
 complete the enquiry form, you give your name, company name, email, and
-(optionally) your phone number. The form sends these to our business email so
+your phone number. The form sends these to our business email so
 we can contact you, usually within one business day, to arrange a time.
 
 **Hosting.** Our website is hosted by **Netlify**, a provider based in the

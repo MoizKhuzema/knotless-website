@@ -19,12 +19,9 @@ export const CONTACT = {
   /** The lit line under the lead. Three facts, not a sentence. */
   promise: ['30 minutes', 'Free', 'With the founders'],
   /**
-   * Three fields, all required.
-   *
-   * It was four — name, company, email, phone — and a phone number is a thing
-   * to chase, not a thing to book a call with. What is left is the least that
-   * lets a founder walk into a Fit Call already knowing something: who is
-   * asking, where to reply, and what the business does.
+   * Four fields, all required: who is asking, where to reply, a number to
+   * call, and what the business does. A field can opt out with
+   * `optional: true` (shows an "Optional" tag and drops `required`).
    *
    * `website` is a url input with a lenient `inputmode` and no scheme demanded
    * of the reader: "knotless.com.au" is what a person types, and the page adds
@@ -55,6 +52,15 @@ export const CONTACT = {
       half: true,
     },
     {
+      id: 'phone',
+      label: 'Phone',
+      type: 'tel',
+      autocomplete: 'tel',
+      inputmode: 'tel',
+      placeholder: '0400 000 000',
+      half: true,
+    },
+    {
       id: 'website',
       label: 'Company website',
       type: 'url',
@@ -65,7 +71,7 @@ export const CONTACT = {
     },
   ],
   submitLabel: 'Request my Fit Call',
-  /** Under the button. Says what the three fields are for, and nothing else. */
+  /** Under the button. Says what the fields are for, and nothing else. */
   fine: 'We only use this to arrange the call.',
   /**
    * Inline field messages. Written as the missing thing, not as the rule that
@@ -77,6 +83,10 @@ export const CONTACT = {
     email: {
       empty: 'Please add your work email',
       invalid: 'That email doesn’t look right',
+    },
+    phone: {
+      empty: 'Please add your phone number',
+      invalid: 'That number doesn’t look right',
     },
     website: {
       empty: 'Add your company’s website',

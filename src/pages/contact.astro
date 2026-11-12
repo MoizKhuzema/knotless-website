@@ -99,6 +99,9 @@ const FORM_ACTION = withBase('/contact');
             <div class="fld">
               <label class="meta fld__label" for={field.id}>
                 {field.label}
+                {'optional' in field && field.optional && (
+                  <span class="fld__opt">Optional</span>
+                )}
               </label>
               {/* The input is wrapped so the warm line can be anchored to the
                   input's own bottom edge. On .fld it would hang off the error
@@ -112,7 +115,7 @@ const FORM_ACTION = withBase('/contact');
                   autocomplete={field.autocomplete}
                   placeholder={field.placeholder || undefined}
                   aria-describedby={`${field.id}-err`}
-                  required
+                  required={!('optional' in field && field.optional)}
                 />
               </span>
               <span class="fld__err" id={`${field.id}-err`}></span>
@@ -479,6 +482,12 @@ const FORM_ACTION = withBase('/contact');
   .fld:focus-within .fld__label {
     color: var(--color-cream);
   }
+  /* Quieter than the label, so the optional field reads as one more line of
+     the same form rather than a different kind of question. */
+  .fld__opt {
+    margin-left: 0.6em;
+    color: #7f786e;
+  }
   .fld.is-ok .fld__label::after {
     content: '  ✓';
     color: var(--color-accent-type);
@@ -671,6 +680,11 @@ const FORM_ACTION = withBase('/contact');
     const check = (el) => {
       const v = el.value.trim();
       if (!v) return 'empty';
+      /* Phone characters with 8–15 digits (AU local or international). */
+      if (el.id === 'phone') {
+        const digits = v.replace(/\D/g, '').length;
+        return /^[0-9+()\s.-]+$/.test(v) && digits >= 8 && digits <= 15 ? null : 'invalid';
+      }
       if (el.id === 'name') return v.length >= 2 ? null : 'invalid';
       if (el.id === 'email') return el.checkValidity() && EMAIL.test(v) ? null : 'invalid';
       if (el.id === 'website') return /\.[a-z]{2,}/i.test(v) ? null : 'invalid';
@@ -692,7 +706,8 @@ const FORM_ACTION = withBase('/contact');
       const e = errOf(el);
       if (f) {
         f.classList.remove('is-bad');
-        f.classList.toggle('is-ok', !!ok);
+        /* No tick on an empty optional field: nothing was checked. */
+        f.classList.toggle('is-ok', !!ok && !!el.value.trim());
       }
       el.removeAttribute('aria-invalid');
       if (e) e.textContent = '';
